@@ -45,7 +45,10 @@ def plate_acc(y_true, y_pred):
 
 La fuente principal del set de validación proviene de estos de [video night drive](https://www.youtube.com/watch?v=75X9vSFCh14) y [video morning drive](https://www.youtube.com/watch?v=-TPJot7-HTs). Créditos a [J Utah](https://www.youtube.com/channel/UCBcVQr-07MH-p9e2kRTdB3A).
 
-Formato de val_set/anotaciones.txt
+Formato de *val_set/anotaciones.txt* (separado por tab):
+```
+imgs/nombre_imagen.png  ABC 123 DE
+```
 
 *Si desean colaborar para expandir el set de validación, es de ayuda.*
 
