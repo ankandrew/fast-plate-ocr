@@ -1,5 +1,7 @@
 # Reconocedor de Patentes OCR de Patentes (Arg)
 
+![Demo](extra/local_recog_demo.png)
+
 **OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Tambien se incluyeron fotos de motos, el formato de estas es diferente al de los vehiculos.
 
 Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LSTM/GRU)** para modelar este tipo de problema de secuencia de caracteres a partir de una imagen. En este caso se implementan solo ConvNets debido a:
@@ -11,9 +13,23 @@ Todas las imagenes procesadas son:
 1. Ajustadas a un tamaño de **70x140**
 1. Píxeles **normalizados** entre valores **[0, 1]**
 
+### Uso
+
+Contar con **python 3.x**, instalar los requerimientos:
+
+`pip3 install requirements.txt`
+
+Luego corran:
+
+`python3 main.py`
+
+*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta val_set/imgs/*
+
 ### Caracteristicas
 
 El modelo que se encuentra en models/modelo_4m.h5 tiene 4~ millones de parametros. Es una ConvNet tipica capas/layers formadas por `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalMaxPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres.
+
+![model head](extra/FCN.png)
 
 * **Label Smoothing**: le da un 10% notorio de aumento de `plate_acc`. Se suavizan los one-hot encoding y pasan de ser (por ejemplo) ```[0, 0, 0, 1]``` a ```[0.01, 0.01, 0.01, 0.90]```
 * **Regularización**: Se probo DropBlock, DropOut y l2 reg. a los filtros. Este ultimo dio los mejores resultados
