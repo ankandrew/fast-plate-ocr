@@ -13,8 +13,8 @@ Todas las imagenes procesadas son:
 
 ### Caracteristicas
 
-* **Label Smoothing**: le da un 10% notorio de aumento de `plate_acc`. Se suavizan los one-hot encoding y pasan de ser (por ejemplo) ```[0, 0, 0, 1]``` a [0.01, 0.01, 0.01, 0.90]
-* **Regularización**: Se probo DropBlock, DropOut y l2 reg. a los filtros. Este ultimo dio los mejores resultas
+* **Label Smoothing**: le da un 10% notorio de aumento de `plate_acc`. Se suavizan los one-hot encoding y pasan de ser (por ejemplo) ```[0, 0, 0, 1]``` a ```[0.01, 0.01, 0.01, 0.90]```
+* **Regularización**: Se probo DropBlock, DropOut y l2 reg. a los filtros. Este ultimo dio los mejores resultados
 * Data Augmentation: Se usa la augmentacion estandard de Keras y se aplica:
     * Cambios de brillo
     * Leve rotaciones
@@ -22,7 +22,7 @@ Todas las imagenes procesadas son:
     * Zoom
     * Desplazamiento Vertical/Horizontal
 * Imagen blanco & negro de **70x140** *(altura x ancho)*
-    * Interpolacion **bilineal**
+    * Interpolacion **bilineal** *(experimentando)*
 
 ### Validación
 
@@ -45,7 +45,9 @@ def plate_acc(y_true, y_pred):
 
 La fuente principal del set de validación proviene de estos de [video night drive](https://www.youtube.com/watch?v=75X9vSFCh14) y [video morning drive](https://www.youtube.com/watch?v=-TPJot7-HTs). Créditos a [J Utah](https://www.youtube.com/channel/UCBcVQr-07MH-p9e2kRTdB3A).
 
-*Si desean colaborar para expandir el set de validación, es de ayuda.
+Formato de val_set/anotaciones.txt
+
+*Si desean colaborar para expandir el set de validación, es de ayuda.*
 
 
 ### TODO
