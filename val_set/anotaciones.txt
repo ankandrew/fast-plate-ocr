@@ -15,7 +15,6 @@ imgs/morning_44010_51.png	OOI662
 imgs/morning_45360_29.png	AC724OH
 imgs/morning_46080_44.png	AC966SD
 imgs/morning_46440_78.png	AC724OH
-imgs/morning_4860_55.png	AD952XI
 imgs/morning_49770_49.png	INC275
 imgs/morning_49860_79.png	EPR935
 imgs/morning_51120_77.png	AB928HY
