@@ -1,4 +1,4 @@
-# cnn-ocr-lp
+# Reconocedor de Patentes OCR de Patentes (Arg)
 
 **OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Tambien se incluyeron fotos de motos, el formato de estas es diferente al de los vehiculos.
 
@@ -13,15 +13,17 @@ Todas las imagenes procesadas son:
 
 ### Caracteristicas
 
+El modelo que se encuentra en models/modelo_4m.h5 tiene 4~ millones de parametros. Es una ConvNet tipica capas/layers formadas por `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalMaxPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres.
+
 * **Label Smoothing**: le da un 10% notorio de aumento de `plate_acc`. Se suavizan los one-hot encoding y pasan de ser (por ejemplo) ```[0, 0, 0, 1]``` a ```[0.01, 0.01, 0.01, 0.90]```
 * **Regularización**: Se probo DropBlock, DropOut y l2 reg. a los filtros. Este ultimo dio los mejores resultados
-* Data Augmentation: Se usa la augmentacion estandard de Keras y se aplica:
+* **Data Augmentation**: Se usa la augmentacion estandard de Keras y se aplica:
     * Cambios de brillo
     * Leve rotaciones
     * Shearing (tambien leve)
     * Zoom
     * Desplazamiento Vertical/Horizontal
-* Imagen blanco & negro de **70x140** *(altura x ancho)*
+* Imagen **blanco & negro de** *70x140* *(altura x ancho)*
     * Interpolacion **bilineal** *(experimentando)*
 
 ### Validación
@@ -59,3 +61,8 @@ imgs/nombre_imagen.png  ABC 123 DE
 - [ ] Ampliar val-set
 - [ ] Implementar SAM (Spatial Attention Module)
 - [x] Label Smoothing
+
+### Notas
+
+* Este modelo deberia tener poco precisión en patentes **no** *Argentinas*
+* *More soon*
