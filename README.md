@@ -76,8 +76,11 @@ Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo.
 | model_4m |   0.9339    | 0.7619 | 0.9631 |
 
 * **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
-* **cat_acc** es simplemente la [CategoricalCrossEntropy](https://www.tensorflow.org/api_docs/python/tf/keras/losses/CategoricalCrossentropy) para problemas de multi-class labels
+* **cat_acc** es simplemente la [CategoricalAccuracy](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalAccuracy) para problemas de multi-class labels. **Ejemplo** si el label correcto es `ABC123` y se predice `ABC133` no va a dar una precisión de 0% como plate_acc *(no clasificada correctamente en su totalidad)*, sino de 83.3% (5/6)
+
 *Estas metricas estan ubicadas en el archivo custom.py*
+
+## Set - Validación
 
 La fuente principal del set de validación proviene de estos de [video night drive](https://www.youtube.com/watch?v=75X9vSFCh14) y [video morning drive](https://www.youtube.com/watch?v=-TPJot7-HTs). Créditos a [J Utah](https://www.youtube.com/channel/UCBcVQr-07MH-p9e2kRTdB3A).
 
@@ -86,15 +89,16 @@ Formato de *val_set/anotaciones.txt* (separado por tab):
 imgs/nombre_imagen.png  ABC 123 DE
 ```
 
-*Si desean colaborar para expandir el set de validación, es de ayuda.*
+*Si desean colaborar para expandir el set de validación, mejor aún.*
 
 
 ## TODO
 
-- [ ] Publicar modelo
-- [ ] Ampliar val-set
-- [ ] Implementar SAM (Spatial Attention Module)
+- [x] Publicar modelo experimental
 - [x] Label Smoothing
+- [ ] Ampliar val-set
+- [ ] <del> Implementar SAM (Spatial Attention Module) </del>
+
 
 ## Notas
 
