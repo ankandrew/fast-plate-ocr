@@ -74,6 +74,7 @@ Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo.
 | modelo  | cat_acc | plate_acc | top_3_k |
 | -------  | ----------- | ------ | ------ |
 | model_4m |   0.9339    | 0.7619 | 0.9631 |
+| model_3-5m |   **0.9689**    | **0.8606** | **0.9888** |
 
 * **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
 * **cat_acc** es simplemente la [CategoricalAccuracy](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalAccuracy) para problemas de multi-class labels. **Ejemplo** si el label correcto es `ABC123` y se predice `ABC133` no va a dar una precisión de 0% como plate_acc *(no clasificada correctamente en su totalidad)*, sino de 83.3% (5/6)
