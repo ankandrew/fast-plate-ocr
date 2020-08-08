@@ -73,8 +73,8 @@ Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo.
 
 | modelo  | cat_acc | plate_acc | top_3_k |
 | -------  | ----------- | ------ | ------ |
-| model_4m |   0.9339    | 0.7619 | 0.9631 |
-| model_3-5m |   **0.9689**    | **0.8606** | **0.9888** |
+| model_4m |   0.9709    | 0.8628 | 0.9863 |
+| model_3-5m |   **0.9737**    | **0.9020** | **0.9888** |
 
 * **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
 * **cat_acc** es simplemente la [CategoricalAccuracy](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalAccuracy) para problemas de multi-class labels. **Ejemplo** si el label correcto es `ABC123` y se predice `ABC133` no va a dar una precisión de 0% como plate_acc *(no clasificada correctamente en su totalidad)*, sino de 83.3% (5/6)
@@ -97,11 +97,17 @@ imgs/nombre_imagen.png  ABC 123 DE
 
 - [x] Publicar modelo experimental
 - [x] Label Smoothing
+- [x] <del> Implementar SAM (Spatial Attention Module) </del>
 - [ ] Ampliar val-set
-- [ ] <del> Implementar SAM (Spatial Attention Module) </del>
-
+- [ ] Aplicar blur a las imagenes(Data Augmentation)
+- [ ] Quantizar el modelo a INT8
+- [ ] Compilarlo para Edge TPU
+- [ ] Hacer version universal (Patentes de EU, BR, ...)
+- [ ] Aumentar el training-set de patentes de motos
 
 ## Notas
 
 * Este modelo deberia tener poco precisión en patentes **no** *Argentinas*
 * Para obtener la mejor precisión es recomendable utilizar obtener las patentes recordadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
+* Los ultimos modelos fueron entrenados con 1800 fotos solamente y validado en 450+ ~ imagenes
+* DropBlock no dio buenos resultados
