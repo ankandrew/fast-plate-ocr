@@ -108,6 +108,7 @@ imgs/nombre_imagen.png  ABC 123 DE
 ## Notas
 
 * Este modelo deberia tener poco precisión en patentes **no** *Argentinas*
-* Para obtener la mejor precisión es recomendable utilizar obtener las patentes recordadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
+* Para obtener la mejor precisión es recomendable utilizar obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
 * Los ultimos modelos fueron entrenados con 1800 fotos solamente y validado en 450+ ~ imagenes
+* La proporcion de vehiculos y motos esta imbalanced, las fotos de motos representan menos del 10% del training-set *(Por ahora)*
 * DropBlock no dio buenos resultados
