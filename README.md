@@ -10,29 +10,37 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 
 ## Uso
 
-### Visualizar predicciones
+### Instalar dependencias
 
 Contar con **python 3.x**, instalar los requerimientos:
 
-`pip3 install requirements.txt`
+```console
+pip install requirements.txt
+```
 
-Luego corran:
+### Visualizar predicciones
 
-`python3 main.py`
+```console
+python demo_recog.py -m models/m2_85_vpc_3.9M.h5
+```
 
 *Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta val_set/imgs/*
 
 ### Calcular precisión
 
-`python3 valid.py -m models/model_4m.h5`
+```console
+python valid.py -m models/m2_85_vpc_3.9M.h5
+```
 
 Ejemplo de salida:
 
-`147/147 [==============================] - 3s 19ms/step - loss: 1.6151 - cat_acc: 0.9339 - plate_acc: 0.7619 - top_3_k: 0.9631`
+```
+147/147 [==============================] - 3s 19ms/step - loss: 1.4920 - cat_acc: 0.9592 - plate_acc: 0.8503 - top_3_k: 0.9796
+```
 
 ## Caracteristicas
 
-El modelo que se encuentra en models/modelo_4m.h5 tiene 4~ millones de parametros. Es una ConvNet tipica capas/layers formadas por `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalAvgPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres.
+Los modelos son una tipica ConvNet. Las capas/layers estan formadas por `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalAvgPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres.
 
 ![model head](extra/FCN.png)
 
@@ -46,7 +54,7 @@ El modelo que se encuentra en models/modelo_4m.h5 tiene 4~ millones de parametro
     * Desplazamiento Vertical/Horizontal
 * **Input**
    * Imagen **blanco & negro de** *70x140* *(altura x ancho)*
-       * Interpolacion **bilineal** *(experimentando)*
+       * Interpolacion **bilineal**
 
 ## Validación
 
@@ -67,14 +75,14 @@ def plate_acc(y_true, y_pred):
     )
 ```
 
-Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo.
+Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo. Para evaluar mejor la precisión se necesita un validation-set publico con mas imagenes
 
 ## Benchmarks
 
 | modelo  | cat_acc | plate_acc | top_3_k |
 | -------  | ----------- | ------ | ------ |
-| model_4m |   **0.9514**    | **0.8027** | **0.9767** |
-| model_3-5m |   0.9446    | 0.7823 | 0.9757 |
+| m2_85_vpc_3.9M |   **0.9592**    | **0.8503** | **0.9796** |
+| m1_78_vpc_3.5M |   0.9446    | 0.7823 | 0.9757 |
 
 * **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
 * **cat_acc** es simplemente la [CategoricalAccuracy](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalAccuracy) para problemas de multi-class labels. **Ejemplo** si el label correcto es `ABC123` y se predice `ABC133` no va a dar una precisión de 0% como plate_acc *(no clasificada correctamente en su totalidad)*, sino de 83.3% (5/6)
@@ -99,6 +107,7 @@ imgs/nombre_imagen.png  ABC 123 DE
 - [x] Label Smoothing
 - [x] <del> Implementar SAM (Spatial Attention Module) </del>
 - [ ] Ampliar val-set
+- [ ] Active Learning
 - [ ] Aplicar blur a las imagenes(Data Augmentation)
 - [ ] Quantizar el modelo a INT8
 - [ ] Compilarlo para Edge TPU
@@ -109,6 +118,6 @@ imgs/nombre_imagen.png  ABC 123 DE
 
 * Este modelo deberia tener poco precisión en patentes **no** *Argentinas*
 * Para obtener la mejor precisión es recomendable utilizar obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
-* Los ultimos modelos fueron entrenados con 1800 fotos solamente y validado en 450+ ~ imagenes
+* Los ultimos modelos fueron entrenados con 1800 fotos solamente y validado en 596 imagenes
 * La proporcion de vehiculos y motos esta imbalanced, las fotos de motos representan menos del 10% del training-set *(Por ahora)*
 * DropBlock no dio buenos resultados
