@@ -2,10 +2,10 @@
 
 ![Demo](extra/local_recog_demo.png)
 
-**OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Tambien se incluyeron fotos de motos (el formato de estas es diferente al de los vehiculos).
+**OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Este repo esta dedicado solamente al modulo que se encarga de *f(imagen patente recortada) = texto de patente*
 
 Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LSTM/GRU)** para modelar este tipo de problema de secuencia de caracteres a partir de una imagen. En este caso se implementan solo ConvNets debido a:
-* Se buscar deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero.
+* Se busca deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero.
 * No tenemos el problema de una **secuencia variable de longitud**. El máximo de caracteres posibles es 7 (para Argentina) por ende las patentes de 6 digitos se le asigna una caracter extra para indicar el faltante.
 
 ## Uso
@@ -14,28 +14,22 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 
 Contar con **python 3.x**, instalar los requerimientos:
 
-```console
-pip install requirements.txt
-```
+```pip install requirements.txt```
 
 ### Visualizar predicciones
 
-```console
-python demo_recog.py -m models/m2_85_vpc_3.9M.h5
-```
+```python demo_recog.py -m models/m2_85_vpc_3.9M.h5```
 
 *Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta val_set/imgs/*
 
 ### Calcular precisión
 
-```console
-python valid.py -m models/m2_85_vpc_3.9M.h5
-```
+```python valid.py -m models/m2_85_vpc_3.9M.h5```
 
 Ejemplo de salida:
 
 ```
-147/147 [==============================] - 3s 19ms/step - loss: 1.4920 - cat_acc: 0.9592 - plate_acc: 0.8503 - top_3_k: 0.9796
+loss: 1.4920 - cat_acc: 0.9592 - plate_acc: 0.8503 - top_3_k: 0.9796
 ```
 
 ## Caracteristicas
@@ -53,7 +47,8 @@ Los modelos son una tipica ConvNet. Las capas/layers estan formadas por `Convolu
     * Zoom
     * Desplazamiento Vertical/Horizontal
 * **Input**
-   * Imagen **blanco & negro de** *70x140* *(altura x ancho)*
+   * Imagen **blanco & negro de**
+       * 70x140 *(altura x ancho)*
        * Interpolacion **bilineal**
 
 ## Validación
@@ -106,8 +101,8 @@ imgs/nombre_imagen.png  ABC 123 DE
 - [x] Publicar modelo experimental
 - [x] Label Smoothing
 - [x] <del> Implementar SAM (Spatial Attention Module) </del>
+- [x] Active Learning
 - [ ] Ampliar val-set
-- [ ] Active Learning
 - [ ] Aplicar blur a las imagenes(Data Augmentation)
 - [ ] Quantizar el modelo a INT8
 - [ ] Compilarlo para Edge TPU
@@ -116,8 +111,8 @@ imgs/nombre_imagen.png  ABC 123 DE
 
 ## Notas
 
-* Este modelo deberia tener poco precisión en patentes **no** *Argentinas*
+* Este modelo deberia tener muy mala precisión en patentes **no** *Argentinas*
 * Para obtener la mejor precisión es recomendable utilizar obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
-* Los ultimos modelos fueron entrenados con 1800 fotos solamente y validado en 596 imagenes
-* La proporcion de vehiculos y motos esta imbalanced, las fotos de motos representan menos del 10% del training-set *(Por ahora)*
+* Los modelos fueron entrenados inicialmente con 1800 fotos solamente y validado en 596 imagenes (Se aumenta iterativamente con Active Learning)
+* La proporcion de vehiculos y motos esta en desproporcion, las fotos de motos representan menos del 10% del training-set *(Por ahora)*
 * DropBlock no dio buenos resultados
