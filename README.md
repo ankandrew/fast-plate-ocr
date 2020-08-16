@@ -47,7 +47,7 @@ Los modelos son una tipica ConvNet. Las capas/layers estan formadas por `Convolu
     * Zoom
     * Desplazamiento Vertical/Horizontal
 * **Input**
-   * Imagen **blanco & negro de**
+   * Imagen **blanco & negro**
        * 70x140 *(altura x ancho)*
        * Interpolacion **bilineal**
 
@@ -95,6 +95,64 @@ imgs/nombre_imagen.png  ABC 123 DE
 
 *Si desean colaborar para expandir el set de validación, mejor aún.*
 
+## Active Learning
+
+Hacer las anotaciones de miles de patentes resulta un trabajo **largo** e **impractico**. Por eso se propone, **"Active Learning"** que simplemente con el modelo base entrenado (con 1800~ imagenes) se predicen patentes no vistas. Luego anotan solo las patentes de **baja confianza**. Este es un proceso **iterativo** y se repite hasta llegar a la precisión deseada (en el test de validación)
+
+![Active Learning](extra/Active_Learning.jpg)
+
+Para decidir si la prediccion tiene poca confianza, se utiliza:
+
+* Si por lo menos un caracter esta poco seguro
+```python
+def on_any(probs, thresh=.3):
+  return any([True if prob < thresh else False for prob in probs])
+```
+
+* Si el promedio de todos los caracteres esta por debajo de un valor
+```python
+def on_avg(probs, avg_thresh=.2):
+  return statistics.mean(probs) < avg_thresh 
+```
+
+*Métodos no optimizados, solo para ilustración*
+
+En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con más imagenes de entrenamiento, basado en el criterio anterior. Para eliminar la varianza en los resultados, y ver el impacto de agregar mas imagenes al dataset de entrenamiento: la arquitectura, método de optimizacion, Data Augmentation ... no cambia en absoluto.
+
+#### Modelo 1 (3.5 M params)
+
+| iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
+| -------  | ---------- | ----------- | ------ | ------ |
+| 1 |   0.9446   | 1800 | 0.7823 | 0.9757 |
+| 2 |   -   | - | - | - |
+
+#### Modelo 2 (3.9 M params)
+
+| iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
+| -------  | ---------- | ----------- | ------ | ------ |
+| 1 |   0.9592   | 1800 | 0.8503 | 0.9796 |
+| 2 |   -   | - | - | - |
+
+
+## Data Augmentation
+
+![Data Aug](extra/data_aug_ejemplo.png)
+
+Configuracion de Data Aug en Keras:
+
+```python
+datagen = ImageDataGenerator(
+    rescale=1/255.,
+    rotation_range=10,
+    width_shift_range=0.05,
+    height_shift_range=0.10,
+    brightness_range=(0.5, 1.5),
+    shear_range=8,
+    zoom_range=0.12
+)
+```
+
+*Aclaracion: A proposito se busco, manualmente, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
 
 ## TODO
 
