@@ -54,6 +54,9 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model", dest="model_path",
                         default='models/m1_93_vpa_2.0M-i2.h5', metavar="FILE",
                         help="Path del modelo, predeterminado es el model_4m.h5")
+    parser.add_argument("-b", "--batch-size", dest="batch_size",
+                        default=1, metavar=int,
+                        help="Tamaño del batch, predeterminado 1")
 
     args = parser.parse_args()
     custom_objects = {
@@ -73,5 +76,6 @@ if __name__ == "__main__":
     datagen_val = ImageDataGenerator(
         rescale=1 / 255.
     )
-    val_generator = datagen_val.flow(x_val, y_val, batch_size=1, shuffle=False)
+    val_generator = datagen_val.flow(
+        x_val, y_val, batch_size=args.batch_size, shuffle=False)
     model.evaluate(val_generator)
