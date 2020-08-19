@@ -1,4 +1,4 @@
-# Reconocedor de Patentes OCR de Patentes (Arg)
+# Reconocedor de Texto(OCR) para Patentes vehiculares de Argentina
 
 ![Demo](extra/local_recog_demo.png)
 
@@ -18,23 +18,25 @@ Contar con **python 3.x**, instalar los requerimientos:
 
 ### Visualizar predicciones
 
-```python demo_recog.py -m models/m2_85_vpc_3.9M.h5```
+```python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i val_set/imgs```
 
 *Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta val_set/imgs/*
 
 ### Calcular precisión
 
-```python valid.py -m models/m2_85_vpc_3.9M.h5```
+```python valid.py -m models/m1_93_vpa_2.0M-i2.h5```
 
 Ejemplo de salida:
 
 ```
-loss: 1.4920 - cat_acc: 0.9592 - plate_acc: 0.8503 - top_3_k: 0.9796
+loss: 1.3214 - cat_acc: 0.9845 - plate_acc: 0.9388 - top_3_k: 0.9961
 ```
+
+*La precisión se calcula en base a val_set/*
 
 ## Caracteristicas
 
-Los modelos son una tipica ConvNet. Las capas/layers estan formadas por `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalAvgPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres.
+Los modelos son las tipicas ConvNet, y estan formadas por bloques de `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalAvgPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres.
 
 ![model head](extra/FCN.png)
 
@@ -70,30 +72,19 @@ def plate_acc(y_true, y_pred):
     )
 ```
 
-Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo. Para evaluar mejor la precisión se necesita un validation-set publico con mas imagenes
+Ninguna imagen (como corresponde) del val_set fue usada para entrenar el modelo. Para evaluar mejor la precisión se necesita un validation-set **publico** con mas imagenes, ya que el que se encuentre en el repo son solo 150~ imagenes.
 
-## Benchmarks
-
-| modelo  | cat_acc | plate_acc | top_3_k |
-| -------  | ----------- | ------ | ------ |
-| m2_85_vpc_3.9M |   **0.9592**    | **0.8503** | **0.9796** |
-| m1_78_vpc_3.5M |   0.9446    | 0.7823 | 0.9757 |
-
-* **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
-* **cat_acc** es simplemente la [CategoricalAccuracy](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalAccuracy) para problemas de multi-class labels. **Ejemplo** si el label correcto es `ABC123` y se predice `ABC133` no va a dar una precisión de 0% como plate_acc *(no clasificada correctamente en su totalidad)*, sino de 83.3% (5/6)
-
-*Estas metricas estan ubicadas en el archivo custom.py*
 
 ## Set - Validación
 
-La fuente principal del set de validación proviene de estos de [video night drive](https://www.youtube.com/watch?v=75X9vSFCh14) y [video morning drive](https://www.youtube.com/watch?v=-TPJot7-HTs). Créditos a [J Utah](https://www.youtube.com/channel/UCBcVQr-07MH-p9e2kRTdB3A).
+La fuente del set de validación proviene de [video night drive](https://www.youtube.com/watch?v=75X9vSFCh14) y [video morning drive](https://www.youtube.com/watch?v=-TPJot7-HTs). Créditos a [J Utah](https://www.youtube.com/channel/UCBcVQr-07MH-p9e2kRTdB3A).
 
 Formato de *val_set/anotaciones.txt* (separado por tab):
 ```
 imgs/nombre_imagen.png  ABC 123 DE
 ```
 
-*Si desean colaborar para expandir el set de validación, mejor aún.*
+*Si desean colaborar para expandir el set de validación, mejor para validar la precisión de los modelos.*
 
 ## Active Learning
 
@@ -119,20 +110,27 @@ def on_avg(probs, avg_thresh=.2):
 
 En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con más imagenes de entrenamiento, basado en el criterio anterior. Para eliminar la varianza en los resultados, y ver el impacto de agregar mas imagenes al dataset de entrenamiento: la arquitectura, método de optimizacion, Data Augmentation ... no cambia en absoluto.
 
-#### Modelo 1 (3.5 M params)
+#### Modelo 1 (2 M params)
 
 | iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
 | -------  | ---------- | ----------- | ------ | ------ |
-| 1 |   0.9446   | 1800 | 0.7823 | 0.9757 |
-| 2 |   -   | - | - | - |
+| 1 |  1853  |  0.9495 |  0.8435  |  0.9757  |
+| 2 |   2873   |  **0.9786**  |	 **0.8912**  |  **0.9922**  |
+| 3 |   -   | - | - | - |
 
-#### Modelo 2 (3.9 M params)
+#### Modelo 2 (1.5 M params)
 
 | iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
 | -------  | ---------- | ----------- | ------ | ------ |
-| 1 |   0.9592   | 1800 | 0.8503 | 0.9796 |
-| 2 |   -   | - | - | - |
+| 1 |  1853  |  0.9602 |	0.8639 |	0.9806 |
+| 2 |   2873   |  **0.9845** |	**0.9388** |	**0.9961**
+| 3 |   -   | - | - | - |
 
+
+* **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
+* **cat_acc** es simplemente la [CategoricalAccuracy](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalAccuracy) para problemas de multi-class labels. **Ejemplo** si el label correcto es `ABC123` y se predice `ABC133` no va a dar una precisión de 0% como plate_acc *(no clasificada correctamente en su totalidad)*, sino de 83.3% (5/6)
+
+*Estas metricas estan ubicadas en el archivo custom.py*
 
 ## Data Augmentation
 
@@ -156,21 +154,21 @@ datagen = ImageDataGenerator(
 
 ## TODO
 
-- [x] Publicar modelo experimental
+- [x] Publicar modelos
 - [x] Label Smoothing
-- [x] <del> Implementar SAM (Spatial Attention Module) </del>
 - [x] Active Learning
-- [ ] Ampliar val-set
+- [x] Ampliar val-set
+- [x] Aumentar el training-set de patentes de motos
+- [x] Disminuir # de parametros
 - [ ] Aplicar blur a las imagenes(Data Augmentation)
 - [ ] Quantizar el modelo a INT8
 - [ ] Compilarlo para Edge TPU
 - [ ] Hacer version universal (Patentes de EU, BR, ...)
-- [ ] Aumentar el training-set de patentes de motos
+- [ ] Probar AutoKeras
 
 ## Notas
 
-* Este modelo deberia tener muy mala precisión en patentes **no** *Argentinas*
+* Este modelo esta hecho especialmente para patentes vehiculares **no** *Argentinas*
 * Para obtener la mejor precisión es recomendable utilizar obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
-* Los modelos fueron entrenados inicialmente con 1800 fotos solamente y validado en 596 imagenes (Se aumenta iterativamente con Active Learning)
-* La proporcion de vehiculos y motos esta en desproporcion, las fotos de motos representan menos del 10% del training-set *(Por ahora)*
-* DropBlock no dio buenos resultados
+* La Cantidad de vehiculos y motos esta en desproporcion, las fotos de motos representan menos del 40% del training-set *(Por ahora)*
+* DropBlock & SAM(Spatial Attention Module) no dieron buenos resultados. *Puede ser porque el Modelo muy chico*

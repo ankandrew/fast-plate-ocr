@@ -106,8 +106,11 @@ def visualize_predictions(model, imgs_path='val_set/imgs/', shuffle=False, print
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-m", "--model", dest="model_path",
-                        default='models/model_4m.h5', metavar="FILE",
+                        default='models/m1_93_vpa_2.0M-i2.h5', metavar="FILE",
                         help="Path del modelo, predeterminado es el model_4m.h5")
+    parser.add_argument("-i", "--imgs-dir", dest="imgs_dir",
+                        default='val_set/imgs/', metavar="FILE",
+                        help="Path de la carpeta contenedora de las imagenes")
 
     args = parser.parse_args()
     custom_objects = {
@@ -120,5 +123,5 @@ if __name__ == "__main__":
     model = tf.keras.models.load_model(
         args.model_path, custom_objects=custom_objects)
 
-    visualize_predictions(model, imgs_path='val_set/imgs/')
+    visualize_predictions(model, imgs_path=args.imgs_dir)
     cv2.destroyAllWindows()

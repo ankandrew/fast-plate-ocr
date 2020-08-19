@@ -1,11 +1,6 @@
 import tensorflow as tf
-# from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import string
 import numpy as np
-import random
-import os
-# from matplotlib import pyplot as plt
-import cv2
 
 # Custom metris / losses
 from custom import cat_acc, cce, plate_acc, top_3_k
@@ -46,9 +41,7 @@ def df_to_x_y(df, target_h=70, target_w=140):
     x_imgs = np.vstack(x_imgs)
 
     y_imgs = []
-    i = 0
     for one_hot in df.labels.values:
-        label = np.expand_dims(one_hot, axis=0)
         one_hot = one_hot.reshape((259))
         y_imgs.append(one_hot)
     y_imgs = np.vstack(y_imgs)
@@ -59,7 +52,7 @@ def df_to_x_y(df, target_h=70, target_w=140):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-m", "--model", dest="model_path",
-                        default='models/model_4m.h5', metavar="FILE",
+                        default='models/m1_93_vpa_2.0M-i2.h5', metavar="FILE",
                         help="Path del modelo, predeterminado es el model_4m.h5")
 
     args = parser.parse_args()
