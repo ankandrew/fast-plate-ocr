@@ -31,7 +31,6 @@ def df_to_x_y(df, target_h=70, target_w=140):
     '''
     # Load all images in numpy array
     x_imgs = []
-    i = 0
     for img in df.path.values:
         img = load_img(img, color_mode="grayscale", target_size=(
             target_h, target_w), interpolation="bilinear")
@@ -55,7 +54,7 @@ if __name__ == "__main__":
                         default='models/m1_93_vpa_2.0M-i2.h5', metavar="FILE",
                         help="Path del modelo, predeterminado es el model_4m.h5")
     parser.add_argument("-b", "--batch-size", dest="batch_size",
-                        default=1, metavar=int,
+                        default=1, type=int,
                         help="Tamaño del batch, predeterminado 1")
 
     args = parser.parse_args()
@@ -68,10 +67,9 @@ if __name__ == "__main__":
     model = tf.keras.models.load_model(
         args.model_path, custom_objects=custom_objects)
 
-    df_val = pd.read_csv('val_set/anotaciones.txt',
+    df_val = pd.read_csv('benchmark/anotaciones.txt',
                          sep='\t', names=['path', 'plate'])
     preprocess_df(df_val)
-    df_val.path = df_val.path.str.replace('imgs', 'val_set/imgs')
     x_val, y_val = df_to_x_y(df_val, target_h=70, target_w=140)
     datagen_val = ImageDataGenerator(
         rescale=1 / 255.

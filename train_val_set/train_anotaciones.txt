@@ -1,0 +1,1 @@
+train_val_set/train/ejemplo_img_patente.png	CBA123

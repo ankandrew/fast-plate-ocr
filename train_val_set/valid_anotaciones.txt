@@ -1,0 +1,1 @@
+train_val_set/valid/img_cualquiera_patente.png	ABC123CD

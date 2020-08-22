@@ -43,7 +43,7 @@ def probs_to_plate(prediction):
     return plate, probs
 
 
-def visualize_predictions(model, imgs_path='val_set/imgs/', shuffle=False, print_time=False):
+def visualize_predictions(model, imgs_path='benchmark/imgs/', shuffle=False, print_time=False):
     # generate samples and plot
     val_imgs = [os.path.join(imgs_path, f) for f in os.listdir(imgs_path)
                 if os.path.isfile(os.path.join(imgs_path, f))]
@@ -109,7 +109,7 @@ if __name__ == "__main__":
                         default='models/m1_93_vpa_2.0M-i2.h5', metavar="FILE",
                         help="Path del modelo, predeterminado es el model_4m.h5")
     parser.add_argument("-i", "--imgs-dir", dest="imgs_dir",
-                        default='val_set/imgs/', metavar="FILE",
+                        default='benchmark/imgs/', metavar="FILE",
                         help="Path de la carpeta contenedora de las imagenes")
 
     args = parser.parse_args()
