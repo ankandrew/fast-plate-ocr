@@ -1,1 +1,1 @@
-train_val_set/valid/img_cualquiera_patente.png	ABC123CD
+train_val_set/valid/night_24618_10.png	AD944PH

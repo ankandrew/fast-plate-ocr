@@ -1,1 +1,1 @@
-train_val_set/train/ejemplo_img_patente.png	CBA123
+train_val_set/train/morning_10620_100.png	AD054JI
