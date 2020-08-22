@@ -14,21 +14,27 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 
 Contar con **python 3.x**, instalar los requerimientos:
 
-```pip install requirements.txt```
+```posh
+pip install requirements.txt
+```
 
 ## Visualizar predicciones
 
-```python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs```
+```posh
+python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs
+```
 
 *Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta val_set/imgs/*
 
 ## Calcular precisión
 
-```python valid.py -m models/m1_93_vpa_2.0M-i2.h5```
+```posh
+python valid.py -m models/m1_93_vpa_2.0M-i2.h5
+```
 
 Ejemplo de salida:
 
-```
+```posh
 loss: 1.3214 - cat_acc: 0.9845 - plate_acc: 0.9388 - top_3_k: 0.9961
 ```
 
@@ -50,7 +56,7 @@ Para las imagenes y anotaciones se tiene que:
 
 #### Opciones
 
-```
+```posh
 usage: train.py [-h] [-vis] [-i ANOTACIONES_PATH] [-v VAL_ANOTACIONES_PATH]
                 [-a HEIGHT] [-ancho WIDTH] [-l LR] [-b BATCH_SIZE]
                 [-o OUTPUT_PATH] [-e EPOCHS] [-ca] [-ba] [-g]
@@ -93,7 +99,9 @@ Para entrenar con
 * Graficos de entrenamiento (loss y de las 3 metricas personalizada)
 * CutOut
 
-```python train.py --epochs 500 --learning-rate 0.001 --batch-size 64 --altura 70 --ancho 140 --graficos --cut-out```
+```posh
+python train.py --epochs 500 --learning-rate 0.001 --batch-size 64 --altura 70 --ancho 140 --graficos --cut-out
+```
 
 Los graficos/estadisticas se guardan en la carpeta principal, y el modelo tambien con el nombre `model2m_trained.h5`. Para cambiar el lugar de destino del modelo a guarda usar `--output-dir`
 
@@ -101,13 +109,15 @@ Los graficos/estadisticas se guardan en la carpeta principal, y el modelo tambie
 
 Para visualizar el tipo de Augmentation que va a recibir el modelo se ejecuta:
 
-```python train.py --visualizar-aug```
+```posh
+python train.py --visualizar-aug
+```
 
 De esta forma se puede ajustar/mejorar la augmentation que se encuentra en `train.py`
 
 ## Caracteristicas
 
-Los modelos son las tipicas ConvNet, y estan formadas por bloques de `Convolution -> BatchNorm -> Activation -> MaxPooling` ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica GlobalAvgPooling para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los bloques usados para la red se encuentran en `layer_blocks.py`
+Los modelos son las tipicas ConvNet, y estan formadas por bloques de **Convolution -> BatchNorm -> Activation -> MaxPooling** ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica **GlobalAvgPooling** para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los **bloques usados** para la ConvNet se encuentran en [layer_blocks.py](layer_blocks.py)
 
 ![model head](extra/FCN.png)
 
