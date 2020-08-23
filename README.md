@@ -231,7 +231,7 @@ datagen = ImageDataGenerator(
 )
 ```
 
-Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se puede encontrar definido en `extra_augmentation.py`.
+Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se puede encontrar definido en `extra_augmentation.py`. [Demo de CutOut](https://www.youtube.com/watch?v=pQ5BL7IFNVw).
 
 *Aclaracion: A proposito se busco, manualmente, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
 
