@@ -1,8 +1,8 @@
 # Reconocedor de Texto(OCR) para Patentes vehiculares de Argentina
 
-![Demo](extra/local_recog_demo.png)
+![Demo](extra/ocr-module.jpg)
 
-**OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Este repo esta dedicado solamente al modulo que se encarga de *f(imagen patente recortada) = texto de patente*
+**OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Este repo esta dedicado solamente al modulo que se encarga de reconocer texto de la patente ya recortada.
 
 Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LSTM/GRU)** para modelar este tipo de problema de secuencia de caracteres a partir de una imagen. En este caso se implementan solo ConvNets debido a:
 * Se busca deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero.
@@ -14,33 +14,29 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 
 Contar con **python 3.x**, instalar los requerimientos:
 
-```posh
-pip install requirements.txt
-```
+`pip install requirements.txt`
 
 ## Visualizar predicciones
 
-```posh
-python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs
-```
+`python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs`
 
-*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta val_set/imgs/*
+*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta benchmark/imgs/*
 
 ## Calcular precisión
 
-```posh
-python valid.py -m models/m1_93_vpa_2.0M-i2.h5
-```
+`python valid.py -m models/m1_93_vpa_2.0M-i2.h5`
 
 Ejemplo de salida:
 
-```posh
-loss: 1.3214 - cat_acc: 0.9845 - plate_acc: 0.9388 - top_3_k: 0.9961
-```
+`loss: 1.3214 - cat_acc: 0.9845 - plate_acc: 0.9388 - top_3_k: 0.9961`
 
 *La precisión se calcula en base a las imagenes de benchmark/*
 
 ## Entrenar
+
+Si no quieren utilizar los modelos entrenados que se encuentran en `models/`, pueden entrenar de cero. (O modificar el codigo para freezar los primeros layers y hacer fine-tuning).
+
+#### Formato para el entrenamiento
 
 Para las imagenes y anotaciones se tiene que:
 1. Mover las imagenes (sin procesar) de las patentes en `train_val_set/train/`
@@ -117,7 +113,7 @@ De esta forma se puede ajustar/mejorar la augmentation que se encuentra en `trai
 
 ## Caracteristicas
 
-Los modelos son las tipicas ConvNet, y estan formadas por bloques de **Convolution -> BatchNorm -> Activation -> MaxPooling** ... hasta formar un volumen de AxHx1024 *(altura x ancho x canales)* ... se le aplica **GlobalAvgPooling** para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los **bloques usados** para la ConvNet se encuentran en [layer_blocks.py](layer_blocks.py)
+Los modelos son las tipicas ConvNet, y estan formadas por bloques de **Convolution -> BatchNorm -> Activation -> MaxPooling** ... hasta formar un volumen de HxWx1024 *(altura x ancho x canales)* ... se le aplica **GlobalAvgPooling** para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los **bloques usados** para la ConvNet se encuentran en [layer_blocks.py](layer_blocks.py)
 
 ![model head](extra/FCN.png)
 
@@ -191,7 +187,7 @@ def on_avg(probs, avg_thresh=.2):
 
 En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con más imagenes de entrenamiento, basado en el criterio anterior. Para eliminar la varianza en los resultados, y ver el impacto de agregar mas imagenes al dataset de entrenamiento: la arquitectura, método de optimizacion, Data Augmentation ... no cambia en absoluto.
 
-#### Modelo 1 (2 M params)
+#### Modelo 2 (1.5 M parametros)
 
 | iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
 | -------  | ---------- | ----------- | ------ | ------ |
@@ -199,7 +195,7 @@ En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con 
 | 2 |   2873   |  **0.9786**  |	 **0.8912**  |  **0.9922**  |
 | 3 |   -   | - | - | - |
 
-#### Modelo 2 (1.5 M params)
+#### Modelo 1 (2 M parametros)
 
 | iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
 | -------  | ---------- | ----------- | ------ | ------ |
@@ -246,16 +242,15 @@ Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se pue
 - [x] Aplicar blur a las imagenes(Data Augmentation)
 - [x] Aplicar CutOut a las imagenes(Data Augmentation)
 - [ ] Quantizar el modelo a INT8
-- [ ] Realizar prunning al modelo
 - [ ] Compilarlo para Edge TPU
 - [ ] Probar AutoKeras
 - [ ] Hacer version universal (Patentes de EU, BR, ...)
 
 ### Notas
 
-* Este modelo esta hecho especialmente para patentes vehiculares **no** *Argentinas*
-* Para obtener la mejor precisión es recomendable utilizar obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
-* La Cantidad de vehiculos y motos esta en desproporcion, las fotos de motos representan menos del 40% del training-set *(Por ahora)*
+* Este modelo esta hecho especialmente para patentes vehiculares *Argentinas*
+* Para obtener la mejor precisión es recomendable obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
+* Las fotos de motos representan menos del 40% del training-set *(Por ahora)*, por ende hay mala precisión en estas
 * DropBlock & SAM(Spatial Attention Module) no dieron buenos resultados. *Puede ser porque el Modelo muy chico*
-* Para hacer Quantization Aware Training (y no Post-Training Quant.) se requiere cambiar la estructura del modelo y no usar tf.keras.layers.Concatenate (porque no esta soportado todavia)
+* Para hacer Quantization Aware Training se requiere cambiar la estructura del modelo y no usar tf.keras.layers.Concatenate (porque no esta soportado todavia)
 * CutOut si bien es Data Augmentation (Pone cuadrados negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
