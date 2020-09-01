@@ -14,17 +14,23 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 
 Contar con **python 3.x**, instalar los requerimientos:
 
-`pip install requirements.txt`
+```
+pip install requirements.txt
+```
 
 ## Visualizar predicciones
 
-`python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs`
+```
+python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs
+```
 
-*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta benchmark/imgs/*
+*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta **benchmark/imgs/***
 
 ## Calcular precisión
 
-`python valid.py -m models/m1_93_vpa_2.0M-i2.h5`
+```
+python valid.py -m models/m1_93_vpa_2.0M-i2.h5
+```
 
 Ejemplo de salida:
 
@@ -34,21 +40,25 @@ Ejemplo de salida:
 
 ## Entrenar
 
-Si no quieren utilizar los modelos entrenados que se encuentran en `models/`, pueden entrenar de cero. (O modificar el codigo para freezar los primeros layers y hacer fine-tuning).
+Si no quieren utilizar los modelos entrenados que se encuentran en `models/`, pueden **entrenar de cero**. (O modificar el codigo para freezar los primeros layers y hacer **fine-tuning**).
 
 #### Formato para el entrenamiento
 
 Para las imagenes y anotaciones se tiene que:
 1. Mover las imagenes (sin procesar) de las patentes en `train_val_set/train/`
-2. En el archivo `train_val_set/train_anotaciones.txt` escribir las anotaciones en formato (separado por tab)
-```train_val_set/train/patente_img.png	ABC123DE```
+2. En el archivo `train_val_set/train_anotaciones.txt` escribir las anotaciones en formato (**separado por tab*)
+```
+train_val_set/train/patente_img.png	ABC123DE
+```
 
-*Recomendado: hacer lo mismo que lo de arriba para el set de validacion* 
+***Recomendado**: hacer lo mismo que lo de arriba para el set de validacion* 
 1. Igual que el anterior pero copiar las imagenes en `train_val_set/valid/`
-2. Parecido al anterior pero ahora en el archivo `train_val_set/valid_anotaciones.txt`, con formato (separado por tab)
-```train_val_set/valid/patente_img.png	123ABC```
+2. Parecido al anterior pero ahora en el archivo `train_val_set/valid_anotaciones.txt`, con formato (**separado por tab**)
+```
+train_val_set/valid/patente_img.png	123ABC
+```
 
-*No hay que convertir a blanco & negro las imagenes ni ajustar el tamaño. Tampoco hay que rellenar con '_' las patentes de 6 digitos, se hace todo automatico*
+*No hay que convertir a blanco & negro las imagenes ni ajustar el tamaño. Tampoco hay que rellenar con '_' las patentes de 6 digitos, **se hace todo automatico***
 
 #### Opciones
 
@@ -185,7 +195,7 @@ def on_avg(probs, avg_thresh=.2):
 
 *Métodos no optimizados, solo para ilustración*
 
-En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con más imagenes de entrenamiento, basado en el criterio anterior. Para eliminar la varianza en los resultados, y ver el impacto de agregar mas imagenes al dataset de entrenamiento: la arquitectura, método de optimizacion, Data Augmentation ... no cambia en absoluto.
+En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con más imagenes de entrenamiento, basado en el criterio anterior. Para eliminar la varianza en los resultados, y ver el impacto de agregar mas imagenes al dataset de entrenamiento: la arquitectura, método de optimizacion, Data Augmentation ... no cambian en lo absoluto.
 
 #### Modelo 2 (1.5 M parametros)
 
@@ -229,7 +239,17 @@ datagen = ImageDataGenerator(
 
 Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se puede encontrar definido en `extra_augmentation.py`. [Demo de CutOut](https://www.youtube.com/watch?v=pQ5BL7IFNVw).
 
-*Aclaracion: A proposito se busco, manualmente, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
+*Aclaracion: A proposito se busco, *manualmente*, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
+
+### Tiempo de inferencia
+
+| Modelo  | ms | FPS | Precisión |
+| --------  | --------- | --------- | ------|
+| 1.5 M | - | - | FP32 |
+| 2.0 M | - | - | FP32 |
+| -  |  | - | - | - |
+
+* FP32: para las weights y activaciones se usan valores de floating point de 32 bits
 
 ## TODO
 
@@ -241,10 +261,13 @@ Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se pue
 - [x] Disminuir # de parametros
 - [x] Aplicar blur a las imagenes(Data Augmentation)
 - [x] Aplicar CutOut a las imagenes(Data Augmentation)
-- [ ] Quantizar el modelo a INT8
-- [ ] Compilarlo para Edge TPU
-- [ ] Probar AutoKeras
+- [ ] Aplicar Motion Blur (Data Augmentation) 
+- [ ] Probar Salt & Pepper noise (Data Augmentation)
+- [ ] Quantizar el modelo a INT8 (Post-Training / Aware-Training)
+- [ ] Ver tiempo inferencia con [Mixed Precision](https://www.tensorflow.org/guide/mixed_precision)
+- [ ] Compilarlo para [Edge TPU](https://coral.ai/docs/edgetpu/compiler/)
 - [ ] Hacer version universal (Patentes de EU, BR, ...)
+- [ ] Generar patentes artificialmente
 
 ### Notas
 
@@ -254,3 +277,5 @@ Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se pue
 * DropBlock & SAM(Spatial Attention Module) no dieron buenos resultados. *Puede ser porque el Modelo muy chico*
 * Para hacer Quantization Aware Training se requiere cambiar la estructura del modelo y no usar tf.keras.layers.Concatenate (porque no esta soportado todavia)
 * CutOut si bien es Data Augmentation (Pone cuadrados negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
+* Si planean deployear esto en smartphones, prueben cambiando los Conv2D por DepthwiseConv2D en [layer_blocks.py](layer_blocks.py) (volver a entrenar)
+* Cualquier duda/mejora que encuentren abran un issue
