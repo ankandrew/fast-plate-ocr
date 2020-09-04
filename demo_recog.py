@@ -5,7 +5,7 @@ import random
 import os
 import cv2
 from argparse import ArgumentParser
-import statistics as stat
+# import statistics as stat
 # Custom metris / losses
 from custom import cat_acc, cce, plate_acc, top_3_k
 
@@ -73,14 +73,24 @@ def visualize_predictions(model, imgs_path='benchmark/imgs/', shuffle=False, pri
         # Converting to BGR for color text
         im_to_show = cv2.cvtColor(im_to_show, cv2.COLOR_GRAY2RGB)
         # Avg. probabilities
-        avg_prob = stat.mean(probs) * 100
-        # Show plate
-        im_to_show = cv2.putText(
+        avg_prob = np.mean(probs) * 100
+        # Agrego borde negro para que se vea mejor
+        cv2.putText(
             im_to_show, f'{plate_str}  {avg_prob:.{2}f}%',
-            org=(5, 20),
+            org=(5, 30),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=0.7,
-            color=(0, 100, 0),
+            fontScale=1,
+            color=(0, 0, 0),
+            lineType=1,
+            thickness=6
+            #  bottomLeftOrigin=True
+        )
+        cv2.putText(
+            im_to_show, f'{plate_str}  {avg_prob:.{2}f}%',
+            org=(5, 30),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=1,
+            color=(255, 255, 255),
             lineType=1,
             thickness=2
             #  bottomLeftOrigin=True
@@ -88,7 +98,7 @@ def visualize_predictions(model, imgs_path='benchmark/imgs/', shuffle=False, pri
         # Display character with low confidence
         low_conf_chars = 'Low conf. on: ' + \
             ' '.join([plate[i] for i in check_low_conf(probs, thresh=.15)])
-        im_to_show = cv2.putText(
+        cv2.putText(
             im_to_show, low_conf_chars,
             org=(5, 200),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
