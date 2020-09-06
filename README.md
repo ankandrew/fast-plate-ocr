@@ -8,6 +8,10 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 * Se busca deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero.
 * No tenemos el problema de una **secuencia variable de longitud**. El máximo de caracteres posibles es 7 (para Argentina) por ende las patentes de 6 digitos se le asigna una caracter extra para indicar el faltante.
 
+## Demo
+
+[![Demo](extra/demo.gif)](https://www.youtube.com/watch?v=4OG1TW4ZV8E)
+
 ## Uso
 
 ### Instalar dependencias
@@ -46,7 +50,7 @@ Si no quieren utilizar los modelos entrenados que se encuentran en `models/`, pu
 
 Para las imagenes y anotaciones se tiene que:
 1. Mover las imagenes (sin procesar) de las patentes en `train_val_set/train/`
-2. En el archivo `train_val_set/train_anotaciones.txt` escribir las anotaciones en formato (**separado por tab*)
+2. En el archivo `train_val_set/train_anotaciones.txt` escribir las anotaciones en formato (**separado por tab**)
 ```
 train_val_set/train/patente_img.png	ABC123DE
 ```
@@ -239,14 +243,32 @@ datagen = ImageDataGenerator(
 
 Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se puede encontrar definido en `extra_augmentation.py`. [Demo de CutOut](https://www.youtube.com/watch?v=pQ5BL7IFNVw).
 
-*Aclaracion: A proposito se busco, *manualmente*, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
+* Aclaracion: A proposito se busco, *manualmente*, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
 
 ### Tiempo de inferencia
 
+##### Ajustes
+
+El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inferencia (Usando `batch=1`)
+
+#### GPU (Nvidia GTX 1070)
+
 | Modelo  | ms | FPS | Precisión |
 | --------  | --------- | --------- | ------|
-| 1.5 M | - | - | FP32 |
-| 2.0 M | - | - | FP32 |
+| 1.5 M |  | 2.12 | 471 | FP32 |
+| 2.0 M | 1.71 | 584 | FP32 |
+| 1.5 M |  | - | - | FP16 |
+| 2.0 M |  | - | - | FP16 |
+| -  |  | - | - | - |
+
+#### CPU (Intel i7-7700)
+
+| Modelo  | ms | FPS | Precisión |
+| --------  | --------- | --------- | ------|
+| 1.5 M |  | 11.1 | 90 | FP32 |
+| 2.0 M | 12.2 | 82 | FP32 |
+| 1.5 M |  | - | - | FP16 |
+| 2.0 M |  | - | - | FP16 |
 | -  |  | - | - | - |
 
 * FP32: para las weights y activaciones se usan valores de floating point de 32 bits
@@ -264,7 +286,6 @@ Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se pue
 - [ ] Aplicar Motion Blur (Data Augmentation) 
 - [ ] Probar Salt & Pepper noise (Data Augmentation)
 - [ ] Quantizar el modelo a INT8 (Post-Training / Aware-Training)
-- [ ] Ver tiempo inferencia con [Mixed Precision](https://www.tensorflow.org/guide/mixed_precision)
 - [ ] Compilarlo para [Edge TPU](https://coral.ai/docs/edgetpu/compiler/)
 - [ ] Hacer version universal (Patentes de EU, BR, ...)
 - [ ] Generar patentes artificialmente
@@ -278,4 +299,5 @@ Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se pue
 * Para hacer Quantization Aware Training se requiere cambiar la estructura del modelo y no usar tf.keras.layers.Concatenate (porque no esta soportado todavia)
 * CutOut si bien es Data Augmentation (Pone cuadrados negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
 * Si planean deployear esto en smartphones, prueben cambiando los Conv2D por DepthwiseConv2D en [layer_blocks.py](layer_blocks.py) (volver a entrenar)
+* Motion Blur tiene mas sentido que aplicar blur, simula el efecto de que fue captada en movimiento
 * Cualquier duda/mejora que encuentren abran un issue
