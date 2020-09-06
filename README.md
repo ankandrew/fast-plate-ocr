@@ -255,8 +255,8 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inf
 
 | Modelo  | ms | FPS | Precisión |
 | --------  | --------- | --------- | ------|
-| 1.5 M |  | 2.12 | 471 | FP32 |
-| 2.0 M | 1.71 | 584 | FP32 |
+| 1.5 M | 2.12 | 471 | FP32 |
+| 2.0 M | 1.71 | **584** | FP32 |
 | 1.5 M |  | - | - | FP16 |
 | 2.0 M |  | - | - | FP16 |
 | -  |  | - | - | - |
@@ -265,7 +265,7 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inf
 
 | Modelo  | ms | FPS | Precisión |
 | --------  | --------- | --------- | ------|
-| 1.5 M |  | 11.1 | 90 | FP32 |
+| 1.5 M | 11.1 | **90** | FP32 |
 | 2.0 M | 12.2 | 82 | FP32 |
 | 1.5 M |  | - | - | FP16 |
 | 2.0 M |  | - | - | FP16 |
@@ -296,7 +296,6 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inf
 * Para obtener la mejor precisión es recomendable obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
 * Las fotos de motos representan menos del 40% del training-set *(Por ahora)*, por ende hay mala precisión en estas
 * DropBlock & SAM(Spatial Attention Module) no dieron buenos resultados. *Puede ser porque el Modelo muy chico*
-* Para hacer Quantization Aware Training se requiere cambiar la estructura del modelo y no usar tf.keras.layers.Concatenate (porque no esta soportado todavia)
 * CutOut si bien es Data Augmentation (Pone cuadrados negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
 * Si planean deployear esto en smartphones, prueben cambiando los Conv2D por DepthwiseConv2D en [layer_blocks.py](layer_blocks.py) (volver a entrenar)
 * Motion Blur tiene mas sentido que aplicar blur, simula el efecto de que fue captada en movimiento
