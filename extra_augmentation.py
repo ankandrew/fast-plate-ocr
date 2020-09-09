@@ -38,8 +38,24 @@ def cut_out(img):
     return img
 
 
-# def cut_out_blur(img):
-#     if random.random() > .5:
-#         return cut_out(img)
-#     else:
-#         return blur(img)
+def motion_blur(img):
+    '''
+    Rank 3 numpy array
+    Modificado de: https://www.geeksforgeeks.org/opencv-motion-blur-in-python/
+    '''
+    # Mas grande el filtro, hay mas efecto
+    # kernel_size = 7
+    kernels = [3, 5]
+    kernel_size = random.choice(kernels)
+    if random.random() > .5:
+        motion_blur_kernel = np.zeros((kernel_size, kernel_size))
+        motion_blur_kernel[:, int((kernel_size - 1) / 2)
+                           ] = np.ones(kernel_size)
+        motion_blur_kernel /= kernel_size
+    else:
+        motion_blur_kernel = np.zeros((kernel_size, kernel_size))
+        motion_blur_kernel[int((kernel_size - 1) / 2),
+                           :] = np.ones(kernel_size)
+        motion_blur_kernel /= kernel_size
+    random_mb = cv2.filter2D(img, -1, motion_blur_kernel)
+    return np.expand_dims(random_mb, axis=-1)

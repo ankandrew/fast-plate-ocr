@@ -1,2 +1,3 @@
 __pycache__/
+.vscode/
 cudnn64_7.dll

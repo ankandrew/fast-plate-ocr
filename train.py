@@ -1,7 +1,6 @@
 import string
 
 import numpy as np
-# import skimage
 import tensorflow as tf
 import tensorflow.keras.metrics
 from tensorflow.keras.activations import softmax
@@ -13,11 +12,12 @@ from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
                                                   img_to_array, load_img)
 from argparse import ArgumentParser
 from custom import cat_acc, cce, plate_acc, top_3_k
-from layer_blocks import block_bn
+from layer_blocks import block_bn, block_bn_sep_conv_l2
 import pandas as pd
-from extra_augmentation import cut_out, blur
+from extra_augmentation import cut_out, motion_blur
 import matplotlib.pyplot as plt
 import os
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 def modelo_2m(h, w):
@@ -44,7 +44,44 @@ def modelo_2m(h, w):
     x, _ = block_bn(x, k=1, n_c=512, s=1, padding='same')
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
     x, _ = block_bn(x, k=1, n_c=1024, s=1, padding='same')
-    # Clasificador
+    x = modelo_head(x)
+    return Model(inputs=input_tensor, outputs=x)
+
+
+def modelo_1m_cpu(h, w):
+    '''
+    Modelo de 1.2 M params
+    Reemplaza Conv2D por SeparableConv2d
+    para que ejecute mas rapido en CPUs
+    '''
+    input_tensor = Input((70, 140, 1))
+    x, _ = block_bn(input_tensor, k=3, n_c=32, s=1, padding='same')
+    x, _ = block_bn(x, k=3, n_c=64, s=1, padding='same')
+    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
+    x, _ = block_bn(x, k=3, n_c=64, s=1, padding='same')
+    x, _ = block_bn(x, k=3, n_c=128, s=1, padding='same')
+    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
+    x, _ = block_bn(x, k=1, n_c=128, s=1, padding='same')
+    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
+    x, _ = block_bn_sep_conv_l2(
+        x, k=3, n_c=128, s=1, padding='same', depth_multiplier=1)
+    x, _ = block_bn(x, k=1, n_c=256, s=1, padding='same')
+    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
+    x, _ = block_bn_sep_conv_l2(
+        x, k=3, n_c=256, s=1, padding='same', depth_multiplier=1)
+    x, _ = block_bn_sep_conv_l2(
+        x, k=1, n_c=512, s=1, padding='same', depth_multiplier=1)
+    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
+    x, _ = block_bn(x, k=1, n_c=1024, s=1, padding='same')
+    x = modelo_head(x)
+    return Model(inputs=input_tensor, outputs=x)
+
+
+def modelo_head(x):
+    '''
+    Se encarga de la parte de clasificacion
+    de caracteres e incluye GlobalAveragePooling2D
+    '''
     x = GlobalAveragePooling2D()(x)
     # dropout for more robust learning
     x = Dropout(0.5)(x)
@@ -64,14 +101,14 @@ def modelo_2m(h, w):
     x6 = Activation(softmax)(x6)
     x7 = Activation(softmax)(x7)
     x = Concatenate()([x1, x2, x3, x4, x5, x6, x7])
-    return Model(inputs=input_tensor, outputs=x)
+    return x
 
 
 def data_aug(do_blur=False, do_cut_out=False):
     if do_blur:
         def pf(img):
             if np.random.rand() > .5:
-                return blur(img)
+                return motion_blur(img)
             else:
                 return img
     elif do_cut_out:
@@ -90,7 +127,7 @@ def data_aug(do_blur=False, do_cut_out=False):
             if rand < 1 / 3:
                 return cut_out(img)
             elif rand > 1 / 3 and rand < 2 / 3:
-                return blur(img)
+                return motion_blur(img)
             else:
                 return img
     else:
@@ -199,16 +236,18 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-vis", "--visualizar-aug", dest="visualizar_aug",
                         action='store_true', help="Visualizar Data Augmentation (no entrenar)")
+    parser.add_argument("-cpu", "--modelo-cpu", dest="cpu",
+                        action='store_true', help="Alternativamente elegir entrenar el modelo para CPU")
     parser.add_argument("-i", "--anotaciones", dest="anotaciones_path",
                         default='train_val_set/train_anotaciones.txt',
                         type=str, help="Path del .txt que contiene las anotaciones")
     parser.add_argument("-v", "--val-anotaciones", dest="val_anotaciones_path",
-                        default='train_val_set/valid_anotaciones.txt', type=str, help="Path del .txt que contiene las anotaciones")
-    parser.add_argument("-a", "--altura", dest="height",
+                        type=str, help="Path del .txt que contiene las anotaciones")
+    parser.add_argument("-alt", "--altura", dest="height",
                         default=70, type=int, help="Alto de imagen a utilizar")
-    parser.add_argument("-ancho", "--ancho", dest="width",
+    parser.add_argument("-anc", "--ancho", dest="width",
                         default=140, type=int, help="Ancho de imagen a utilizar")
-    parser.add_argument("-l", "--learning-rate", dest="lr",
+    parser.add_argument("-lr", "--learning-rate", dest="lr",
                         default=1e-3, type=float, help="Valor del learning rate")
     parser.add_argument("-b", "--batch-size", dest="batch_size",
                         default=64, type=int, help="Tamaño del batch, predeterminado 1")
@@ -244,7 +283,10 @@ if __name__ == "__main__":
         plt.show()
     else:
         # Entrenar
-        modelo = modelo_2m(args.height, args.width)
+        if args.cpu:
+            modelo = modelo_1m_cpu(args.height, args.width)
+        else:
+            modelo = modelo_2m(args.height, args.width)
         modelo.compile(loss=cce, optimizer=tf.keras.optimizers.Adam(args.lr),
                        metrics=[cat_acc, plate_acc, top_3_k])
 
