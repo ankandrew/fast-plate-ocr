@@ -249,27 +249,32 @@ Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se pue
 
 ##### Ajustes
 
-El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inferencia (Usando `batch=1`)
+El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer **solo la inferencia** el modelo (Usando `batch=1`). Los modelos que dicen **CPU** estan hechos para que corran mas rapido en los procesadores. La diferencia principal es que se cambia la op. de [Convolucion normal](https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv2D) por una [Separable Conv](https://www.tensorflow.org/api_docs/python/tf/keras/layers/SeparableConv2D).
+
+En algunos casos (aunque sean menos multiplicaciones y sumas de las **SeparableConv**) las operaciones Convolucionales **aprovechan mejor los recursos disponibles**. Mas informacion de esto [aca](https://tlkh.dev/depsep-convs-perf-investigations/) y en el caso del accelerator de Google Coral [aca](https://ai.googleblog.com/2019/08/efficientnet-edgetpu-creating.html) (Segunda imagen).
 
 #### GPU (Nvidia GTX 1070)
 
 | Modelo  | ms | FPS | Precisión |
 | --------  | --------- | --------- | ------|
-| 1.5 M |  | 2.12 | 471 | FP32 |
-| 2.0 M | 1.71 | 584 | FP32 |
-| 1.5 M |  | - | - | FP16 |
-| 2.0 M |  | - | - | FP16 |
-| -  |  | - | - | - |
+| 1.5 M (GPU) | 2.12 | 471 | FP32 |
+| 2.0 M (GPU) | 1.71 | 584 | FP32 |
+| 1.4 M (CPU) | 1.54 | 650 | FP32 |
+| 1.1 M (CPU) | 1.36 | 735 | FP32 |
+| - | - | - | - |
+| -  | - | - | - |
+
 
 #### CPU (Intel i7-7700)
 
 | Modelo  | ms | FPS | Precisión |
 | --------  | --------- | --------- | ------|
-| 1.5 M |  | 11.1 | 90 | FP32 |
-| 2.0 M | 12.2 | 82 | FP32 |
-| 1.5 M |  | - | - | FP16 |
-| 2.0 M |  | - | - | FP16 |
-| -  |  | - | - | - |
+| 1.5 M (GPU) | 11.1 | 90 | FP32 |
+| 2.0 M (GPU) | 12.2 | 82 | FP32 |
+| 1.4 M (CPU) | 6.55 | 152 | FP32 |
+| 1.1 M (CPU) | 5.88 | 170 | FP32 |
+| - | - | - | - |
+| -  | - | - | - |
 
 * FP32: para las weights y activaciones se usan valores de floating point de 32 bits
 
@@ -284,7 +289,6 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inf
 - [x] Aplicar blur a las imagenes(Data Augmentation)
 - [x] Aplicar CutOut a las imagenes(Data Augmentation)
 - [ ] Aplicar Motion Blur (Data Augmentation) 
-- [ ] Probar Salt & Pepper noise (Data Augmentation)
 - [ ] Quantizar el modelo a INT8 (Post-Training / Aware-Training)
 - [ ] Compilarlo para [Edge TPU](https://coral.ai/docs/edgetpu/compiler/)
 - [ ] Hacer version universal (Patentes de EU, BR, ...)
@@ -295,9 +299,7 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer solo la inf
 * Este modelo esta hecho especialmente para patentes vehiculares *Argentinas*
 * Para obtener la mejor precisión es recomendable obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
 * Las fotos de motos representan menos del 40% del training-set *(Por ahora)*, por ende hay mala precisión en estas
-* DropBlock & SAM(Spatial Attention Module) no dieron buenos resultados. *Puede ser porque el Modelo muy chico*
 * Para hacer Quantization Aware Training se requiere cambiar la estructura del modelo y no usar tf.keras.layers.Concatenate (porque no esta soportado todavia)
 * CutOut si bien es Data Augmentation (Pone cuadrados negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
-* Si planean deployear esto en smartphones, prueben cambiando los Conv2D por DepthwiseConv2D en [layer_blocks.py](layer_blocks.py) (volver a entrenar)
 * Motion Blur tiene mas sentido que aplicar blur, simula el efecto de que fue captada en movimiento
 * Cualquier duda/mejora que encuentren abran un issue
