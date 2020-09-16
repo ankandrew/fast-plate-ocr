@@ -8,6 +8,8 @@ Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LST
 * Se busca deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero.
 * No tenemos el problema de una **secuencia variable de longitud**. El máximo de caracteres posibles es 7 (para Argentina) por ende las patentes de 6 digitos se le asigna una caracter extra para indicar el faltante.
 
+*Aclaracion: Este modulo es utilizado en [ConvALPR](https://github.com/ankandrew/ConvALPR)*
+
 ## Demo
 
 [![Demo](extra/demo.gif)](https://www.youtube.com/watch?v=4OG1TW4ZV8E)
