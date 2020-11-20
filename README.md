@@ -1,18 +1,14 @@
 # Reconocedor de Texto(OCR) para Patentes vehiculares de Argentina
 
-![Demo](extra/ocr-module.jpg)
+[![Intro](extra/demo.gif)](https://www.youtube.com/watch?v=4OG1TW4ZV8E)
 
 **OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Este repo esta dedicado solamente al modulo que se encarga de reconocer texto de la patente ya recortada.
 
 Es común que se aplique una **ConvNet(CNN)** y una **Recurrent Neural Net. (LSTM/GRU)** para modelar este tipo de problema de secuencia de caracteres a partir de una imagen. En este caso se implementan solo ConvNets debido a:
-* Se busca deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero.
+* Se busca deployear en **sistemas embebidos** como RaspBerry Pi + Accelerator, por ende tiene que ser ligero. Además Accelerators como el de Google Coral, no están optimizados para Redes Recurrentes
 * No tenemos el problema de una **secuencia variable de longitud**. El máximo de caracteres posibles es 7 (para Argentina) por ende las patentes de 6 digitos se le asigna una caracter extra para indicar el faltante.
 
-*Aclaracion: Este modulo es utilizado en [ConvALPR](https://github.com/ankandrew/ConvALPR)*
-
-## Demo
-
-[![Demo](extra/demo.gif)](https://www.youtube.com/watch?v=4OG1TW4ZV8E)
+To **train on your custom dataset** a detailed explanation can be found [here](https://github.com/ankandrew/cnn-ocr-lp/wiki/Train-your-custom-OCR)
 
 ## Uso
 
@@ -27,10 +23,10 @@ pip install requirements.txt
 ## Visualizar predicciones
 
 ```
-python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs
+python demo_recog.py -m models/m1_93_vpa_2.0M-i2.h5 -i benchmark/imgs --time
 ```
 
-*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta **benchmark/imgs/***
+*Se visualizaran las predicciones hechas a patentes que se encuentren en la carpeta **benchmark/imgs/*** y se muestra el tiempo que tarda en hacer inference
 
 ## Calcular precisión
 
@@ -44,24 +40,31 @@ Ejemplo de salida:
 
 *La precisión se calcula en base a las imagenes de benchmark/*
 
-### Entrenar
+### Train
 
 Para entrenar algun modelo desde cero, pasos estan en la [wiki](https://github.com/ankandrew/cnn-ocr-lp/wiki/Inicio)
 
-## Caracteristicas
+## Models
 
-Los modelos son las tipicas ConvNet, y estan formadas por bloques de **Convolution -> BatchNorm -> Activation -> MaxPooling** ... hasta formar un volumen de HxWx1024 *(altura x ancho x canales)* ... se le aplica **GlobalAvgPooling** para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los **bloques usados** para la ConvNet se encuentran en [layer_blocks.py](layer_blocks.py)
+Los modelos son las tipicas ConvNet, y estan formadas por bloques de **Convolution -> BatchNorm -> Activation -> MaxPooling** ... hasta formar un volumen de HxWx1024 *(altura x ancho x canales)* ... se le aplica **GlobalAvgPooling** para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los **bloques usados** para la ConvNet se encuentran en [layer_blocks.py](layer_blocks.py).
 
 ![model head](extra/FCN.png)
 
+Un segundo modelo borra por completo las Dense layers y aplica [Softmax](https://github.com/ankandrew/cnn-ocr-lp/blob/25ad10916adb30ac33106bce19d85f92d45a7db6/models.py#L101) directamente a la salida del volumen de la ConvNet. Es recomendable probar ambas versiones, pero los experimentos muestran que sin las Dense/Fully Connected layers, tienda a overfittear menos el modelo.
+
+## Características
+
 * **Regularización**: Se probo [DropBlock](https://arxiv.org/abs/1810.12890), DropOut y l2 reg. a los filtros. Este ultimo junto a [CutOut](https://arxiv.org/abs/1708.04552) dieron los mejores resultados
-   * **Label Smoothing**: le da un 10% notorio de aumento de `plate_acc`. Se suavizan los one-hot encoding y pasan de ser (por ejemplo) ```[0, 0, 0, 1]``` a ```[0.01, 0.01, 0.01, 0.90]```
+   * **Label Smoothing**: le da un 10% notorio de aumento de `plate_acc`. Se suavizan los one-hot encoding y pasan de ser (por ejemplo) ```[0, 0, 0, 1]``` a ```[0.03, 0.03, 0.03, 0.91]```
 * **Data Augmentation**: Se usa la augmentacion estandard de Keras y se aplica:
     * Cambios de brillo
     * Leve rotaciones
     * Shearing (tambien leve)
     * Zoom
     * Desplazamiento Vertical/Horizontal
+* **Extra Data Augmentation**:
+    * CutOut
+    * Motion-Blur
 * **Input**
    * Imagen **blanco & negro**
        * 70x140 *(altura x ancho)*
@@ -164,7 +167,7 @@ datagen = ImageDataGenerator(
 )
 ```
 
-Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se puede encontrar definido en `extra_augmentation.py`. [Demo de CutOut](https://www.youtube.com/watch?v=pQ5BL7IFNVw).
+Ademas como metodos extras de Data Augmentation se incluyo Blur y CutOut, se puede encontrar definido en `extra_augmentation.py`.
 
 **Aclaracion**: A proposito se busco, *manualmente*, que de vez en cuando los caracteres salgan **un poco** del frame. Esto ayuda a que generalice mejor y que no se espere una patente recortada perfectamente.
 
@@ -193,7 +196,7 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer **solo la i
 | Modelo 4 (1.1 M - CPU) | **5.88** | **170** | FP32 |
 | -  | - | - | - |
 
-* FP32: para las weights y activaciones se usan valores de floating point de 32 bits *
+*FP32: para las weights y activaciones se usan valores de floating point de 32 bits*
 
 ## TODO
 
@@ -205,15 +208,14 @@ El tiempo medido no cubre el preprocessing, es cuanto tarda en hacer **solo la i
 - [x] Disminuir # de parametros
 - [x] Aplicar blur a las imagenes(Data Augmentation)
 - [x] Aplicar CutOut a las imagenes(Data Augmentation)
-- [x] Implementar Motion Blur (Data Augmentation) 
+- [x] Implementar Motion Blur (Data Augmentation)
+- [x] Implementar modelo sin Dense/FC
+- [ ] Agregar script de time benchmark
 - [ ] Quantizar el modelo a INT8 (Post-Training / Aware-Training)
 - [ ] Compilarlo para [Edge TPU](https://coral.ai/docs/edgetpu/compiler/)
 
 ### Notas
 
-* Este modelo esta hecho especialmente para patentes vehiculares *Argentinas*
 * Para obtener la mejor precisión es recomendable obtener las patentes recortadas con [YOLO v4/v4 tiny](https://github.com/ankandrew/LocalizadorPatentes)
-* Las fotos de motos representan menos del 40% del training-set *(Por ahora)*, por ende hay mala precisión en estas
-* CutOut si bien es Data Augmentation (Pone cuadrados negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
+* CutOut si bien es Data Augmentation (Pone rectangulos negros random en la imagen de entrada) tiene efecto de regulación. Por ende no hace falta usar l2 reg, se puede usar directamente el `block_bn_no_l2` encontrado en `layer_blocks.py`
 * Motion Blur tiene mas sentido que aplicar blur, simula el efecto de que fue captada en movimiento
-* Cualquier duda/mejora que encuentren abran un issue
