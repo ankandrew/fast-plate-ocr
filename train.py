@@ -1,280 +1,185 @@
+from augmentation import DataAugmentation
 import string
-
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.metrics
-from tensorflow.keras.activations import softmax
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.layers import (Activation, Concatenate, Dense, Dropout,
-                                     GlobalAveragePooling2D, Input, MaxPool2D)
-from tensorflow.keras.models import Model
-from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
-                                                  img_to_array, load_img)
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from argparse import ArgumentParser
 from custom import cat_acc, cce, plate_acc, top_3_k
-from layer_blocks import block_bn, block_bn_sep_conv_l2
 import pandas as pd
-from extra_augmentation import cut_out, motion_blur
 import matplotlib.pyplot as plt
 import os
+from models import modelo_1m_cpu, modelo_2m
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
-def modelo_2m(h, w):
-    '''
-    Modelo de 2 millones de parametros
-    '''
-    input_tensor = Input((h, w, 1))
-    # Backbone
-    x, _ = block_bn(input_tensor)
-    x, _ = block_bn(x, k=3, n_c=32, s=1, padding='same')
-    x, _ = block_bn(x, k=3, n_c=32, s=1, padding='same')
-    x, _ = block_bn(x, k=1, n_c=64, s=1, padding='same')
-    x = MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding='same')(x)
-    x, _ = block_bn(x, k=3, n_c=64, s=1, padding='same')
-    x, _ = block_bn(x, k=3, n_c=128, s=1, padding='same')
-    x, _ = block_bn(x, k=1, n_c=128, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=3, n_c=128, s=1, padding='same')
-    x, _ = block_bn(x, k=3, n_c=128, s=1, padding='same')
-    x, _ = block_bn(x, k=1, n_c=256, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=3, n_c=256, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=1, n_c=512, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=1, n_c=1024, s=1, padding='same')
-    x = modelo_head(x)
-    return Model(inputs=input_tensor, outputs=x)
+class Preprocess:
+    def __init__(self, annots_path, h, w, interpolation='bilinear') -> None:
+        self.height = h
+        self.width = w
+        self.annotations = annots_path
+        #  ["bilinear", "bicubic", "nearest", "lanczos", "box", "hamming"]
+        self.interpolation = interpolation
+        self.alphabet = string.digits + string.ascii_uppercase + '_'
+        self.df = pd.read_csv(self.annotations, sep='\t',
+                              names=['path', 'plate'])
+        self.__preprocess_df()
 
+    def __call__(self):
+        # Return numpy array: features, labels
+        return self.__df_to_x_y()
 
-def modelo_1m_cpu(h, w):
-    '''
-    Modelo de 1.2 M params
-    Reemplaza Conv2D por SeparableConv2d
-    para que ejecute mas rapido en CPUs
-    '''
-    input_tensor = Input((70, 140, 1))
-    x, _ = block_bn(input_tensor, k=3, n_c=32, s=1, padding='same')
-    x, _ = block_bn(x, k=3, n_c=64, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=3, n_c=64, s=1, padding='same')
-    x, _ = block_bn(x, k=3, n_c=128, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=1, n_c=128, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn_sep_conv_l2(
-        x, k=3, n_c=128, s=1, padding='same', depth_multiplier=1)
-    x, _ = block_bn(x, k=1, n_c=256, s=1, padding='same')
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn_sep_conv_l2(
-        x, k=3, n_c=256, s=1, padding='same', depth_multiplier=1)
-    x, _ = block_bn_sep_conv_l2(
-        x, k=1, n_c=512, s=1, padding='same', depth_multiplier=1)
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(x)
-    x, _ = block_bn(x, k=1, n_c=1024, s=1, padding='same')
-    x = modelo_head(x)
-    return Model(inputs=input_tensor, outputs=x)
+    def __df_to_x_y(self):
+        '''
+        Loads all the imgs to memory (by col name='path')
+        with the corresponding y labels (one-hot encoded)
+        '''
+        # Load all images in numpy array
+        x_imgs = []
+        for img in self.df.path.values:
+            img = load_img(img, color_mode="grayscale", target_size=(
+                self.height, self.width), interpolation=self.interpolation)
+            img = img_to_array(img)
+            img = np.expand_dims(img, axis=0)
+            x_imgs.append(img)
+        x_imgs = np.vstack(x_imgs)
+        y_imgs = []
+        for one_hot in self.df.labels.values:
+            # label = np.expand_dims(one_hot, axis=0)
+            one_hot = one_hot.reshape((259))
+            y_imgs.append(one_hot)
+        y_imgs = np.vstack(y_imgs)
+        return x_imgs, y_imgs
 
+    def __preprocess_df(self):
+        # Pad 6-len plates with '_'
+        self.df.loc[self.df.plate.str.len() == 6, 'plate'] += '_'
+        # Convert to one-hot
+        self.df['labels'] = self.df.plate.apply(
+            lambda x: np.array(self.__string_vectorizer(x)))
 
-def modelo_head(x):
-    '''
-    Se encarga de la parte de clasificacion
-    de caracteres e incluye GlobalAveragePooling2D
-    '''
-    x = GlobalAveragePooling2D()(x)
-    # dropout for more robust learning
-    x = Dropout(0.5)(x)
-    x1 = Dense(units=37)(x)
-    x2 = Dense(units=37)(x)
-    x3 = Dense(units=37)(x)
-    x4 = Dense(units=37)(x)
-    x5 = Dense(units=37)(x)
-    x6 = Dense(units=37)(x)
-    x7 = Dense(units=37)(x)
-    # Softmax act.
-    x1 = Activation(softmax)(x1)
-    x2 = Activation(softmax)(x2)
-    x3 = Activation(softmax)(x3)
-    x4 = Activation(softmax)(x4)
-    x5 = Activation(softmax)(x5)
-    x6 = Activation(softmax)(x6)
-    x7 = Activation(softmax)(x7)
-    x = Concatenate()([x1, x2, x3, x4, x5, x6, x7])
-    return x
-
-
-def data_aug(do_blur=False, do_cut_out=False):
-    if do_blur:
-        def pf(img):
-            if np.random.rand() > .5:
-                return motion_blur(img)
-            else:
-                return img
-    elif do_cut_out:
-        def pf(img):
-            if np.random.rand() > .5:
-                return cut_out(img)
-            else:
-                return img
-    elif do_blur and do_cut_out:
-        def pf(img):
-            '''
-            Aplicar 33.3% de las veces cut_out, blur
-            y la imagen aumentada normalmente
-            '''
-            rand = np.random.rand()
-            if rand < 1 / 3:
-                return cut_out(img)
-            elif rand > 1 / 3 and rand < 2 / 3:
-                return motion_blur(img)
-            else:
-                return img
-    else:
-        pf = None
-    datagen = ImageDataGenerator(
-        rescale=1 / 255.,
-        rotation_range=10,
-        width_shift_range=0.05,
-        height_shift_range=0.10,
-        brightness_range=(0.5, 1.5),
-        shear_range=8,
-        zoom_range=0.12,
-        preprocessing_function=pf
-    )
-
-    datagen_validator = ImageDataGenerator(
-        rescale=1 / 255.
-    )
-
-    return datagen, datagen_validator
-
-
-def txt_to_numpy(anots_path, h, w):
-    # Ejemplos de interpolacion:
-    #  ["bilinear", "bicubic", "nearest", "lanczos", "box", "hamming"]
-    interpolation = "bilinear"
-    df = pd.read_csv(anots_path, sep='\t', names=['path', 'plate'])
-    preprocess_df(df)
-    # df.path = df.path.str.replace('imgs', 'val_imgs')
-    x, y = df_to_x_y(df, target_h=h, target_w=w, interpolation=interpolation)
-    return x, y
-
-
-def df_to_x_y(df, target_h=70, target_w=140, interpolation="bilinear"):
-    '''
-    Loads all the imgs to memory (by col name='path')
-    with the corresponding y labels (one-hot encoded)
-    '''
-    # Load all images in numpy array
-    x_imgs = []
-    for img in df.path.values:
-        img = load_img(img, color_mode="grayscale", target_size=(
-            target_h, target_w), interpolation=interpolation)
-        img = img_to_array(img)
-        img = np.expand_dims(img, axis=0)
-        x_imgs.append(img)
-    x_imgs = np.vstack(x_imgs)
-
-    y_imgs = []
-    for one_hot in df.labels.values:
-        # label = np.expand_dims(one_hot, axis=0)
-        one_hot = one_hot.reshape((259))
-        y_imgs.append(one_hot)
-    y_imgs = np.vstack(y_imgs)
-
-    return x_imgs, y_imgs
-
-
-def preprocess_df(df):
-    # Pad 6-len plates with '_'
-    df.loc[df.plate.str.len() == 6, 'plate'] += '_'
-
-    def string_vectorizer(plate_str):
-        alphabet = string.digits + string.ascii_uppercase + '_'
-        vector = [[0 if char != letter else 1 for char in alphabet]
+    def __string_vectorizer(self, plate_str):
+        vector = [[0 if char != letter else 1 for char in self.alphabet]
                   for letter in plate_str]
         return vector
 
-    # Convert to one-hot
-    df['labels'] = df.plate.apply(lambda x: np.array(string_vectorizer(x)))
 
+class Graph:
+    def __init__(self, history, output_folder) -> None:
+        self.history = history
+        self.output_folder = output_folder
+        plt.style.use('seaborn')
 
-def save_accuracy_plot(save_name, history, metric='plate_acc'):
-    plt.plot(history.history[metric])
-    plt.plot(history.history[f'val_{metric}'])
-    plt.title(f'model {metric}')
-    plt.ylabel(f'{metric}')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'val'], loc='upper left')
-    # plt.show()
-    plt.savefig(save_name)
+    def __call__(self):
+        self.__save_accuracy_plot(os.path.join(self.output_folder, 'top3_acc.png'), metric='top_3_k')
+        self.__save_accuracy_plot(os.path.join(self.output_folder, 'cat_acc.png'), metric='cat_acc')
+        self.__save_accuracy_plot(os.path.join(self.output_folder, 'plate_acc.png'), metric='plate_acc')
+        self.__save_lr_plot(os.path.join(self.output_folder, 'learning_rate.png'))
+        self.__save_loss_plot(os.path.join(self.output_folder, 'loss.png'))
+        self.__save_stats(os.path.join(self.output_folder, 'stats.csv'))
 
+    def __save_accuracy_plot(self, save_name, metric='plate_acc'):
+        plt.plot(self.__smooth_curve(self.history.history[metric]))
+        plt.plot(self.__smooth_curve(self.history.history[f'val_{metric}']))
+        plt.title(f'Model {metric}')
+        plt.ylabel(f'{metric}')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        # plt.show()
+        plt.savefig(save_name)
+        # Clear points/axis
+        plt.clf()
 
-def save_loss_plot(save_name, history):
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'val'], loc='upper left')
-    # plt.show()
-    plt.savefig(save_name)
+    def __save_lr_plot(self, save_name):
+        plt.plot(self.history.history['lr'])
+        plt.title(f'LR during training')
+        plt.ylabel(f'learning rate')
+        plt.xlabel('epoch')
+        plt.savefig(save_name)
+        # Clear points/axis
+        plt.clf()
 
+    def __save_loss_plot(self, save_name):
+        plt.plot(self.__smooth_curve(self.history.history['loss']))
+        plt.plot(self.__smooth_curve(self.history.history['val_loss']))
+        plt.title('Model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        # plt.show()
+        plt.savefig(save_name)
 
-def save_stats(save_name, history):
-    with open(save_name, 'w') as out:
-        for key, val in history.history.items():
-            out.write(f'---{key}---\n')
-            out.write(f'max\t{max(val)}\n')
-            out.write(f'max\t{min(val)}\n')
-            out.write(f'mean\t{np.mean(val)}\n')
-            out.write(f'std\t{np.std(val)}\n')
+    def __save_stats(self, save_name):
+        metricl, maxl, minl, meanl, stdl = [], [], [], [], []
+        for key, val in self.history.history.items():
+            metricl.append(key)
+            maxl.append(max(val))
+            minl.append(min(val))
+            meanl.append(np.mean(val))
+            stdl.append(np.std(val))
+        pd.DataFrame({'metric': metricl, 'max': maxl, 'min': minl,
+                      'mean': meanl, 'std': stdl}).to_csv(save_name, index=False)
+
+    # Suavizado Exponencial
+    # Sacado de 'Deep Learning with Python' por François Chollet
+    def __smooth_curve(self, points, factor=.6):
+        smoothed_points = []
+        for point in points:
+            if smoothed_points:
+                previous = smoothed_points[-1]
+                smoothed_points.append(
+                    previous * factor + point * (1 - factor))
+            else:
+                smoothed_points.append(point)
+        return smoothed_points
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-vis", "--visualizar-aug", dest="visualizar_aug",
+    parser.add_argument("--show-aug", dest="show_aug",
                         action='store_true', help="Visualizar Data Augmentation (no entrenar)")
-    parser.add_argument("-cpu", "--modelo-cpu", dest="cpu",
+    parser.add_argument("--modelo-cpu", dest="cpu",
                         action='store_true', help="Alternativamente elegir entrenar el modelo para CPU")
-    parser.add_argument("-i", "--anotaciones", dest="anotaciones_path",
-                        default='train_val_set/train_anotaciones.txt',
+    parser.add_argument("--dense", dest="dense",
+                        action='store_true', help="Incluir Dense Layers para la parte final(head) de clasificacion")
+    parser.add_argument("--annotations", dest="anotaciones_path",
+                        default='./train_val_set/train_anotaciones.txt',
                         type=str, help="Path del .txt que contiene las anotaciones")
-    parser.add_argument("-v", "--val-anotaciones", dest="val_anotaciones_path",
+    parser.add_argument("--val-annotations", dest="val_anotaciones_path",
                         type=str, help="Path del .txt que contiene las anotaciones")
-    parser.add_argument("-alt", "--altura", dest="height",
+    parser.add_argument("--height", dest="height",
                         default=70, type=int, help="Alto de imagen a utilizar")
-    parser.add_argument("-anc", "--ancho", dest="width",
+    parser.add_argument("--width", dest="width",
                         default=140, type=int, help="Ancho de imagen a utilizar")
-    parser.add_argument("-lr", "--learning-rate", dest="lr",
-                        default=1e-3, type=float, help="Valor del learning rate")
-    parser.add_argument("-b", "--batch-size", dest="batch_size",
+    parser.add_argument("--lr", dest="lr",
+                        default=1e-3, type=float, help="Valor del learning rate inicial")
+    parser.add_argument("--batch-size", dest="batch_size",
                         default=64, type=int, help="Tamaño del batch, predeterminado 1")
 
-    parser.add_argument("-o", "--output-dir", dest="output_path",
-                        default='', type=str, help="Path para guarda el modelo")
-    parser.add_argument("-e", "--epochs", dest="epochs",
+    parser.add_argument("--output-dir", dest="output_path",
+                        default=None, type=str, help="Path para guarda el modelo")
+    parser.add_argument("--epochs", dest="epochs",
                         default=500, type=int, help="Cantidad de Epochs(cuantas veces se ve el dataset completo")
 
-    parser.add_argument("-ca", "--cut-out", dest="cut_out",
+    parser.add_argument("--cut-out", dest="cut_out",
                         action='store_true', help="Aplicar cut out a las imagenes, adicionalmente al Augmentation normal")
 
-    parser.add_argument("-ba", "--blur", dest="blur",
-                        action='store_true', help="Aplicar blur a las imagenes, adicionalmente al Augmentation normal")
-    parser.add_argument("-g", "--graficos", dest="graphics",
+    parser.add_argument("--blur", dest="blur",
+                        action='store_true', help="Aplicar motion blur a las imagenes, adicionalmente al Augmentation normal")
+    parser.add_argument("--graficos", dest="graphics",
                         action='store_true', help="Guardar imagenes graficos de entrenamiento (loss, cat_acc, etc...)")
 
     args = parser.parse_args()
+    da = DataAugmentation(do_blur=args.blur, do_cut_out=args.cut_out)
 
-    if args.visualizar_aug:
-        datagen, _ = data_aug(do_blur=args.blur, do_cut_out=args.cut_out)
+    if args.show_aug:
+        datagen, _ = da.data_aug()
         # Por defecto se aumenta las imagenes de benchmark/imgs
-        x_imgs, _ = txt_to_numpy(
-            'benchmark/anotaciones.txt', args.height, args.width)
+        x_imgs, _ = Preprocess(
+            './benchmark/anotaciones.txt', args.height, args.width)()
         aug_generator = datagen.flow(x_imgs, batch_size=1, shuffle=True)
 
-        fig, ax = plt.subplots(nrows=5, ncols=5)
+        fig, ax = plt.subplots(nrows=6, ncols=6)
         for row in ax:
             for col in row:
                 img = aug_generator.next() * 255.
@@ -284,23 +189,23 @@ if __name__ == "__main__":
     else:
         # Entrenar
         if args.cpu:
-            modelo = modelo_1m_cpu(args.height, args.width)
+            modelo = modelo_1m_cpu(args.height, args.width, args.dense)
         else:
-            modelo = modelo_2m(args.height, args.width)
+            modelo = modelo_2m(args.height, args.width, args.dense)
         modelo.compile(loss=cce, optimizer=tf.keras.optimizers.Adam(args.lr),
                        metrics=[cat_acc, plate_acc, top_3_k])
 
-        datagen, datagen_validator = data_aug(args.cut_out, args.blur)
+        datagen, datagen_validator = da.data_aug()
         # Pre-procesar .txt -> arrays de numpy listo para model.fit(...)
-        x_imgs, y_imgs = txt_to_numpy(
-            args.anotaciones_path, args.height, args.width)
+        x_imgs, y_imgs = Preprocess(
+            args.anotaciones_path, args.height, args.width)()
         train_generator = datagen.flow(
             x_imgs, y_imgs, batch_size=args.batch_size, shuffle=True)
         train_steps = train_generator.n // train_generator.batch_size
 
         if args.val_anotaciones_path is not None:
-            X_test, y_test = txt_to_numpy(
-                args.val_anotaciones_path, args.height, args.width)
+            X_test, y_test = Preprocess(
+                args.val_anotaciones_path, args.height, args.width)()
             validation_generator = datagen_validator.flow(
                 X_test, y_test, batch_size=args.batch_size, shuffle=False)
             validation_steps = validation_generator.n // validation_generator.batch_size
@@ -309,11 +214,14 @@ if __name__ == "__main__":
             validation_steps = None
 
         callbacks = [
-            # Si en 5 epochs no baja val_loss, disminuir por un
-            # factor de 0.3 el lr (cambiar la patience para esperar mas antes de bajarlo)
-            ReduceLROnPlateau('val_loss'),
-            # Parar de entrenar si val_cat_acc no aumenta en 50 epochs
-            EarlyStopping(monitor='val_cat_acc', patience=50)
+            # Si en 35 epochs no mejora val_plate_acc reducir
+            # lr por un factor de 0.5x
+            ReduceLROnPlateau('val_plate_acc', verbose=1,
+                              patience=35, factor=0.5, min_lr=1e-5),
+            # Parar de entrenar si val_plate_acc no aumenta en 50 epochs
+            # Guardo la mejor version con restore_best_weights
+            EarlyStopping(monitor='val_plate_acc', patience=50,
+                          restore_best_weights=True)
         ]
 
         history = modelo.fit(
@@ -326,12 +234,20 @@ if __name__ == "__main__":
         )
 
         # modelo.save(f'model2m_trained_{args.epochs}.h5')
-        modelo.save(os.path.join(args.output_path, 'model2m_trained.h5'))
+        best_vpa = max(history.history['val_plate_acc'])
+        epochs = len(history.epoch)
+        model_name = f'cnn-ocr_{best_vpa:.4}-vpa_epochs-{epochs}'
+        # Make dir for trained model
+        if args.output_path is None:
+            model_folder = f'./trained/{model_name}'
+            if not os.path.exists(model_folder):
+                os.makedirs(model_folder)
+            output_path = model_folder
+        else:
+            output_path = args.output_path
+        modelo.save(os.path.join(output_path,
+                                 f'{model_name}.h5'))
 
         if args.graphics:
             # Save graphs to current dir.
-            save_accuracy_plot('top3_acc.png', history, metric='top_3_k')
-            save_accuracy_plot('cat_acc.png', history, metric='cat_acc')
-            save_accuracy_plot('plate_acc.png', history, metric='plate_acc')
-            save_loss_plot('loss.png', history)
-            save_stats('stats.txt', history)
+            Graph(history, output_path)()

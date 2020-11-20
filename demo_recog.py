@@ -5,6 +5,8 @@ import random
 import os
 import cv2
 from argparse import ArgumentParser
+
+from tensorflow.python.keras.activations import softmax
 # import statistics as stat
 # Custom metris / losses
 from custom import cat_acc, cce, plate_acc, top_3_k
@@ -22,24 +24,17 @@ def check_low_conf(probs, thresh=.3):
     return [i for i, prob in enumerate(probs) if prob < thresh]
 
 
-def predict_from_array(img):
-    # img = np.expand_dims(img, axis=0)
-    img = img[np.newaxis, ..., np.newaxis]
-    img = img.astype("float32") / 255
-    # Make prediction
-    return model.predict(img)
+@tf.function
+def predict_from_array(img, model):
+    pred = model(img, training=False)
+    return pred
 
 
 def probs_to_plate(prediction):
-    alphabet = string.digits + string.ascii_uppercase + '_'
-    i = 0
-    plate = []
-    probs = []
-    for x in range(7):
-        id = np.argmax(prediction[0][i:i + 37])
-        probs.append(np.max(prediction[0][i:i + 37]))
-        plate.append(alphabet[id])
-        i += 37
+    prediction = prediction.reshape((7, 37))
+    probs = np.max(prediction, axis=-1)
+    prediction = np.argmax(prediction, axis=-1)
+    plate = list(map(lambda x: alphabet[x], prediction))
     return plate, probs
 
 
@@ -55,19 +50,28 @@ def visualize_predictions(model, imgs_path='benchmark/imgs/', shuffle=False, pri
         #
         im = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
         # resize dsize (w, h) -> (140, 70)
-        im = cv2.resize(im, dsize=(140, 70), interpolation=cv2.INTER_LINEAR)
-        prediction = predict_from_array(im)
+        img = cv2.resize(im, dsize=(140, 70), interpolation=cv2.INTER_LINEAR)
+        img = img[np.newaxis, ..., np.newaxis] / 255.
+        img = tf.constant(img, dtype=tf.float32)
+        start_inference = timer()
+        prediction = predict_from_array(img, model).numpy()
+        end_inference = timer()
         plate, probs = probs_to_plate(prediction)
         plate_str = ''.join(plate)
         # End timer
         end = timer()
         #
         if print_time:
+            delta_time = end - start
+            fps = 1 / delta_time
+            delta_time_inference = end_inference - start_inference
+            fps_inference = 1 / delta_time_inference
+            # Timing con y sin preprocessing (rescale, add axis, cast)
             print(
-                f'Time taken, including reading, resize, prediction is\t{end - start}'
-            )
-        print(f'Plate: {plate_str}')
-        print(f'Confidence: {probs}')
+                f'Time taken, including reading, resize, prediction is\t{delta_time:.5f}\tFPS: {fps:.0f}\
+                \nTime taken just inference: {delta_time_inference:.5f}\tFPS: {fps_inference:.0f}', flush=True)
+        print(f'Plate: {plate_str}', flush=True)
+        print(f'Confidence: {probs}', flush=True)
         im_to_show = cv2.resize(im, dsize=(
             140 * 3, 70 * 3), interpolation=cv2.INTER_LINEAR)
         # Converting to BGR for color text
@@ -121,17 +125,22 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--imgs-dir", dest="imgs_dir",
                         default='benchmark/imgs/', metavar="FILE",
                         help="Path de la carpeta contenedora de las imagenes")
+    parser.add_argument("-t", "--time", dest='do_time', action='store_true',
+                        help="Mostrar el tiempo de inferencia (c/procesamiento)")
 
     args = parser.parse_args()
     custom_objects = {
         'cce': cce,
         'cat_acc': cat_acc,
         'plate_acc': plate_acc,
-        'top_3_k': top_3_k
+        'top_3_k': top_3_k,
+        'softmax': softmax
     }
 
+    alphabet = string.digits + string.ascii_uppercase + '_'
     model = tf.keras.models.load_model(
         args.model_path, custom_objects=custom_objects)
 
-    visualize_predictions(model, imgs_path=args.imgs_dir)
+    visualize_predictions(model, imgs_path=args.imgs_dir,
+                          print_time=args.do_time)
     cv2.destroyAllWindows()

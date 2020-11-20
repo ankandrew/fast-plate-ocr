@@ -5,7 +5,7 @@ import numpy as np
 # Custom metris / losses
 from custom import cat_acc, cce, plate_acc, top_3_k
 from tensorflow.keras.preprocessing.image import load_img, img_to_array, ImageDataGenerator
-
+from tensorflow.python.keras.activations import softmax
 from argparse import ArgumentParser
 import pandas as pd
 
@@ -62,7 +62,8 @@ if __name__ == "__main__":
         'cce': cce,
         'cat_acc': cat_acc,
         'plate_acc': plate_acc,
-        'top_3_k': top_3_k
+        'top_3_k': top_3_k,
+        'softmax': softmax
     }
     model = tf.keras.models.load_model(
         args.model_path, custom_objects=custom_objects)
