@@ -1,7 +1,7 @@
 import tensorflow.keras.backend as K
 from tensorflow.keras import regularizers
 from tensorflow.keras.activations import relu
-from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, Add, SeparableConv2D
+from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, SeparableConv2D
 # print(tf.__version__)
 
 
@@ -10,6 +10,13 @@ def block_no_bn(i, k=3, n_c=64, s=1, padding='same'):
                 kernel_regularizer=regularizers.l2(0.01), use_bias=False)(i)
     x2 = Activation(relu)(x1)
     return x2, x1
+
+
+def block_no_activation(i, k=3, n_c=64, s=1, padding='same'):
+    x = Conv2D(kernel_size=k, filters=n_c, strides=s, padding=padding,
+               kernel_regularizer=regularizers.l2(0.01), use_bias=False)(i)
+    x = BatchNormalization()(x)
+    return x
 
 
 def block_bn(i, k=3, n_c=64, s=1, padding='same'):
