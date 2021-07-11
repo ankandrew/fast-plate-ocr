@@ -1,13 +1,14 @@
-import tensorflow as tf
 import string
+from argparse import ArgumentParser
+
 import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import load_img, img_to_array, ImageDataGenerator
+from tensorflow.python.keras.activations import softmax
 
 # Custom metris / losses
 from custom import cat_acc, cce, plate_acc, top_3_k
-from tensorflow.keras.preprocessing.image import load_img, img_to_array, ImageDataGenerator
-from tensorflow.python.keras.activations import softmax
-from argparse import ArgumentParser
-import pandas as pd
 
 
 def preprocess_df(df):

@@ -2,7 +2,6 @@ import tensorflow.keras.backend as K
 from tensorflow.keras import regularizers
 from tensorflow.keras.activations import relu
 from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, SeparableConv2D
-# print(tf.__version__)
 
 
 def block_no_bn(i, k=3, n_c=64, s=1, padding='same'):

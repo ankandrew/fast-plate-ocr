@@ -1,6 +1,7 @@
-import numpy as np
 import random
+
 import cv2
+import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
@@ -21,7 +22,7 @@ class DataAugmentation:
                 rand = np.random.rand()
                 if rand < 1 / 3:
                     return self.cut_out(img)
-                elif rand > 1 / 3 and rand < 2 / 3:
+                elif 1 / 3 < rand < 2 / 3:
                     return self.motion_blur(img)
                 else:
                     return img
@@ -91,12 +92,12 @@ class DataAugmentation:
         if random.random() > .5:
             motion_blur_kernel = np.zeros((kernel_size, kernel_size))
             motion_blur_kernel[:, int((kernel_size - 1) / 2)
-                               ] = np.ones(kernel_size)
+            ] = np.ones(kernel_size)
             motion_blur_kernel /= kernel_size
         else:
             motion_blur_kernel = np.zeros((kernel_size, kernel_size))
             motion_blur_kernel[int((kernel_size - 1) / 2),
-                               :] = np.ones(kernel_size)
+            :] = np.ones(kernel_size)
             motion_blur_kernel /= kernel_size
         random_mb = cv2.filter2D(img, -1, motion_blur_kernel)
         return np.expand_dims(random_mb, axis=-1)

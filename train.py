@@ -1,15 +1,18 @@
-from augmentation import DataAugmentation
+import os
 import string
+from argparse import ArgumentParser
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from argparse import ArgumentParser
+
+from augmentation import DataAugmentation
 from custom import cat_acc, cce, plate_acc, top_3_k
-import pandas as pd
-import matplotlib.pyplot as plt
-import os
 from models import modelo_1m_cpu, modelo_2m
+
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
@@ -162,10 +165,12 @@ if __name__ == "__main__":
                         default=500, type=int, help="Cantidad de Epochs(cuantas veces se ve el dataset completo")
 
     parser.add_argument("--cut-out", dest="cut_out",
-                        action='store_true', help="Aplicar cut out a las imagenes, adicionalmente al Augmentation normal")
+                        action='store_true',
+                        help="Aplicar cut out a las imagenes, adicionalmente al Augmentation normal")
 
     parser.add_argument("--blur", dest="blur",
-                        action='store_true', help="Aplicar motion blur a las imagenes, adicionalmente al Augmentation normal")
+                        action='store_true',
+                        help="Aplicar motion blur a las imagenes, adicionalmente al Augmentation normal")
     parser.add_argument("--graficos", dest="graphics",
                         action='store_true', help="Guardar imagenes graficos de entrenamiento (loss, cat_acc, etc...)")
 

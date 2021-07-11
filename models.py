@@ -1,11 +1,12 @@
-from layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 from tensorflow.keras.activations import softmax
-from tensorflow.keras.models import Model
 from tensorflow.keras.layers import (
     Activation, Concatenate, Dense, Dropout,
     GlobalAveragePooling2D, Input, MaxPool2D,
     Lambda, Reshape
 )
+from tensorflow.keras.models import Model
+
+from layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 
 
 def modelo_2m(h, w, dense=True):

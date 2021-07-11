@@ -1,8 +1,8 @@
 '''
 Custom cce, plate_acc and acc for plate recognition using CNN
 '''
-from tensorflow.keras import backend as K
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 
 # Custom Metrics
@@ -39,9 +39,8 @@ def top_3_k(y_true, y_pred):
         tf.keras.metrics.top_k_categorical_accuracy(y_true, y_pred, k=3)
     )
 
+
 # Custom loss
-
-
 def cce(y_true, y_pred):
     y_true = K.reshape(y_true, shape=(-1, 37))
     y_pred = K.reshape(y_pred, shape=(-1, 37))
