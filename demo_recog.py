@@ -1,18 +1,18 @@
-import tensorflow as tf
-import string
-import numpy as np
-import random
 import os
-import cv2
+import random
+import string
 from argparse import ArgumentParser
+# For measuring inference time
+from timeit import default_timer as timer
 
+import cv2
+import numpy as np
+import tensorflow as tf
 from tensorflow.python.keras.activations import softmax
+
 # import statistics as stat
 # Custom metris / losses
 from custom import cat_acc, cce, plate_acc, top_3_k
-
-# For measuring inference time
-from timeit import default_timer as timer
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
@@ -101,7 +101,7 @@ def visualize_predictions(model, imgs_path='benchmark/imgs/', shuffle=False, pri
         )
         # Display character with low confidence
         low_conf_chars = 'Low conf. on: ' + \
-            ' '.join([plate[i] for i in check_low_conf(probs, thresh=.15)])
+                         ' '.join([plate[i] for i in check_low_conf(probs, thresh=.15)])
         cv2.putText(
             im_to_show, low_conf_chars,
             org=(5, 200),
