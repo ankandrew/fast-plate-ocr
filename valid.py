@@ -12,8 +12,8 @@ from custom import cat_acc, cce, plate_acc, top_3_k
 
 
 def preprocess_df(df):
-    # Pad 6-len plates with '_'
-    df.loc[df.plate.str.len() == 6, 'plate'] += '_'
+    # Pad: if len(plates) < 11 with '_'
+    df.plate = df.plate.str.ljust(11, "_")
 
     def string_vectorizer(plate_str):
         alphabet = string.digits + string.ascii_uppercase + '_'
@@ -42,7 +42,7 @@ def df_to_x_y(df, target_h=70, target_w=140):
 
     y_imgs = []
     for one_hot in df.labels.values:
-        one_hot = one_hot.reshape((259))
+        one_hot = one_hot.reshape(407)
         y_imgs.append(one_hot)
     y_imgs = np.vstack(y_imgs)
 

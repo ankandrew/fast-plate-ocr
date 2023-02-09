@@ -49,14 +49,14 @@ class Preprocess:
         y_imgs = []
         for one_hot in self.df.labels.values:
             # label = np.expand_dims(one_hot, axis=0)
-            one_hot = one_hot.reshape((259))
+            one_hot = one_hot.reshape(407)
             y_imgs.append(one_hot)
         y_imgs = np.vstack(y_imgs)
         return x_imgs, y_imgs
 
     def __preprocess_df(self):
-        # Pad 6-len plates with '_'
-        self.df.loc[self.df.plate.str.len() == 6, 'plate'] += '_'
+        # Pad: if len(plates) < 11 with '_'
+        self.df.plate = self.df.plate.str.ljust(11, "_")
         # Convert to one-hot
         self.df['labels'] = self.df.plate.apply(
             lambda x: np.array(self.__string_vectorizer(x)))
