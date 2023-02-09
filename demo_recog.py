@@ -31,7 +31,7 @@ def predict_from_array(img, model):
 
 
 def probs_to_plate(prediction):
-    prediction = prediction.reshape((7, 37))
+    prediction = prediction.reshape((11, 37))
     probs = np.max(prediction, axis=-1)
     prediction = np.argmax(prediction, axis=-1)
     plate = list(map(lambda x: alphabet[x], prediction))
