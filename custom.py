@@ -9,8 +9,8 @@ from tensorflow.keras import backend as K
 
 
 def cat_acc(y_true, y_pred):
-    y_true = K.reshape(y_true, shape=(-1, 7, 37))
-    y_pred = K.reshape(y_pred, shape=(-1, 7, 37))
+    y_true = K.reshape(y_true, shape=(-1, 11, 37))
+    y_pred = K.reshape(y_pred, shape=(-1, 11, 37))
     return K.mean(tf.keras.metrics.categorical_accuracy(y_true, y_pred))
 
 
@@ -23,8 +23,8 @@ def plate_acc(y_true, y_pred):
     Avg these results (1 + 0) / 2 -> Gives .5 accuracy
     (Half of the plates were completely corrected classified)
     '''
-    y_true = K.reshape(y_true, shape=(-1, 7, 37))
-    y_pred = K.reshape(y_pred, shape=(-1, 7, 37))
+    y_true = K.reshape(y_true, shape=(-1, 11, 37))
+    y_pred = K.reshape(y_pred, shape=(-1, 11, 37))
     et = K.equal(K.argmax(y_true), K.argmax(y_pred))
     return K.mean(
         K.cast(K.all(et, axis=-1, keepdims=False), dtype='float32')
