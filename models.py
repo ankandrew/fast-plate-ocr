@@ -87,6 +87,10 @@ def head(x):
     x5 = Dense(units=37)(x)
     x6 = Dense(units=37)(x)
     x7 = Dense(units=37)(x)
+    x8 = Dense(units=37)(x)
+    x9 = Dense(units=37)(x)
+    x10 = Dense(units=37)(x)
+    x11 = Dense(units=37)(x)
     # Softmax act.
     x1 = Activation(softmax)(x1)
     x2 = Activation(softmax)(x2)
@@ -95,7 +99,11 @@ def head(x):
     x5 = Activation(softmax)(x5)
     x6 = Activation(softmax)(x6)
     x7 = Activation(softmax)(x7)
-    x = Concatenate()([x1, x2, x3, x4, x5, x6, x7])
+    x8 = Activation(softmax)(x8)
+    x9 = Activation(softmax)(x9)
+    x10 = Activation(softmax)(x10)
+    x11 = Activation(softmax)(x11)
+    x = Concatenate()([x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11])
     return x
 
 
@@ -105,7 +113,7 @@ def head_no_fc(x):
     +2.5~ en val_place_acc
     Sin los FC, evitamos un poco mas el overfitting
     '''
-    x = block_no_activation(x, k=1, n_c=259, s=1, padding='same')
+    x = block_no_activation(x, k=1, n_c=407, s=1, padding='same')
     x = GlobalAveragePooling2D()(x)
-    x = Reshape((7, 37, 1))(x)
+    x = Reshape((11, 37, 1))(x)
     return Lambda(lambda x: softmax(x, axis=-2))(x)
