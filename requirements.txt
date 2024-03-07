@@ -1,6 +1,0 @@
-opencv-python
-matplotlib
-pandas
-numpy
-tensorflow==2.3.0
-keras2onnx
