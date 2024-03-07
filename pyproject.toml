@@ -7,6 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+opencv-python = "^4.9.0.80"
+matplotlib = "^3.8.3"
+pandas = "^2.2.1"
+numpy = "^1.26.4"
+keras2onnx = "^1.7.0"
+keras = "^3.0.5"
+tensorflow = "^2.15.0.post1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
@@ -14,14 +21,44 @@ pytest = "*"
 [tool.poetry.group.dev.dependencies]
 mypy = "*"
 ruff = "^0.3.1"
+pandas-stubs = "^2.2.0.240218"
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
 
 [tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # pep8-naming
+    "N",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # flake8-unused-arguments
+    "ARG",
+    # Pylint
+    "PL",
+    # Perflint
+    "PERF",
+    # Ruff-specific rules
+    "RUF",
+    # pandas-vet
+    "PD",
+]
+ignore = ["N812", "PLR2004"]
 fixable = ["ALL"]
 unfixable = []
+
+[tool.ruff.lint.pylint]
+max-args = 6
 
 [tool.ruff.format]
 line-ending = "lf"
