@@ -31,19 +31,19 @@ def df_to_x_y(df, target_h=70, target_w=140):
     """
     # Load all images in numpy array
     x_imgs = []
-    for img in df.path.values:
+    for img_path in df.path.values:
         img = load_img(
-            img, color_mode="grayscale", target_size=(target_h, target_w), interpolation="bilinear"
+            img_path,
+            color_mode="grayscale",
+            target_size=(target_h, target_w),
+            interpolation="bilinear",
         )
         img = img_to_array(img)
         img = np.expand_dims(img, axis=0)
         x_imgs.append(img)
     x_imgs = np.vstack(x_imgs)
 
-    y_imgs = []
-    for one_hot in df.labels.values:
-        one_hot = one_hot.reshape(259)
-        y_imgs.append(one_hot)
+    y_imgs = [one_hot.reshape(7 * 37) for one_hot in df.labels.values]
     y_imgs = np.vstack(y_imgs)
 
     return x_imgs, y_imgs

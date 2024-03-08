@@ -9,7 +9,7 @@ from timeit import default_timer as timer
 import cv2
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.activations import softmax
+from keras.activations import softmax
 
 # import statistics as stat
 # Custom metris / losses
@@ -48,10 +48,10 @@ def visualize_predictions(model, imgs_path="benchmark/imgs/", shuffle=False, pri
     ]
     if shuffle:
         random.shuffle(val_imgs)
-    for im in val_imgs:
+    for val_img in val_imgs:
         # Start time
         start = timer()
-        im = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
+        im = cv2.imread(val_img, cv2.IMREAD_GRAYSCALE)
         # resize dsize (w, h) -> (140, 70)
         img = cv2.resize(im, dsize=(140, 70), interpolation=cv2.INTER_LINEAR)
         img = img[np.newaxis, ..., np.newaxis] / 255.0

@@ -1,5 +1,5 @@
-from tensorflow.keras.activations import softmax
-from tensorflow.keras.layers import (
+from keras.activations import softmax
+from keras.layers import (
     Activation,
     Concatenate,
     Dense,
@@ -10,7 +10,7 @@ from tensorflow.keras.layers import (
     MaxPool2D,
     Reshape,
 )
-from tensorflow.keras.models import Model
+from keras.models import Model
 
 from fast_lp_ocr.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 
@@ -102,7 +102,7 @@ def head_no_fc(x):
     +2.5~ en val_place_acc
     Sin los FC, evitamos un poco mas el overfitting
     """
-    x = block_no_activation(x, k=1, n_c=259, s=1, padding="same")
+    x = block_no_activation(x, k=1, n_c=7 * 37, s=1, padding="same")
     x = GlobalAveragePooling2D()(x)
     x = Reshape((7, 37, 1))(x)
     return Lambda(lambda x: softmax(x, axis=-2))(x)

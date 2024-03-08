@@ -1,7 +1,6 @@
-import tensorflow.keras.backend as K
-from tensorflow.keras import regularizers
-from tensorflow.keras.activations import relu
-from tensorflow.keras.layers import Activation, BatchNormalization, Conv2D, SeparableConv2D
+from keras import regularizers
+from keras.activations import relu, relu6
+from keras.layers import Activation, BatchNormalization, Conv2D, SeparableConv2D
 
 
 def block_no_bn(i, k=3, n_c=64, s=1, padding="same"):
@@ -67,12 +66,6 @@ def block_bn_sep_conv_l2(i, k=3, n_c=64, s=1, padding="same", depth_multiplier=1
     x2 = BatchNormalization()(x1)
     x2 = Activation(relu)(x2)
     return x2, x1
-
-
-# For Edge TPU
-# o bien usar tf.keras.layers.ReLU(6.0)
-def relu6(x):
-    return K.relu(x, max_value=6)
 
 
 def block_bn_relu6(i, k=3, n_c=64, s=1, padding="same"):

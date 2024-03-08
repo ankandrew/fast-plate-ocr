@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras.preprocessing.image import img_to_array, load_img
 
 from fast_lp_ocr.augmentation import DataAugmentation
 from fast_lp_ocr.custom import cat_acc, cce, plate_acc, top_3_k
@@ -38,9 +38,9 @@ class Preprocess:
         """
         # Load all images in numpy array
         x_imgs = []
-        for img in self.df.path.values:
+        for img_path in self.df.path.values:
             img = load_img(
-                img,
+                img_path,
                 color_mode="grayscale",
                 target_size=(self.height, self.width),
                 interpolation=self.interpolation,
@@ -49,11 +49,7 @@ class Preprocess:
             img = np.expand_dims(img, axis=0)
             x_imgs.append(img)
         x_imgs = np.vstack(x_imgs)
-        y_imgs = []
-        for one_hot in self.df.labels.values:
-            # label = np.expand_dims(one_hot, axis=0)
-            one_hot = one_hot.reshape(259)
-            y_imgs.append(one_hot)
+        y_imgs = [one_hot.reshape(7 * 37) for one_hot in self.df.plate.values]
         y_imgs = np.vstack(y_imgs)
         return x_imgs, y_imgs
 
