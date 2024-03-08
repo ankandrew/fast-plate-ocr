@@ -1,3 +1,6 @@
+"""
+Layer blocks used in the OCR model.
+"""
 from keras import regularizers
 from keras.activations import relu, relu6
 from keras.layers import Activation, BatchNormalization, Conv2D, SeparableConv2D

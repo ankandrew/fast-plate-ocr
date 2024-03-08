@@ -1,3 +1,6 @@
+"""
+Model definitions for the FastLP OCR.
+"""
 from keras.activations import softmax
 from keras.layers import (
     Activation,
@@ -15,9 +18,9 @@ from keras.models import Model
 from fast_lp_ocr.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 
 
-def modelo_2m(h, w, dense=True):
+def modelo_2m(h: int, w: int, dense: bool = True) -> Model:
     """
-    Modelo de 2 millones de parametros
+    2M parameter model that uses normal Convolutional layers (not Depthwise Convolutional layers).
     """
     input_tensor = Input((h, w, 1))
     # Backbone
@@ -43,11 +46,9 @@ def modelo_2m(h, w, dense=True):
     return Model(inputs=input_tensor, outputs=x)
 
 
-def modelo_1m_cpu(h, w, dense=True):
+def modelo_1m_cpu(h: int, w: int, dense: bool = True) -> Model:
     """
-    Modelo de 1.2 M params
-    Reemplaza Conv2D por SeparableConv2d
-    para que ejecute mas rapido en CPUs
+    1.2M parameter model that uses Depthwise Convolutional layers, more suitable for low-end devices
     """
     input_tensor = Input((h, w, 1))
     x, _ = block_bn(input_tensor, k=3, n_c=32, s=1, padding="same")
@@ -98,9 +99,7 @@ def head(x):
 
 def head_no_fc(x):
     """
-    No incluye fully connected, logra un
-    +2.5~ en val_place_acc
-    Sin los FC, evitamos un poco mas el overfitting
+    Model head without Fully Connected (FC) layers.
     """
     x = block_no_activation(x, k=1, n_c=7 * 37, s=1, padding="same")
     x = GlobalAveragePooling2D()(x)

@@ -1,3 +1,6 @@
+"""
+Script for training the License Plate OCR models.
+"""
 import os
 import string
 from argparse import ArgumentParser
@@ -9,7 +12,7 @@ import tensorflow as tf
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.preprocessing.image import img_to_array, load_img
 
-from fast_lp_ocr.augmentation import DataAugmentation
+from augmentation import DataAugmentation
 from fast_lp_ocr.custom import cat_acc, cce, plate_acc, top_3_k
 from fast_lp_ocr.models import modelo_1m_cpu, modelo_2m
 

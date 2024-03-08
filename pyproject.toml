@@ -76,7 +76,7 @@ ignore_missing_imports = true
 max-line-length = 100
 
 [tool.pylint."messages control"]
-disable = ["missing-class-docstring", "missing-function-docstring", "missing-module-docstring"]
+disable = ["missing-class-docstring", "missing-function-docstring"]
 
 [tool.pylint.design]
 max-args = 6
