@@ -33,14 +33,23 @@ check_format:
 	@echo "=====> Checking imports are sorted..."
 	@poetry run ruff check --select I --exit-non-zero-on-fix $(SRC_PATHS)
 
-.PHONY: lint
-lint:
+.PHONY: run_ruff
+run_ruff:
 	@echo "=====> Running Ruff..."
 	@poetry run ruff check $(SRC_PATHS)
+
+.PHONY: run_pylint
+run_pylint:
 	@echo "=====> Running Pylint..."
 	@poetry run pylint $(SRC_PATHS)
+
+.PHONY: run_mypy
+run_mypy:
 	@echo "=====> Running Mypy..."
 	@poetry run mypy $(SRC_PATHS)
+
+.PHONY: lint
+lint: run_ruff run_pylint run_mypy
 
 .PHONY: test
 test:
