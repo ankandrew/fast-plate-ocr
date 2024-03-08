@@ -22,6 +22,7 @@ pytest = "*"
 mypy = "*"
 ruff = "^0.3.1"
 pandas-stubs = "^2.2.0.240218"
+pylint = "^3.1.0"
 
 [tool.ruff]
 line-length = 100
@@ -53,7 +54,7 @@ select = [
     # pandas-vet
     "PD",
 ]
-ignore = ["N812", "PLR2004"]
+ignore = ["N812", "PLR2004", "PD011"]
 fixable = ["ALL"]
 unfixable = []
 
@@ -62,6 +63,23 @@ max-args = 6
 
 [tool.ruff.format]
 line-ending = "lf"
+
+[[tool.mypy.overrides]]
+module = [
+    "keras.*",
+    "tensorflow.*",
+    "keras2onnx"
+]
+ignore_missing_imports = true
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = ["missing-class-docstring", "missing-function-docstring", "missing-module-docstring"]
+
+[tool.pylint.design]
+max-args = 6
 
 [build-system]
 requires = ["poetry-core"]
