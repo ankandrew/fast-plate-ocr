@@ -1,6 +1,7 @@
 """
 Script for training the License Plate OCR models.
 """
+
 import os
 import string
 from argparse import ArgumentParser

@@ -1,6 +1,7 @@
 """
 Model definitions for the FastLP OCR.
 """
+
 from keras.activations import softmax
 from keras.layers import (
     Activation,

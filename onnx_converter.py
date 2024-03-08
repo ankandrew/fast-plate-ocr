@@ -1,6 +1,7 @@
 """
 Script to convert Keras model to ONNX.
 """
+
 from argparse import ArgumentParser
 
 import keras2onnx

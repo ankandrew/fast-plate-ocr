@@ -1,6 +1,7 @@
 """
 Script for displaying an image with the OCR model predictions.
 """
+
 import os
 import random
 import string

@@ -1,6 +1,7 @@
 """
 Script for validating trained OCR models.
 """
+
 import string
 from argparse import ArgumentParser
 
