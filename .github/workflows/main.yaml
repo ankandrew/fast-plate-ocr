@@ -23,10 +23,10 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
-      - name: Check Format
+      - name: Check format
         run: make check_format
 
-      - name: Run Linter
+      - name: Run linters
         run: make lint
 
       - name: Run tests
