@@ -1,102 +1,28 @@
-import random
+import albumentations as A
 
-import cv2
-import numpy as np
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+TRAIN_AUGMENTATION = A.Compose(
+    [
+        A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=8, p=1),
+        A.RandomBrightnessContrast(brightness_limit=0.5, contrast_limit=0.5, p=1),
+        A.Affine(shear=8, p=1),
+        A.OneOf(
+            [
+                A.MotionBlur(blur_limit=(3, 7)),
+                # TODO: Add more blurs here
+            ]
+        ),
+        A.CoarseDropout(max_holes=3, p=0.85),
+        # TODO: Add more augmentations here. Tip: try them first in albumentations/demo.
+        A.PixelDropout(dropout_prob=0.01, p=0.25),
+        A.ImageCompression(quality_lower=50, quality_upper=70, p=0.10),
+        # TODO: Normalize image between [0, 1]
+    ]
+)
+"""Training augmentations recipe."""
 
-
-class DataAugmentation:
-    def __init__(self, do_blur=False, do_cut_out=False) -> None:
-        self.do_blur = do_blur
-        self.do_cut_out = do_cut_out
-        # Cutout
-        # Motion Blur
-
-    def data_aug(self):
-        if self.do_blur and self.do_cut_out:
-
-            def pf(img):
-                """
-                Aplicar 33.3% de las veces cut_out, blur
-                y la imagen aumentada normalmente
-                """
-                rand = np.random.rand()
-                if rand < 1 / 3:
-                    return self.cut_out(img)
-                elif 1 / 3 < rand < 2 / 3:
-                    return self.motion_blur(img)
-                else:
-                    return img
-        elif self.do_blur:
-
-            def pf(img):
-                if np.random.rand() > 0.5:
-                    return self.motion_blur(img)
-                else:
-                    return img
-        elif self.do_cut_out:
-
-            def pf(img):
-                if np.random.rand() > 0.5:
-                    return self.cut_out(img)
-                else:
-                    return img
-        else:
-            pf = None
-        datagen = ImageDataGenerator(
-            rescale=1 / 255.0,
-            rotation_range=8,
-            width_shift_range=0.05,
-            height_shift_range=0.10,
-            brightness_range=(0.5, 1.5),
-            shear_range=8,
-            zoom_range=0.10,
-            preprocessing_function=pf,
-        )
-
-        datagen_validator = ImageDataGenerator(rescale=1 / 255.0)
-
-        return datagen, datagen_validator
-
-    @staticmethod
-    def cut_out(img):
-        """
-        Modificada de la implementacion original
-        https://github.com/uoguelph-mlrg/Cutout/blob/master/util/cutout.py
-        """
-        h, w, _ = img.shape
-        mask = np.ones((h, w), np.float32)
-        n_holes = random.randint(1, 6)
-        side_len = random.randint(5, 15)
-        for _ in range(n_holes):
-            y = np.random.randint(h)
-            x = np.random.randint(w)
-            y1 = np.clip(y - side_len // 2, 0, h)
-            y2 = np.clip(y + side_len // 2, 0, h)
-            x1 = np.clip(x - side_len // 2, 0, w)
-            x2 = np.clip(x + side_len // 2, 0, w)
-            mask[y1:y2, x1:x2] = 0.0
-        mask = np.expand_dims(mask, axis=-1)
-        img = img * mask
-        return img
-
-    @staticmethod
-    def motion_blur(img):
-        """
-        Rank 3 numpy array
-        Modificado de: https://www.geeksforgeeks.org/opencv-motion-blur-in-python/
-        """
-        # Mas grande el filtro, hay mas efecto
-        # kernel_size = 7
-        kernels = [3, 5]
-        kernel_size = random.choice(kernels)
-        if random.random() > 0.5:
-            motion_blur_kernel = np.zeros((kernel_size, kernel_size))
-            motion_blur_kernel[:, int((kernel_size - 1) / 2)] = np.ones(kernel_size)
-            motion_blur_kernel /= kernel_size
-        else:
-            motion_blur_kernel = np.zeros((kernel_size, kernel_size))
-            motion_blur_kernel[int((kernel_size - 1) / 2), :] = np.ones(kernel_size)
-            motion_blur_kernel /= kernel_size
-        random_mb = cv2.filter2D(img, -1, motion_blur_kernel)
-        return np.expand_dims(random_mb, axis=-1)
+VAL_AUGMENTATION = A.Compose(
+    [
+        # TODO: Normalize image (same as training)
+    ]
+)
+"""Validation augmentations recipe."""

@@ -4,7 +4,8 @@ SRC_PATHS := fast_lp_ocr/ \
             train.py \
             valid.py \
             onnx_converter.py \
-            demo_recog.py
+            demo_recog.py \
+            augmentation.py
 
 # Tasks
 .PHONY: help
