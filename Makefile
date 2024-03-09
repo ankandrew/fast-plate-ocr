@@ -11,13 +11,16 @@ SRC_PATHS := fast_lp_ocr/ \
 .PHONY: help
 help:
 	@echo "Available targets:"
+	@echo "  help             : Show this help message"
 	@echo "  format           : Format code using Ruff format"
 	@echo "  check_format     : Check code formatting with Ruff format"
+	@echo "  ruff             : Run Ruff linter"
+	@echo "  pylint           : Run Pylint linter"
+	@echo "  mypy             : Run MyPy static type checker"
 	@echo "  lint             : Run linters (Ruff, Pylint and Mypy)"
 	@echo "  test             : Run tests using pytest"
+	@echo "  checks           : Check format, lint, and test"
 	@echo "  clean            : Clean up caches and build artifacts"
-	@echo "  run_local_checks : Run format, lint, and test"
-	@echo "  help             : Show this help message"
 
 .PHONY: format
 format:
@@ -34,23 +37,23 @@ check_format:
 	@echo "=====> Checking imports are sorted..."
 	@poetry run ruff check --select I --exit-non-zero-on-fix $(SRC_PATHS)
 
-.PHONY: run_ruff
-run_ruff:
+.PHONY: ruff
+ruff:
 	@echo "=====> Running Ruff..."
 	@poetry run ruff check $(SRC_PATHS)
 
-.PHONY: run_pylint
-run_pylint:
+.PHONY: pylint
+pylint:
 	@echo "=====> Running Pylint..."
 	@poetry run pylint $(SRC_PATHS)
 
-.PHONY: run_mypy
-run_mypy:
+.PHONY: mypy
+mypy:
 	@echo "=====> Running Mypy..."
 	@poetry run mypy $(SRC_PATHS)
 
 .PHONY: lint
-lint: run_ruff run_pylint run_mypy
+lint: ruff pylint mypy
 
 .PHONY: test
 test:
@@ -63,4 +66,4 @@ clean:
 	@poetry run ruff clean
 	@rm -rf .cache .pytest_cache .mypy_cache build dist *.egg-info
 
-run_local_checks: format lint test
+checks: format lint test
