@@ -42,7 +42,7 @@ def top_3_k(y_true: KerasTensor, y_pred: KerasTensor) -> KerasTensor:
 # Custom loss
 def cce(y_true: KerasTensor, y_pred: KerasTensor) -> KerasTensor:
     """
-    Computes the categorical crossentropy loss.
+    Computes the categorical cross-entropy loss.
     """
     y_true = ops.reshape(y_true, newshape=(-1, 37))
     y_pred = ops.reshape(y_pred, newshape=(-1, 37))
