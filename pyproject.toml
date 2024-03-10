@@ -73,6 +73,9 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.pylint.typecheck]
+generated-members = ["cv2.*"]
+
 [tool.pylint.format]
 max-line-length = 100
 
