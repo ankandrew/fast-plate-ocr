@@ -82,6 +82,9 @@ disable = ["missing-class-docstring", "missing-function-docstring"]
 [tool.pylint.design]
 max-args = 6
 
+[tool.pylint.basic]
+no-docstring-rgx = "^__|^test_"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
