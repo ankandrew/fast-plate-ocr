@@ -1,1 +1,0 @@
-train_val_set/valid/night_24618_10.png	AD944PH

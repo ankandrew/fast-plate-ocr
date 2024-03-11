@@ -1,1 +1,0 @@
-train_val_set/train/morning_10620_100.png	AD054JI

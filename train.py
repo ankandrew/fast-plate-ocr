@@ -165,7 +165,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--annotations",
         dest="anotaciones_path",
-        default="./train_val_set/train_anotaciones.txt",
+        default="./train_val_set/train_anotaciones.csv",
         type=str,
         help="Path del .txt que contiene las anotaciones",
     )
