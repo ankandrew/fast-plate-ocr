@@ -3,7 +3,6 @@ SRC_PATHS := fast_lp_ocr/ \
             test/ \
             train.py \
             valid.py \
-            onnx_converter.py \
             demo_recog.py \
             augmentation.py
 
