@@ -1,6 +1,6 @@
 # Reconocedor de Texto(OCR) para Patentes vehiculares de Argentina
 
-[![Intro](extra/demo.gif)](https://www.youtube.com/watch?v=4OG1TW4ZV8E)
+[![Intro](assets/readme/demo.gif)](https://www.youtube.com/watch?v=4OG1TW4ZV8E)
 
 **OCR** implementado con solo Redes Convolucionales (**CNN**) de Patentes Argentinas. Los modelos son entrenados con patentes de 6 digitos (viejas) y patentes del Mercosur de 7 digitos (las nuevas). Este repo esta dedicado solamente al modulo que se encarga de reconocer texto de la patente ya recortada.
 
@@ -48,7 +48,7 @@ Para entrenar algun modelo desde cero, pasos estan en la [wiki](https://github.c
 
 Los modelos son las tipicas ConvNet, y estan formadas por bloques de **Convolution -> BatchNorm -> Activation -> MaxPooling** ... hasta formar un volumen de HxWx1024 *(altura x ancho x canales)* ... se le aplica **GlobalAvgPooling** para formar un volumen de 1x1x1024 que se conecta (mediante una Fully Conected Layer) con 37 x 7 unidades con activacion `softmax`. El numero 37 viene de 26 (vocabulario) + 10 digitos + simbolo de faltante `'_'`, por 7 porque por cada posición tiene una probabilidad de 37 caracteres. Los **bloques usados** para la ConvNet se encuentran en [layer_blocks.py](fast_lp_ocr/layer_blocks.py).
 
-![model head](extra/FCN.png)
+![model head](assets/readme/FCN.png)
 
 Un segundo modelo borra por completo las Dense layers y aplica [Softmax](https://github.com/ankandrew/cnn-ocr-lp/blob/25ad10916adb30ac33106bce19d85f92d45a7db6/models.py#L101) directamente a la salida del volumen de la ConvNet. Es recomendable probar ambas versiones, pero los experimentos muestran que sin las Dense/Fully Connected layers, tienda a overfittear menos el modelo.
 
@@ -77,14 +77,14 @@ Para validar la calidad de los modelos se utilizara *principalmente* una metrica
 Ejemplo si se tiene 2 patentes: { `AB 123 DC`, `GKO 697` } y se predice { `AB 123 CC`, `GKO 697` } la precisión es de 50%, una patente correctamente reconocida y la otra no.
 Métrica definida en Keras:
 ```python
-from tensorflow.keras import backend as K
+from keras import ops
 
 def plate_acc(y_true, y_pred):
-    et = K.equal(K.argmax(y_true), K.argmax(y_pred))
-    return K.mean(
-        K.cast(
-          K.all(et, axis=-1, keepdims=False),
-          dtype='float32'
+    et = ops.equal(ops.argmax(y_true), ops.argmax(y_pred))
+    return ops.mean(
+        ops.cast(
+            ops.all(et, axis=-1, keepdims=False),
+            dtype="float32",
         )
     )
 ```
@@ -107,7 +107,7 @@ imgs/nombre_imagen.png  ABC 123 DE
 
 Hacer las anotaciones de miles de patentes resulta un trabajo **largo** e **impractico**. Por eso se propone, **"Active Learning"** que simplemente con el modelo base entrenado (con 1800~ imagenes) se predicen patentes no vistas. Luego anotan solo las patentes de **baja confianza**. Este es un proceso **iterativo** y se repite hasta llegar a la precisión deseada (en el test de validación)
 
-![Active Learning](extra/Active_Learning.jpg)
+![Active Learning](assets/readme/Active_Learning.jpg)
 
 Para decidir si la prediccion tiene poca confianza, se utiliza:
 
@@ -129,19 +129,19 @@ En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con 
 
 #### Modelo 2 (1.5 M parametros)
 
-| iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
-| -------  | ---------- | ----------- | ------ | ------ |
-| 1 |  1853  |  0.9495 |  0.8435  |  0.9757  |
-| 2 |   2873   |  **0.9786**  |	 **0.8912**  |  **0.9922**  |
-| 3 |   -   | - | - | - |
+| iteracion | Set-Entrenamiento | cat_acc    | plate_acc    | top_3_k    |
+|-----------|-------------------|------------|--------------|------------|
+| 1         | 1853              | 0.9495     | 0.8435       | 0.9757     |
+| 2         | 2873              | **0.9786** | 	 **0.8912** | **0.9922** |
+| 3         | -                 | -          | -            | -          |
 
 #### Modelo 1 (2 M parametros)
 
-| iteracion  | Set-Entrenamiento | cat_acc | plate_acc | top_3_k |
-| -------  | ---------- | ----------- | ------ | ------ |
-| 1 |  1853  |  0.9602 |	0.8639 |	0.9806 |
-| 2 |   2873   |  **0.9845** |	**0.9388** |	**0.9961**
-| 3 |   -   | - | - | - |
+| iteracion | Set-Entrenamiento | cat_acc    | plate_acc   | top_3_k     |
+|-----------|-------------------|------------|-------------|-------------|
+| 1         | 1853              | 0.9602     | 	0.8639     | 	0.9806     |
+| 2         | 2873              | **0.9845** | 	**0.9388** | 	**0.9961** |
+| 3         | -                 | -          | -           | -           |
 
 
 * **top_3_k** calcula que tan seguido el caracter verdadero se encuentra en las 3 predicciones con mayor probabilidades
@@ -151,7 +151,7 @@ En la siguiente tabla se va a mostrar los modelos (misma arquitectura) pero con 
 
 ## Data Augmentation
 
-![Data Aug](extra/data_aug_ejemplo.png)
+![Data Aug](assets/readme/data_aug_ejemplo.png)
 
 Configuracion de Data Aug en Keras:
 
