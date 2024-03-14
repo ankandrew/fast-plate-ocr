@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fast-lp-ocr"
+name = "fast-plate-ocr"
 version = "0.1.0"
 description = "Fast & Lightweight OCR for license plates."
 authors = ["ankandrew <61120139+ankandrew@users.noreply.github.com>"]

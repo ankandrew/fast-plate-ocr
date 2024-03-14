@@ -8,8 +8,8 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from fast_lp_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR
-from fast_lp_ocr.custom_types import Framework
+from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR
+from fast_plate_ocr.custom_types import Framework
 
 
 def one_hot_plate(plate: str, alphabet: str = MODEL_ALPHABET) -> list[list[int]]:

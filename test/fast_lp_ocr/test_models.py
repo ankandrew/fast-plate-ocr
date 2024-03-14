@@ -5,7 +5,7 @@ Test OCR models module.
 import pytest
 from keras import Input
 
-from fast_lp_ocr import models
+from fast_plate_ocr import models
 
 
 @pytest.mark.parametrize(

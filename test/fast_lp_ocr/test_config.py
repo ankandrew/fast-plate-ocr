@@ -2,7 +2,7 @@
 Tests for config module
 """
 
-from fast_lp_ocr.config import MODEL_ALPHABET, PAD_CHAR, VOCABULARY_SIZE
+from fast_plate_ocr.config import MODEL_ALPHABET, PAD_CHAR, VOCABULARY_SIZE
 
 
 def test_pad_char_in_model_alphabet() -> None:

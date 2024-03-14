@@ -10,15 +10,15 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from fast_lp_ocr.config import (
+from fast_plate_ocr.config import (
     DEFAULT_IMG_HEIGHT,
     DEFAULT_IMG_WIDTH,
     MAX_PLATE_SLOTS,
     MODEL_ALPHABET,
     PAD_CHAR,
 )
-from fast_lp_ocr.custom_types import FilePath, PilInterpolation
-from fast_lp_ocr.utils import target_transform
+from fast_plate_ocr.custom_types import FilePath, PilInterpolation
+from fast_plate_ocr.utils import target_transform
 
 
 class LicensePlatesDataset(keras.utils.PyDataset):

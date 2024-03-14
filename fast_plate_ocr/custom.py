@@ -4,7 +4,7 @@ Custom metrics and loss functions.
 
 from keras import losses, metrics, ops
 
-from fast_lp_ocr.config import MAX_PLATE_SLOTS, VOCABULARY_SIZE
+from fast_plate_ocr.config import MAX_PLATE_SLOTS, VOCABULARY_SIZE
 
 
 def cat_acc(

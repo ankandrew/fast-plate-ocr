@@ -5,7 +5,7 @@ Test the custom metric/losses module.
 import pytest
 import tensorflow as tf
 
-from fast_lp_ocr.custom import cat_acc
+from fast_plate_ocr.custom import cat_acc
 
 
 @pytest.mark.parametrize(

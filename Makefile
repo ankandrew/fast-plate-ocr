@@ -1,5 +1,5 @@
 # Directories
-SRC_PATHS := fast_lp_ocr/ \
+SRC_PATHS := fast_plate_ocr/ \
             test/ \
             train.py \
             valid.py \
