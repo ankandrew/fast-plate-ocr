@@ -233,7 +233,7 @@ if __name__ == "__main__":
     if args.show_aug:
         datagen, _ = da.data_aug()
         # Por defecto se aumenta las imagenes de benchmark/imgs
-        x_imgs, _ = Preprocess("./benchmark/anotaciones.txt", args.height, args.width)()
+        x_imgs, _ = Preprocess("assets/benchmark/anotaciones.txt", args.height, args.width)()
         aug_generator = datagen.flow(x_imgs, batch_size=1, shuffle=True)
 
         fig, ax = plt.subplots(nrows=6, ncols=6)

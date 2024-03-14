@@ -82,7 +82,7 @@ if __name__ == "__main__":
     }
     model = tf.keras.models.load_model(args.model_path, custom_objects=custom_objects)
 
-    df_val = pd.read_csv("benchmark/anotaciones.txt", sep="\t", names=["path", "plate"])
+    df_val = pd.read_csv("assets/benchmark/anotaciones.txt", sep="\t", names=["path", "plate"])
     preprocess_df(df_val)
     x_val, y_val = df_to_x_y(df_val, target_h=70, target_w=140)
     datagen_val = ImageDataGenerator(rescale=1 / 255.0)
