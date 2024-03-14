@@ -1,28 +1,40 @@
+"""
+Augmentations used for training the OCR model.
+"""
+
 import albumentations as A
+import cv2
+
+BORDER_COLOR_BLACK: tuple[int, int, int] = (0, 0, 0)
 
 TRAIN_AUGMENTATION = A.Compose(
     [
-        A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=8, p=1),
-        A.RandomBrightnessContrast(brightness_limit=0.5, contrast_limit=0.5, p=1),
-        A.Affine(shear=8, p=1),
+        A.ShiftScaleRotate(
+            shift_limit=0.05,
+            scale_limit=0.1,
+            rotate_limit=10,
+            border_mode=cv2.BORDER_CONSTANT,
+            value=BORDER_COLOR_BLACK,
+            p=1,
+        ),
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1),
+        A.Affine(shear=5, p=1),
         A.OneOf(
             [
-                A.MotionBlur(blur_limit=(3, 7)),
-                # TODO: Add more blurs here
-            ]
+                A.MotionBlur(blur_limit=(3, 7), p=0.2),
+                A.MedianBlur(blur_limit=3, p=0.1),
+                A.Blur(blur_limit=3, p=0.1),
+            ],
+            p=0.5,
         ),
-        A.CoarseDropout(max_holes=3, p=0.85),
-        # TODO: Add more augmentations here. Tip: try them first in albumentations/demo.
-        A.PixelDropout(dropout_prob=0.01, p=0.25),
-        A.ImageCompression(quality_lower=50, quality_upper=70, p=0.10),
-        # TODO: Normalize image between [0, 1]
+        A.OneOf(
+            [
+                A.CoarseDropout(max_holes=5, p=0.3),
+                A.PixelDropout(dropout_prob=0.01, p=0.1),
+            ],
+            p=0.5,
+        ),
+        # A.ImageCompression(quality_lower=70, quality_upper=90, p=0.2),
     ]
 )
 """Training augmentations recipe."""
-
-VAL_AUGMENTATION = A.Compose(
-    [
-        # TODO: Normalize image (same as training)
-    ]
-)
-"""Validation augmentations recipe."""
