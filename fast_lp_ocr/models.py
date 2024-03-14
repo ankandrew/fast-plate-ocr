@@ -12,20 +12,29 @@ from keras.layers import (
     Input,
     Lambda,
     MaxPool2D,
+    Rescaling,
     Reshape,
 )
 from keras.models import Model
 
+from fast_lp_ocr.config import MAX_PLATE_SLOTS, VOCABULARY_SIZE
 from fast_lp_ocr.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 
 
-def modelo_2m(h: int, w: int, dense: bool = True) -> Model:
+def modelo_2m(
+    h: int,
+    w: int,
+    dense: bool = True,
+    max_plate_slots: int = MAX_PLATE_SLOTS,
+    vocabulary_size: int = VOCABULARY_SIZE,
+) -> Model:
     """
     2M parameter model that uses normal Convolutional layers (not Depthwise Convolutional layers).
     """
     input_tensor = Input((h, w, 1))
+    x = Rescaling(1.0 / 255)(input_tensor)
     # Backbone
-    x, _ = block_bn(input_tensor)
+    x, _ = block_bn(x)
     x, _ = block_bn(x, k=3, n_c=32, s=1, padding="same")
     x, _ = block_bn(x, k=3, n_c=32, s=1, padding="same")
     x, _ = block_bn(x, k=1, n_c=64, s=1, padding="same")
@@ -43,11 +52,21 @@ def modelo_2m(h: int, w: int, dense: bool = True) -> Model:
     x, _ = block_bn(x, k=1, n_c=512, s=1, padding="same")
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
     x, _ = block_bn(x, k=1, n_c=1024, s=1, padding="same")
-    x = head(x) if dense else head_no_fc(x)
+    x = (
+        head(x, max_plate_slots, vocabulary_size)
+        if dense
+        else head_no_fc(x, max_plate_slots, vocabulary_size)
+    )
     return Model(inputs=input_tensor, outputs=x)
 
 
-def modelo_1m_cpu(h: int, w: int, dense: bool = True) -> Model:
+def modelo_1m_cpu(
+    h: int,
+    w: int,
+    dense: bool = True,
+    max_plate_slots: int = MAX_PLATE_SLOTS,
+    vocabulary_size: int = VOCABULARY_SIZE,
+) -> Model:
     """
     1.2M parameter model that uses Depthwise Convolutional layers, more suitable for low-end devices
     """
@@ -67,42 +86,34 @@ def modelo_1m_cpu(h: int, w: int, dense: bool = True) -> Model:
     x, _ = block_bn_sep_conv_l2(x, k=1, n_c=512, s=1, padding="same", depth_multiplier=1)
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
     x, _ = block_bn(x, k=1, n_c=1024, s=1, padding="same")
-    x = head(x) if dense else head_no_fc(x)
+    x = (
+        head(x, max_plate_slots, vocabulary_size)
+        if dense
+        else head_no_fc(x, max_plate_slots, vocabulary_size)
+    )
     return Model(inputs=input_tensor, outputs=x)
 
 
-def head(x):
+def head(x, max_plate_slots: int = MAX_PLATE_SLOTS, vocabulary_size: int = VOCABULARY_SIZE):
     """
-    Se encarga de la parte de clasificacion
-    de caracteres e incluye Fully Connected Layers
+    Model's head with Fully Connected (FC) layers.
     """
     x = GlobalAveragePooling2D()(x)
     # dropout for more robust learning
     x = Dropout(0.5)(x)
-    x1 = Dense(units=37)(x)
-    x2 = Dense(units=37)(x)
-    x3 = Dense(units=37)(x)
-    x4 = Dense(units=37)(x)
-    x5 = Dense(units=37)(x)
-    x6 = Dense(units=37)(x)
-    x7 = Dense(units=37)(x)
-    # Softmax act.
-    x1 = Activation(softmax)(x1)
-    x2 = Activation(softmax)(x2)
-    x3 = Activation(softmax)(x3)
-    x4 = Activation(softmax)(x4)
-    x5 = Activation(softmax)(x5)
-    x6 = Activation(softmax)(x6)
-    x7 = Activation(softmax)(x7)
-    x = Concatenate()([x1, x2, x3, x4, x5, x6, x7])
+    dense_outputs = [
+        Activation(softmax)(Dense(units=vocabulary_size)(x)) for _ in range(max_plate_slots)
+    ]
+    # concat all the dense outputs
+    x = Concatenate()(dense_outputs)
     return x
 
 
-def head_no_fc(x):
+def head_no_fc(x, max_plate_slots: int = MAX_PLATE_SLOTS, vocabulary_size: int = VOCABULARY_SIZE):
     """
-    Model head without Fully Connected (FC) layers.
+    Model's head without Fully Connected (FC) layers.
     """
-    x = block_no_activation(x, k=1, n_c=7 * 37, s=1, padding="same")
+    x = block_no_activation(x, k=1, n_c=max_plate_slots * vocabulary_size, s=1, padding="same")
     x = GlobalAveragePooling2D()(x)
-    x = Reshape((7, 37, 1))(x)
+    x = Reshape((max_plate_slots, vocabulary_size, 1))(x)
     return Lambda(lambda x: softmax(x, axis=-2))(x)
