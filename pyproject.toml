@@ -65,11 +65,7 @@ max-args = 6
 line-ending = "lf"
 
 [[tool.mypy.overrides]]
-module = [
-    "keras.*",
-    "tensorflow.*",
-    "keras2onnx"
-]
+module = ["keras.*", "tensorflow.*"]
 ignore_missing_imports = true
 
 [tool.pylint.typecheck]
