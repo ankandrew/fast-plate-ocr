@@ -4,6 +4,7 @@ Utility functions module
 
 import os
 
+import cv2
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -50,16 +51,35 @@ def target_transform(
 
 
 def set_tensorflow_backend() -> None:
+    """Set Keras backend to tensorflow."""
     set_keras_backend("tensorflow")
 
 
 def set_jax_backend() -> None:
+    """Set Keras backend to jax."""
     set_keras_backend("jax")
 
 
 def set_pytorch_backend() -> None:
+    """Set Keras backend to pytorch."""
     set_keras_backend("torch")
 
 
 def set_keras_backend(framework: Framework) -> None:
+    """Set the Keras backend to a given framework."""
     os.environ["KERAS_BACKEND"] = framework
+
+
+def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.NDArray:
+    """
+    Read and resize a license plate image.
+
+    :param str image_path: The path to the license plate image.
+    :param int img_height: The desired height of the resized image.
+    :param int img_width: The desired width of the resized image.
+    :return: The resized license plate image as a NumPy array.
+    """
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    img = cv2.resize(img, (img_width, img_height), interpolation=cv2.INTER_LINEAR)
+    img = np.expand_dims(img, -1)
+    return img
