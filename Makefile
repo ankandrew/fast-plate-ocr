@@ -3,6 +3,7 @@ SRC_PATHS := fast_plate_ocr/ \
             test/ \
             train.py \
             valid.py \
+            visualize_augmentation.py \
             demo_recog.py \
             augmentation.py
 
