@@ -34,7 +34,6 @@ TRAIN_AUGMENTATION = A.Compose(
             ],
             p=0.5,
         ),
-        # A.ImageCompression(quality_lower=70, quality_upper=90, p=0.2),
     ]
 )
 """Training augmentations recipe."""
