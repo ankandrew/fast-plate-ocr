@@ -16,6 +16,7 @@ albumentations = "^1.4.1"
 tensorboard = "^2.16.2"
 torch = "^2.2.1"
 click = "^8.1.7"
+tensorflow = "^2.16.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
