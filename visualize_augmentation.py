@@ -59,6 +59,7 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
     "--img-dir",
     "-d",
     type=click.Path(exists=True, dir_okay=True, path_type=pathlib.Path),
+    default="assets/benchmark/imgs",
     help="Path to the images that will be augmented and visualized",
 )
 @click.option(
