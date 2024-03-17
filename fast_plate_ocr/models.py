@@ -71,7 +71,8 @@ def modelo_1m_cpu(
     1.2M parameter model that uses Depthwise Convolutional layers, more suitable for low-end devices
     """
     input_tensor = Input((h, w, 1))
-    x, _ = block_bn(input_tensor, k=3, n_c=32, s=1, padding="same")
+    x = Rescaling(1.0 / 255)(input_tensor)
+    x, _ = block_bn(x, k=3, n_c=32, s=1, padding="same")
     x, _ = block_bn(x, k=3, n_c=64, s=1, padding="same")
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
     x, _ = block_bn(x, k=3, n_c=64, s=1, padding="same")
