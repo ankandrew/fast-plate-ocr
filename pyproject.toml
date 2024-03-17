@@ -12,8 +12,10 @@ matplotlib = "^3.8.3"
 pandas = "^2.2.1"
 numpy = "^1.26.4"
 keras = "^3.0.5"
-tensorflow = "^2.15.0.post1"
 albumentations = "^1.4.1"
+tensorboard = "^2.16.2"
+torch = "^2.2.1"
+click = "^8.1.7"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
@@ -65,7 +67,7 @@ max-args = 6
 line-ending = "lf"
 
 [[tool.mypy.overrides]]
-module = ["keras.*", "tensorflow.*"]
+module = ["keras.*", "tensorflow.*", "albumentations"]
 ignore_missing_imports = true
 
 [tool.pylint.typecheck]
