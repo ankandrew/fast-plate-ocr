@@ -61,7 +61,7 @@ fixable = ["ALL"]
 unfixable = []
 
 [tool.ruff.lint.pylint]
-max-args = 6
+max-args = 8
 
 [tool.ruff.format]
 line-ending = "lf"
@@ -80,7 +80,7 @@ max-line-length = 100
 disable = ["missing-class-docstring", "missing-function-docstring"]
 
 [tool.pylint.design]
-max-args = 6
+max-args = 8
 
 [tool.pylint.basic]
 no-docstring-rgx = "^__|^test_"
