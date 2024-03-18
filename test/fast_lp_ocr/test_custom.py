@@ -13,7 +13,7 @@ set_pytorch_backend()
 import pytest
 import torch
 
-from fast_plate_ocr.custom import cat_acc
+from fast_plate_ocr.custom import cat_acc_metric
 
 
 @pytest.mark.parametrize(
@@ -23,5 +23,5 @@ from fast_plate_ocr.custom import cat_acc
     ],
 )
 def test_cat_acc(y_true: torch.Tensor, y_pred: torch.Tensor, expected_accuracy: float):
-    actual_accuracy = cat_acc(y_true, y_pred, 2, 1)
+    actual_accuracy = cat_acc_metric(2, 1)(y_true, y_pred)
     assert actual_accuracy == expected_accuracy
