@@ -17,22 +17,15 @@ TRAIN_AUGMENTATION = A.Compose(
             value=BORDER_COLOR_BLACK,
             p=1,
         ),
-        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1),
+        A.RandomBrightnessContrast(brightness_limit=0.15, contrast_limit=0.15, p=1),
         A.Affine(shear=5, p=1),
+        A.MotionBlur(blur_limit=(3, 7), p=0.2),
         A.OneOf(
             [
-                A.MotionBlur(blur_limit=(3, 7), p=0.2),
-                A.MedianBlur(blur_limit=3, p=0.1),
-                A.Blur(blur_limit=3, p=0.1),
+                A.CoarseDropout(max_holes=10, max_height=6, max_width=6, p=0.2),
+                A.PixelDropout(dropout_prob=0.02, p=0.2),
             ],
-            p=0.5,
-        ),
-        A.OneOf(
-            [
-                A.CoarseDropout(max_holes=5, p=0.3),
-                A.PixelDropout(dropout_prob=0.01, p=0.1),
-            ],
-            p=0.5,
+            p=0.6,
         ),
     ]
 )
