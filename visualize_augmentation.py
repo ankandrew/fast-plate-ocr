@@ -15,6 +15,9 @@ from augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.config import DEFAULT_IMG_HEIGHT, DEFAULT_IMG_WIDTH
 from fast_plate_ocr.utils import read_plate_image
 
+IMG_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"}
+"""Valid image extensions for the scope of this script."""
+
 
 def load_images(
     img_dir: pathlib.Path,
@@ -23,7 +26,7 @@ def load_images(
     height: int,
     width: int,
 ) -> list[npt.NDArray[np.uint8]]:
-    img_paths = sorted(f for f in img_dir.iterdir() if f.is_file())
+    img_paths = sorted(f for f in img_dir.iterdir() if f.is_file() and f.suffix in IMG_EXTENSIONS)
     img_paths = img_paths[:num_images]
     if shuffle_img:
         random.shuffle(img_paths)
@@ -72,6 +75,7 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
 )
 @click.option(
     "--shuffle_img",
+    "-s",
     is_flag=True,
     default=False,
     help="Whether to shuffle the images before plotting them",
