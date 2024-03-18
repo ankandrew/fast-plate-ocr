@@ -19,7 +19,7 @@ from fast_plate_ocr.config import (
     PAD_CHAR,
     VOCABULARY_SIZE,
 )
-from fast_plate_ocr.custom import cat_acc, cce, plate_acc, top_3_k
+from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
 from fast_plate_ocr.dataset import LicensePlateDataset
 from fast_plate_ocr.models import modelo_1m_cpu, modelo_2m
 
@@ -41,12 +41,13 @@ from fast_plate_ocr.models import modelo_1m_cpu, modelo_2m
 )
 @click.option(
     "--annotations",
-    default="assets/benchmark/annotations.csv",
+    required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the train annotations CSV file.",
 )
 @click.option(
     "--val-annotations",
+    required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the train validation CSV file.",
 )
@@ -188,7 +189,15 @@ def train(
             max_plate_slots=plate_slots,
             vocabulary_size=vocab_size,
         )
-    model.compile(loss=cce, optimizer=Adam(lr), metrics=[cat_acc, plate_acc, top_3_k])
+    model.compile(
+        loss=cce_loss(vocabulary_size=vocab_size),
+        optimizer=Adam(lr),
+        metrics=[
+            cat_acc_metric(max_plate_slots=plate_slots, vocabulary_size=vocab_size),
+            plate_acc_metric(max_plate_slots=plate_slots, vocabulary_size=vocab_size),
+            top_3_k_metric(vocabulary_size=vocab_size),
+        ],
+    )
 
     callbacks = [
         # Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs

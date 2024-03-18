@@ -9,10 +9,10 @@ import keras
 from keras.src.activations import softmax
 from torch.utils.data import DataLoader
 
-from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR
+from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR, VOCABULARY_SIZE
 
 # Custom metris / losses
-from fast_plate_ocr.custom import cat_acc, cce, plate_acc, top_3_k
+from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
 from fast_plate_ocr.dataset import LicensePlateDataset
 
 
@@ -56,6 +56,13 @@ from fast_plate_ocr.dataset import LicensePlateDataset
     help="Model vocabulary. This must include the padding symbol.",
 )
 @click.option(
+    "--vocab-size",
+    default=VOCABULARY_SIZE,
+    show_default=True,
+    type=int,
+    help="Size of the vocabulary. This should match '--alphabet' length.",
+)
+@click.option(
     "--pad-char",
     default=PAD_CHAR,
     show_default=True,
@@ -68,14 +75,15 @@ def valid(
     batch_size: int,
     plate_slots: int,
     alphabet: str,
+    vocab_size: int,
     pad_char: str,
 ) -> None:
     """Validate a model for a given annotated data."""
     custom_objects = {
-        "cce": cce,
-        "cat_acc": cat_acc,
-        "plate_acc": plate_acc,
-        "top_3_k": top_3_k,
+        "cce": cce_loss(vocabulary_size=vocab_size),
+        "cat_acc": cat_acc_metric(max_plate_slots=plate_slots, vocabulary_size=vocab_size),
+        "plate_acc": plate_acc_metric(max_plate_slots=plate_slots, vocabulary_size=vocab_size),
+        "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
         "softmax": softmax,
     }
     model = keras.models.load_model(model_path, custom_objects=custom_objects)
