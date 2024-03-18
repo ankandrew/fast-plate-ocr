@@ -19,27 +19,39 @@ IMG_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".
 """Valid image extensions for the scope of this script."""
 
 
+def _set_seed(seed: int | None) -> None:
+    """Set random seed for reproducing augmentations."""
+    if seed:
+        random.seed(seed)
+        np.random.seed(seed)
+
+
 def load_images(
     img_dir: pathlib.Path,
     num_images: int,
     shuffle_img: bool,
     height: int,
     width: int,
-) -> list[npt.NDArray[np.uint8]]:
+) -> tuple[list[npt.NDArray[np.uint8]], list[npt.NDArray[np.uint8]]]:
     img_paths = sorted(f for f in img_dir.iterdir() if f.is_file() and f.suffix in IMG_EXTENSIONS)
     img_paths = img_paths[:num_images]
     if shuffle_img:
         random.shuffle(img_paths)
-    img_data = [
-        TRAIN_AUGMENTATION(
-            image=read_plate_image(image_path=str(img), img_height=height, img_width=width)
-        )["image"]
+    images = [
+        read_plate_image(image_path=str(img), img_height=height, img_width=width)
         for img in img_paths
     ]
-    return img_data
+    augmented_images = [TRAIN_AUGMENTATION(image=i)["image"] for i in images]
+    return images, augmented_images
 
 
-def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int) -> None:
+def display_images(
+    images: list[npt.NDArray[np.uint8]],
+    augmented_images: list[npt.NDArray[np.uint8]],
+    columns: int,
+    rows: int,
+    show_original: bool,
+) -> None:
     num_images = len(images)
     total_plots = rows * columns
     num_pages = ceil(num_images / total_plots)
@@ -49,12 +61,20 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
         for i, ax in enumerate(axs):
             idx = page * total_plots + i
             if idx < num_images:
-                ax.imshow(images[idx], cmap="gray")
+                if show_original:
+                    img_to_show = np.concatenate((images[idx], augmented_images[idx]), axis=1)
+                else:
+                    img_to_show = augmented_images[idx]
+                ax.imshow(img_to_show, cmap="gray")
                 ax.axis("off")
             else:
                 ax.axis("off")
         plt.tight_layout()
         plt.show()
+
+
+# ruff: noqa: PLR0913
+# pylint: disable=too-many-arguments,too-many-locals
 
 
 @click.command()
@@ -63,7 +83,7 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
     "-d",
     type=click.Path(exists=True, dir_okay=True, path_type=pathlib.Path),
     default="assets/benchmark/imgs",
-    help="Path to the images that will be augmented and visualized",
+    help="Path to the images that will be augmented and visualized.",
 )
 @click.option(
     "--num-images",
@@ -71,22 +91,22 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
     type=int,
     default=1_000,
     show_default=True,
-    help="Maximum number of images to visualize",
+    help="Maximum number of images to visualize.",
 )
 @click.option(
     "--shuffle_img",
     "-s",
     is_flag=True,
     default=False,
-    help="Whether to shuffle the images before plotting them",
+    help="Whether to shuffle the images before plotting them.",
 )
 @click.option(
     "--columns",
     "-c",
     type=int,
-    default=4,
+    default=3,
     show_default=True,
-    help="Number of columns in the grid layout for displaying images",
+    help="Number of columns in the grid layout for displaying images.",
 )
 @click.option(
     "--rows",
@@ -94,7 +114,7 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
     type=int,
     default=4,
     show_default=True,
-    help="Number of rows in the grid layout for displaying images",
+    help="Number of rows in the grid layout for displaying images.",
 )
 @click.option(
     "--height",
@@ -102,7 +122,7 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
     type=int,
     default=DEFAULT_IMG_HEIGHT,
     show_default=True,
-    help="Height to which the images will be resize",
+    help="Height to which the images will be resize.",
 )
 @click.option(
     "--width",
@@ -110,7 +130,18 @@ def display_images(images: list[npt.NDArray[np.uint8]], columns: int, rows: int)
     type=int,
     default=DEFAULT_IMG_WIDTH,
     show_default=True,
-    help="Width to which the images will be resize",
+    help="Width to which the images will be resize.",
+)
+@click.option(
+    "--show-original",
+    "-o",
+    is_flag=True,
+    help="Show the original image along with the augmented one.",
+)
+@click.option(
+    "--seed",
+    type=int,
+    help="Seed for reproducing augmentations.",
 )
 def visualize_augmentation(
     img_dir: pathlib.Path,
@@ -120,9 +151,12 @@ def visualize_augmentation(
     rows: int,
     height: int,
     width: int,
+    seed: int | None,
+    show_original: bool,
 ) -> None:
-    augmented_images = load_images(img_dir, num_images, shuffle_img, height, width)
-    display_images(augmented_images, columns, rows)
+    _set_seed(seed)
+    images, augmented_images = load_images(img_dir, num_images, shuffle_img, height, width)
+    display_images(images, augmented_images, columns, rows, show_original)
 
 
 if __name__ == "__main__":
