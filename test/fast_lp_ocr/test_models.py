@@ -24,7 +24,6 @@ def test_head(max_plates_slots: int, vocabulary_size: int, expected_hidden_units
 def test_head_no_fc(
     max_plates_slots: int, vocabulary_size: int, expected_hidden_units: int
 ) -> None:
-    # TODO: See why head / head_no_fc output shape differs
     x = Input((70, 140, 1))
     out_tensor = models.head_no_fc(x, max_plates_slots, vocabulary_size)
     actual_hidden_units = out_tensor.shape[1] * out_tensor.shape[2]
