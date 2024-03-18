@@ -4,7 +4,6 @@ Script for displaying an image with the OCR model predictions.
 
 import os
 import random
-import string
 from argparse import ArgumentParser
 
 # For measuring inference time
@@ -15,9 +14,11 @@ import numpy as np
 import tensorflow as tf
 from keras.activations import softmax
 
+from fast_plate_ocr.config import MODEL_ALPHABET
+
 # import statistics as stat
 # Custom metris / losses
-from fast_lp_ocr.custom import cat_acc, cce, plate_acc, top_3_k
+from fast_plate_ocr.custom import cat_acc, cce, plate_acc, top_3_k
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
@@ -131,6 +132,7 @@ def visualize_predictions(model, imgs_path="benchmark/imgs/", shuffle=False, pri
 
 
 if __name__ == "__main__":
+    # pylint: disable=duplicate-code
     parser = ArgumentParser()
     parser.add_argument(
         "-m",
@@ -165,7 +167,7 @@ if __name__ == "__main__":
         "softmax": softmax,
     }
 
-    alphabet = string.digits + string.ascii_uppercase + "_"
+    alphabet = MODEL_ALPHABET
     model = tf.keras.models.load_model(args.model_path, custom_objects=custom_objects)
 
     visualize_predictions(model, imgs_path=args.imgs_dir, print_time=args.do_time)
