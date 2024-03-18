@@ -2,25 +2,26 @@
 Script for displaying an image with the OCR model predictions.
 """
 
-import os
-import random
-from argparse import ArgumentParser
+import logging
+import pathlib
+from contextlib import nullcontext
 
-# For measuring inference time
-from timeit import default_timer as timer
-
+import click
 import cv2
+import keras
 import numpy as np
-import tensorflow as tf
-from keras.activations import softmax
+import numpy.typing as npt
 
-from fast_plate_ocr.config import MODEL_ALPHABET
+from fast_plate_ocr import utils
+from fast_plate_ocr.config import (
+    DEFAULT_IMG_HEIGHT,
+    DEFAULT_IMG_WIDTH,
+    MAX_PLATE_SLOTS,
+    MODEL_ALPHABET,
+    VOCABULARY_SIZE,
+)
 
-# import statistics as stat
-# Custom metris / losses
-from fast_plate_ocr.custom import cat_acc, cce, plate_acc, top_3_k
-
-os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
+logging.basicConfig(level=logging.INFO)
 
 
 def check_low_conf(probs, thresh=0.3):
@@ -30,145 +31,158 @@ def check_low_conf(probs, thresh=0.3):
     return [i for i, prob in enumerate(probs) if prob < thresh]
 
 
-@tf.function
-def predict_from_array(img, model):
-    pred = model(img, training=False)
-    return pred
-
-
-def probs_to_plate(prediction):
-    prediction = prediction.reshape((7, 37))
+def probs_to_plate(
+    prediction: npt.NDArray,
+    alphabet: str = MODEL_ALPHABET,
+    max_plate_slots: int = MAX_PLATE_SLOTS,
+    vocab_size: int = VOCABULARY_SIZE,
+) -> tuple[list[str], npt.NDArray]:
+    """
+    Convert raw model prediction probabilities into a list of characters representing the plate
+    and an array of confidence scores.
+    """
+    prediction = prediction.reshape((max_plate_slots, vocab_size))
     probs = np.max(prediction, axis=-1)
     prediction = np.argmax(prediction, axis=-1)
     plate = list(map(lambda x: alphabet[x], prediction))
     return plate, probs
 
 
-def visualize_predictions(model, imgs_path="benchmark/imgs/", shuffle=False, print_time=False):
-    # generate samples and plot
-    val_imgs = [
-        os.path.join(imgs_path, f)
-        for f in os.listdir(imgs_path)
-        if os.path.isfile(os.path.join(imgs_path, f))
-    ]
-    if shuffle:
-        random.shuffle(val_imgs)
-    for val_img in val_imgs:
-        # Start time
-        start = timer()
-        im = cv2.imread(val_img, cv2.IMREAD_GRAYSCALE)
-        # resize dsize (w, h) -> (140, 70)
-        img = cv2.resize(im, dsize=(140, 70), interpolation=cv2.INTER_LINEAR)
-        img = img[np.newaxis, ..., np.newaxis] / 255.0
-        img = tf.constant(img, dtype=tf.float32)
-        start_inference = timer()
-        prediction = predict_from_array(img, model).numpy()
-        end_inference = timer()
-        plate, probs = probs_to_plate(prediction)
-        plate_str = "".join(plate)
-        # End timer
-        end = timer()
-        #
-        if print_time:
-            delta_time = end - start
-            fps = 1 / delta_time
-            delta_time_inference = end_inference - start_inference
-            fps_inference = 1 / delta_time_inference
-            # Timing con y sin preprocessing (rescale, add axis, cast)
-            print(
-                f"Time taken, including reading, resize, prediction is"
-                f"\t{delta_time:.5f}\tFPS: {fps:.0f} \nTime taken just inference: "
-                f"{delta_time_inference:.5f}\tFPS: {fps_inference:.0f}",
-                flush=True,
-            )
-        print(f"Plate: {plate_str}", flush=True)
-        print(f"Confidence: {probs}", flush=True)
-        im_to_show = cv2.resize(im, dsize=(140 * 3, 70 * 3), interpolation=cv2.INTER_LINEAR)
-        # Converting to BGR for color text
-        im_to_show = cv2.cvtColor(im_to_show, cv2.COLOR_GRAY2RGB)
-        # Avg. probabilities
-        avg_prob = np.mean(probs) * 100
-        # Agrego borde negro para que se vea mejor
-        cv2.putText(
-            im_to_show,
-            f"{plate_str}  {avg_prob:.{2}f}%",
-            org=(5, 30),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=1,
-            color=(0, 0, 0),
-            lineType=1,
-            thickness=6,
-            #  bottomLeftOrigin=True
-        )
-        cv2.putText(
-            im_to_show,
-            f"{plate_str}  {avg_prob:.{2}f}%",
-            org=(5, 30),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=1,
-            color=(255, 255, 255),
-            lineType=1,
-            thickness=2,
-            #  bottomLeftOrigin=True
-        )
-        # Display character with low confidence
-        low_conf_chars = "Low conf. on: " + " ".join(
-            [plate[i] for i in check_low_conf(probs, thresh=0.15)]
-        )
-        cv2.putText(
-            im_to_show,
-            low_conf_chars,
-            org=(5, 200),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=0.7,
-            color=(0, 0, 220),
-            lineType=1,
-            thickness=2,
-            #  bottomLeftOrigin=True
-        )
-        cv2.imshow("plates", im_to_show)
-        if cv2.waitKey(0) & 0xFF == ord("q"):
-            return
+def display_predictions(
+    image: npt.NDArray, prediction: npt.NDArray, alphabet: str = MODEL_ALPHABET
+) -> None:
+    """
+    Display plate and corresponding prediction.
+    """
+    plate, probs = probs_to_plate(prediction, alphabet=alphabet)
+    plate_str = "".join(plate)
+    logging.info("Plate: %s", plate_str)
+    logging.info("Confidence: %s", probs)
+    image_to_show = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_LINEAR)
+    # Converting to BGR for color text
+    image_to_show = cv2.cvtColor(image_to_show, cv2.COLOR_GRAY2RGB)
+    # Average probabilities
+    avg_prob = np.mean(probs) * 100
+    cv2.putText(
+        image_to_show,
+        f"{plate_str}  {avg_prob:.{2}f}%",
+        org=(5, 30),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        color=(0, 0, 0),
+        lineType=1,
+        thickness=6,
+    )
+    cv2.putText(
+        image_to_show,
+        f"{plate_str}  {avg_prob:.{2}f}%",
+        org=(5, 30),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        color=(255, 255, 255),
+        lineType=1,
+        thickness=2,
+    )
+    # Display character with low confidence
+    low_conf_chars = "Low conf. on: " + " ".join(
+        [plate[i] for i in check_low_conf(probs, thresh=0.15)]
+    )
+    cv2.putText(
+        image_to_show,
+        low_conf_chars,
+        org=(5, 200),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=0.7,
+        color=(0, 0, 220),
+        lineType=1,
+        thickness=2,
+    )
+    cv2.imshow("plates", image_to_show)
+    if cv2.waitKey(0) & 0xFF == ord("q"):
+        return
+
+
+@click.command(context_settings={"max_content_width": 140})
+@click.option(
+    "-m",
+    "--model",
+    "model_path",
+    required=True,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    help="Path to the saved .keras model.",
+)
+@click.option(
+    "-d",
+    "--img-dir",
+    type=click.Path(exists=True, dir_okay=True, file_okay=False, path_type=pathlib.Path),
+    default="assets/benchmark/imgs",
+    show_default=True,
+    help="Directory containing the images to make predictions from.",
+)
+@click.option(
+    "-t",
+    "--time",
+    default=True,
+    is_flag=True,
+    help="Log time taken to run predictions.",
+)
+@click.option(
+    "--height",
+    "-h",
+    type=int,
+    default=DEFAULT_IMG_HEIGHT,
+    show_default=True,
+    help="Height to which the images will be resize.",
+)
+@click.option(
+    "--width",
+    "-w",
+    type=int,
+    default=DEFAULT_IMG_WIDTH,
+    show_default=True,
+    help="Width to which the images will be resize.",
+)
+@click.option(
+    "--plate-slots",
+    default=MAX_PLATE_SLOTS,
+    show_default=True,
+    type=int,
+    help="Max number of plate slots supported. Plates with less slots will be padded.",
+)
+@click.option(
+    "--alphabet",
+    default=MODEL_ALPHABET,
+    show_default=True,
+    type=str,
+    help="Model vocabulary. This must include the padding symbol.",
+)
+@click.option(
+    "--vocab-size",
+    default=VOCABULARY_SIZE,
+    show_default=True,
+    type=int,
+    help="Size of the vocabulary. This should match '--alphabet' length.",
+)
+def visualize_predictions(
+    model_path: pathlib.Path,
+    img_dir: pathlib.Path,
+    height: int,
+    width: int,
+    plate_slots: int,
+    alphabet: str,
+    vocab_size: int,
+    time: bool,
+):
+    model = utils.load_keras_model(model_path, vocab_size=vocab_size, max_plate_slots=plate_slots)
+    images = utils.load_images_from_folder(img_dir, width=width, height=height)
+    for image in images:
+        with utils.log_time_taken("Prediction time") if time else nullcontext():
+            x = np.expand_dims(image, 0)
+            prediction = model(x, training=False)
+            prediction = keras.ops.stop_gradient(prediction).numpy()
+        display_predictions(image, prediction, alphabet=alphabet)
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    # pylint: disable=duplicate-code
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-m",
-        "--model",
-        dest="model_path",
-        default="models/m1_93_vpa_2.0M-i2.h5",
-        metavar="FILE",
-        help="Path del modelo, predeterminado es el model_4m.h5",
-    )
-    parser.add_argument(
-        "-i",
-        "--imgs-dir",
-        dest="imgs_dir",
-        default="benchmark/imgs/",
-        metavar="FILE",
-        help="Path de la carpeta contenedora de las imagenes",
-    )
-    parser.add_argument(
-        "-t",
-        "--time",
-        dest="do_time",
-        action="store_true",
-        help="Mostrar el tiempo de inferencia (c/procesamiento)",
-    )
-
-    args = parser.parse_args()
-    custom_objects = {
-        "cce": cce,
-        "cat_acc": cat_acc,
-        "plate_acc": plate_acc,
-        "top_3_k": top_3_k,
-        "softmax": softmax,
-    }
-
-    alphabet = MODEL_ALPHABET
-    model = tf.keras.models.load_model(args.model_path, custom_objects=custom_objects)
-
-    visualize_predictions(model, imgs_path=args.imgs_dir, print_time=args.do_time)
-    cv2.destroyAllWindows()
+    visualize_predictions()
