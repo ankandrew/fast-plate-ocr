@@ -11,12 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 
+from fast_plate_ocr import utils
 from fast_plate_ocr.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.config import DEFAULT_IMG_HEIGHT, DEFAULT_IMG_WIDTH
-from fast_plate_ocr.utils import read_plate_image
-
-IMG_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"}
-"""Valid image extensions for the scope of this script."""
 
 
 def _set_seed(seed: int | None) -> None:
@@ -29,18 +26,13 @@ def _set_seed(seed: int | None) -> None:
 def load_images(
     img_dir: pathlib.Path,
     num_images: int,
-    shuffle_img: bool,
+    shuffle: bool,
     height: int,
     width: int,
 ) -> tuple[list[npt.NDArray[np.uint8]], list[npt.NDArray[np.uint8]]]:
-    img_paths = sorted(f for f in img_dir.iterdir() if f.is_file() and f.suffix in IMG_EXTENSIONS)
-    img_paths = img_paths[:num_images]
-    if shuffle_img:
-        random.shuffle(img_paths)
-    images = [
-        read_plate_image(image_path=str(img), img_height=height, img_width=width)
-        for img in img_paths
-    ]
+    images = utils.load_images_from_folder(
+        img_dir, height=height, width=width, shuffle=shuffle, limit=num_images
+    )
     augmented_images = [TRAIN_AUGMENTATION(image=i)["image"] for i in images]
     return images, augmented_images
 
@@ -94,7 +86,7 @@ def display_images(
     help="Maximum number of images to visualize.",
 )
 @click.option(
-    "--shuffle_img",
+    "--shuffle",
     "-s",
     is_flag=True,
     default=False,
@@ -146,7 +138,7 @@ def display_images(
 def visualize_augmentation(
     img_dir: pathlib.Path,
     num_images: int,
-    shuffle_img: bool,
+    shuffle: bool,
     columns: int,
     rows: int,
     height: int,
@@ -155,7 +147,7 @@ def visualize_augmentation(
     show_original: bool,
 ) -> None:
     _set_seed(seed)
-    images, augmented_images = load_images(img_dir, num_images, shuffle_img, height, width)
+    images, augmented_images = load_images(img_dir, num_images, shuffle, height, width)
     display_images(images, augmented_images, columns, rows, show_original)
 
 

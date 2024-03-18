@@ -2,13 +2,29 @@
 Utility functions module
 """
 
+import logging
 import os
+import pathlib
+import random
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import cv2
+import keras
 import numpy as np
 import numpy.typing as npt
+from keras.src.activations import softmax
 
-from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR
+from fast_plate_ocr.config import (
+    DEFAULT_IMG_HEIGHT,
+    DEFAULT_IMG_WIDTH,
+    MAX_PLATE_SLOTS,
+    MODEL_ALPHABET,
+    PAD_CHAR,
+    VOCABULARY_SIZE,
+)
+from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
 from fast_plate_ocr.custom_types import Framework
 
 
@@ -49,7 +65,9 @@ def set_keras_backend(framework: Framework) -> None:
     os.environ["KERAS_BACKEND"] = framework
 
 
-def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.NDArray:
+def read_plate_image(
+    image_path: str, img_height: int = DEFAULT_IMG_HEIGHT, img_width: int = DEFAULT_IMG_WIDTH
+) -> npt.NDArray:
     """
     Read and resize a license plate image.
 
@@ -62,3 +80,59 @@ def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.ND
     img = cv2.resize(img, (img_width, img_height), interpolation=cv2.INTER_LINEAR)
     img = np.expand_dims(img, -1)
     return img
+
+
+def load_keras_model(
+    model_path: pathlib.Path,
+    vocab_size: int = VOCABULARY_SIZE,
+    max_plate_slots: int = MAX_PLATE_SLOTS,
+) -> keras.Model:
+    """
+    Utility helper function to load the keras OCR model.
+    """
+    custom_objects = {
+        "cce": cce_loss(vocabulary_size=vocab_size),
+        "cat_acc": cat_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
+        "plate_acc": plate_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
+        "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
+        "softmax": softmax,
+    }
+    model = keras.models.load_model(model_path, custom_objects=custom_objects)
+    return model
+
+
+IMG_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"}
+"""Valid image extensions for the scope of this script."""
+
+
+def load_images_from_folder(
+    img_dir: pathlib.Path,
+    width: int = DEFAULT_IMG_WIDTH,
+    height: int = DEFAULT_IMG_HEIGHT,
+    shuffle: bool = False,
+    limit: int | None = None,
+) -> list[npt.NDArray]:
+    """
+    Return all images read from a directory. This uses the same read function used during training.
+    """
+    image_paths = sorted(
+        str(f.resolve()) for f in img_dir.iterdir() if f.is_file() and f.suffix in IMG_EXTENSIONS
+    )
+    if limit:
+        image_paths = image_paths[:limit]
+    if shuffle:
+        random.shuffle(image_paths)
+    images = [read_plate_image(i, img_height=height, img_width=width) for i in image_paths]
+    return images
+
+
+@contextmanager
+def log_time_taken(process_name: str) -> Iterator[None]:
+    """A concise context manager to time code snippets and log the result."""
+    time_start: float = time.perf_counter()
+    try:
+        yield
+    finally:
+        time_end: float = time.perf_counter()
+        time_elapsed: float = time_end - time_start
+        logging.info("Computation time of '%s' = %.3fms", process_name, 1000 * time_elapsed)

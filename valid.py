@@ -5,14 +5,12 @@ Script for validating trained OCR models.
 import pathlib
 
 import click
-import keras
-from keras.src.activations import softmax
 from torch.utils.data import DataLoader
 
+from fast_plate_ocr import utils
 from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR, VOCABULARY_SIZE
 
 # Custom metris / losses
-from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
 from fast_plate_ocr.dataset import LicensePlateDataset
 
 
@@ -79,14 +77,7 @@ def valid(
     pad_char: str,
 ) -> None:
     """Validate a model for a given annotated data."""
-    custom_objects = {
-        "cce": cce_loss(vocabulary_size=vocab_size),
-        "cat_acc": cat_acc_metric(max_plate_slots=plate_slots, vocabulary_size=vocab_size),
-        "plate_acc": plate_acc_metric(max_plate_slots=plate_slots, vocabulary_size=vocab_size),
-        "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
-        "softmax": softmax,
-    }
-    model = keras.models.load_model(model_path, custom_objects=custom_objects)
+    model = utils.load_keras_model(model_path, vocab_size=vocab_size, max_plate_slots=plate_slots)
     val_torch_dataset = LicensePlateDataset(
         annotations_file=annotations,
         max_plate_slots=plate_slots,
