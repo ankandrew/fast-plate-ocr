@@ -4,8 +4,7 @@ SRC_PATHS := fast_plate_ocr/ \
             train.py \
             valid.py \
             visualize_augmentation.py \
-            visualize_predictions.py \
-            augmentation.py
+            visualize_predictions.py
 
 # Tasks
 .PHONY: help

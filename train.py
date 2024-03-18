@@ -10,7 +10,7 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard
 from keras.optimizers import Adam
 from torch.utils.data import DataLoader
 
-from augmentation import TRAIN_AUGMENTATION
+from fast_plate_ocr.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.config import (
     DEFAULT_IMG_HEIGHT,
     DEFAULT_IMG_WIDTH,

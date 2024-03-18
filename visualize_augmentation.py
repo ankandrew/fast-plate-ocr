@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 
-from augmentation import TRAIN_AUGMENTATION
+from fast_plate_ocr.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.config import DEFAULT_IMG_HEIGHT, DEFAULT_IMG_WIDTH
 from fast_plate_ocr.utils import read_plate_image
 
