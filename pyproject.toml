@@ -73,6 +73,14 @@ ignore_missing_imports = true
 
 [tool.pylint.typecheck]
 generated-members = ["cv2.*"]
+signature-mutators = [
+    "click.decorators.option",
+    "click.decorators.argument",
+    "click.decorators.version_option",
+    "click.decorators.help_option",
+    "click.decorators.pass_context",
+    "click.decorators.confirmation_option"
+]
 
 [tool.pylint.format]
 max-line-length = 100
