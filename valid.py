@@ -2,77 +2,75 @@
 Script for validating trained OCR models.
 """
 
-import string
-from argparse import ArgumentParser
+import pathlib
 
-import numpy as np
-import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
-from tensorflow.python.keras.activations import softmax
+import click
+import keras
+from keras.src.activations import softmax
+from torch.utils.data import DataLoader
+
+from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR
 
 # Custom metris / losses
-from fast_lp_ocr.custom import cat_acc, cce, plate_acc, top_3_k
+from fast_plate_ocr.custom import cat_acc, cce, plate_acc, top_3_k
+from fast_plate_ocr.dataset import LicensePlateDataset
 
 
-def preprocess_df(df):
-    # Pad 6-len plates with '_'
-    df.loc[df.plate.str.len() == 6, "plate"] += "_"
-
-    def string_vectorizer(plate_str):
-        alphabet = string.digits + string.ascii_uppercase + "_"
-        vector = [[0 if char != letter else 1 for char in alphabet] for letter in plate_str]
-        return vector
-
-    # Convert to one-hot
-    df["labels"] = df.plate.apply(lambda x: np.array(string_vectorizer(x)))
-
-
-def df_to_x_y(df, target_h=70, target_w=140):
-    """
-    Loads all the imgs to memory (by col name='path')
-    with the corresponding y labels (one-hot encoded)
-    """
-    # Load all images in numpy array
-    x_imgs = []
-    for img_path in df.path.values:
-        img = load_img(
-            img_path,
-            color_mode="grayscale",
-            target_size=(target_h, target_w),
-            interpolation="bilinear",
-        )
-        img = img_to_array(img)
-        img = np.expand_dims(img, axis=0)
-        x_imgs.append(img)
-    x_imgs = np.vstack(x_imgs)
-
-    y_imgs = [one_hot.reshape(7 * 37) for one_hot in df.labels.values]
-    y_imgs = np.vstack(y_imgs)
-
-    return x_imgs, y_imgs
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-m",
-        "--model",
-        dest="model_path",
-        default="models/m1_93_vpa_2.0M-i2.h5",
-        metavar="FILE",
-        help="Path del modelo, predeterminado es el model_4m.h5",
-    )
-    parser.add_argument(
-        "-b",
-        "--batch-size",
-        dest="batch_size",
-        default=1,
-        type=int,
-        help="Tamaño del batch, predeterminado 1",
-    )
-
-    args = parser.parse_args()
+@click.command(context_settings={"max_content_width": 140})
+@click.option(
+    "-m",
+    "--model",
+    "model_path",
+    required=True,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    help="Path to the saved .keras model.",
+)
+@click.option(
+    "-a",
+    "--annotations",
+    default="assets/benchmark/annotations.csv",
+    show_default=True,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    help="Annotations file used for validation.",
+)
+@click.option(
+    "-b",
+    "--batch-size",
+    default=1,
+    show_default=True,
+    type=int,
+    help="Batch size.",
+)
+@click.option(
+    "--plate-slots",
+    default=MAX_PLATE_SLOTS,
+    show_default=True,
+    type=int,
+    help="Max number of plate slots supported. Plates with less slots will be padded.",
+)
+@click.option(
+    "--alphabet",
+    default=MODEL_ALPHABET,
+    show_default=True,
+    type=str,
+    help="Model vocabulary. This must include the padding symbol.",
+)
+@click.option(
+    "--pad-char",
+    default=PAD_CHAR,
+    show_default=True,
+    type=str,
+    help="Padding char for plates with length less than '--plate-slots'.",
+)
+def valid(
+    model_path: pathlib.Path,
+    annotations: pathlib.Path,
+    batch_size: int,
+    plate_slots: int,
+    alphabet: str,
+    pad_char: str,
+) -> None:
+    """Validate a model for a given annotated data."""
     custom_objects = {
         "cce": cce,
         "cat_acc": cat_acc,
@@ -80,11 +78,16 @@ if __name__ == "__main__":
         "top_3_k": top_3_k,
         "softmax": softmax,
     }
-    model = tf.keras.models.load_model(args.model_path, custom_objects=custom_objects)
+    model = keras.models.load_model(model_path, custom_objects=custom_objects)
+    val_torch_dataset = LicensePlateDataset(
+        annotations_file=annotations,
+        max_plate_slots=plate_slots,
+        alphabet=alphabet,
+        pad_char=pad_char,
+    )
+    val_dataloader = DataLoader(val_torch_dataset, batch_size=batch_size, shuffle=False)
+    model.evaluate(val_dataloader)
 
-    df_val = pd.read_csv("assets/benchmark/anotaciones.txt", sep="\t", names=["path", "plate"])
-    preprocess_df(df_val)
-    x_val, y_val = df_to_x_y(df_val, target_h=70, target_w=140)
-    datagen_val = ImageDataGenerator(rescale=1 / 255.0)
-    val_generator = datagen_val.flow(x_val, y_val, batch_size=args.batch_size, shuffle=False)
-    model.evaluate(val_generator)
+
+if __name__ == "__main__":
+    valid()
