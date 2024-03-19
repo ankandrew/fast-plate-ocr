@@ -74,7 +74,7 @@ from fast_plate_ocr.models import modelo_1m_cpu, modelo_2m
 )
 @click.option(
     "--batch-size",
-    default=64,
+    default=128,
     show_default=True,
     type=int,
     help="Batch size for training.",
@@ -138,7 +138,7 @@ def train(
     model_type: str,
     dense: bool,
     annotations: pathlib.Path,
-    val_annotations: pathlib.Path | None,
+    val_annotations: pathlib.Path,
     height: int,
     width: int,
     lr: float,
