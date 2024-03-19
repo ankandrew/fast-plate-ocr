@@ -5,7 +5,7 @@ Test the custom metric/losses module.
 # ruff: noqa: E402
 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
 # fmt: off
-from fast_plate_ocr.utils import set_pytorch_backend
+from fast_plate_ocr.backend_utils import set_pytorch_backend
 
 set_pytorch_backend()
 # fmt: on

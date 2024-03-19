@@ -3,7 +3,6 @@ Utility functions module
 """
 
 import logging
-import os
 import pathlib
 import random
 import time
@@ -25,7 +24,6 @@ from fast_plate_ocr.config import (
     VOCABULARY_SIZE,
 )
 from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
-from fast_plate_ocr.custom_types import Framework
 
 
 def one_hot_plate(plate: str, alphabet: str = MODEL_ALPHABET) -> list[list[int]]:
@@ -43,26 +41,6 @@ def target_transform(
     # Generate numpy arrays with one-hot encoding of plates
     encoded_plate = np.array(one_hot_plate(plate_text, alphabet=alphabet), dtype=np.uint8)
     return encoded_plate
-
-
-def set_tensorflow_backend() -> None:
-    """Set Keras backend to tensorflow."""
-    set_keras_backend("tensorflow")
-
-
-def set_jax_backend() -> None:
-    """Set Keras backend to jax."""
-    set_keras_backend("jax")
-
-
-def set_pytorch_backend() -> None:
-    """Set Keras backend to pytorch."""
-    set_keras_backend("torch")
-
-
-def set_keras_backend(framework: Framework) -> None:
-    """Set the Keras backend to a given framework."""
-    os.environ["KERAS_BACKEND"] = framework
 
 
 def read_plate_image(
