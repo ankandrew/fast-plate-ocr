@@ -13,7 +13,6 @@ import cv2
 import keras
 import numpy as np
 import numpy.typing as npt
-from keras.src.activations import softmax
 
 from fast_plate_ocr.config import (
     DEFAULT_IMG_HEIGHT,
@@ -73,7 +72,6 @@ def load_keras_model(
         "cat_acc": cat_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
         "plate_acc": plate_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
         "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
-        "softmax": softmax,
     }
     model = keras.models.load_model(model_path, custom_objects=custom_objects)
     return model

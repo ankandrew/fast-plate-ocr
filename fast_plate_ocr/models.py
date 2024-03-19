@@ -10,10 +10,10 @@ from keras.layers import (
     Dropout,
     GlobalAveragePooling2D,
     Input,
-    Lambda,
     MaxPool2D,
     Rescaling,
     Reshape,
+    Softmax,
 )
 from keras.models import Model
 
@@ -117,4 +117,5 @@ def head_no_fc(x, max_plate_slots: int = MAX_PLATE_SLOTS, vocabulary_size: int =
     x = block_no_activation(x, k=1, n_c=max_plate_slots * vocabulary_size, s=1, padding="same")
     x = GlobalAveragePooling2D()(x)
     x = Reshape((max_plate_slots, vocabulary_size, 1))(x)
-    return Lambda(lambda x: softmax(x, axis=-2))(x)
+    x = Softmax(axis=-2)(x)
+    return x
