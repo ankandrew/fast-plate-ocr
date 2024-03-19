@@ -44,7 +44,7 @@ def plate_acc_metric(
         """
         y_true = ops.reshape(y_true, newshape=(-1, max_plate_slots, vocabulary_size))
         y_pred = ops.reshape(y_pred, newshape=(-1, max_plate_slots, vocabulary_size))
-        et = ops.equal(ops.argmax(y_true), ops.argmax(y_pred))
+        et = ops.equal(ops.argmax(y_true, axis=-1), ops.argmax(y_pred, axis=-1))
         return ops.mean(ops.cast(ops.all(et, axis=-1, keepdims=False), dtype="float32"))
 
     return plate_acc
