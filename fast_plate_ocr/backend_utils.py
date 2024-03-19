@@ -25,3 +25,11 @@ def set_pytorch_backend() -> None:
 def set_keras_backend(framework: Framework) -> None:
     """Set the Keras backend to a given framework."""
     os.environ["KERAS_BACKEND"] = framework
+
+
+def reload_keras_backend(framework: Framework) -> None:
+    """Reload the Keras backend with a given framework."""
+    # pylint: disable=import-outside-toplevel
+    import keras
+
+    keras.config.set_backend(framework)
