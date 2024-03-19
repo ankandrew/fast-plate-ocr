@@ -61,8 +61,8 @@ def top_3_k_metric(vocabulary_size: int = VOCABULARY_SIZE):
         probability.
         """
         # Reshape into 2-d
-        y_true = ops.reshape(y_true, (-1, vocabulary_size))
-        y_pred = ops.reshape(y_pred, (-1, vocabulary_size))
+        y_true = ops.reshape(y_true, newshape=(-1, vocabulary_size))
+        y_pred = ops.reshape(y_pred, newshape=(-1, vocabulary_size))
         return ops.mean(metrics.top_k_categorical_accuracy(y_true, y_pred, k=3))
 
     return top_3_k
