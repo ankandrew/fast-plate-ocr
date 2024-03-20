@@ -134,6 +134,20 @@ from fast_plate_ocr.models import modelo_1m_cpu, modelo_2m
     type=str,
     help="Padding char for plates with length less than '--plate-slots'.",
 )
+@click.option(
+    "--early-stopping-patience",
+    default=120,
+    show_default=True,
+    type=int,
+    help="Stop training when 'val_plate_acc' doesn't improve for X epochs.",
+)
+@click.option(
+    "--reduce-lr-patience",
+    default=100,
+    show_default=True,
+    type=int,
+    help="Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs.",
+)
 def train(
     model_type: str,
     dense: bool,
@@ -151,6 +165,8 @@ def train(
     alphabet: str,
     vocab_size: int,
     pad_char: str,
+    early_stopping_patience: int,
+    reduce_lr_patience: int,
 ) -> None:
     train_torch_dataset = LicensePlateDataset(
         annotations_file=annotations,
@@ -201,9 +217,20 @@ def train(
 
     callbacks = [
         # Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs
-        ReduceLROnPlateau("val_plate_acc", verbose=1, patience=35, factor=0.5, min_lr=1e-5),
+        ReduceLROnPlateau(
+            "val_plate_acc",
+            verbose=1,
+            patience=reduce_lr_patience,
+            factor=0.5,
+            min_lr=1e-5,
+        ),
         # Stop training when 'val_plate_acc' doesn't improve for X epochs
-        EarlyStopping(monitor="val_plate_acc", patience=50, mode="max", restore_best_weights=True),
+        EarlyStopping(
+            monitor="val_plate_acc",
+            patience=early_stopping_patience,
+            mode="max",
+            restore_best_weights=True,
+        ),
     ]
 
     if tensorboard:
