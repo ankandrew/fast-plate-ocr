@@ -31,30 +31,22 @@ def check_low_conf(probs, thresh=0.3):
     return [i for i, prob in enumerate(probs) if prob < thresh]
 
 
-def probs_to_plate(
+def display_predictions(
+    image: npt.NDArray,
     prediction: npt.NDArray,
     alphabet: str = MODEL_ALPHABET,
-    max_plate_slots: int = MAX_PLATE_SLOTS,
+    plate_slots: int = MAX_PLATE_SLOTS,
     vocab_size: int = VOCABULARY_SIZE,
-) -> tuple[list[str], npt.NDArray]:
-    """
-    Convert raw model prediction probabilities into a list of characters representing the plate
-    and an array of confidence scores.
-    """
-    prediction = prediction.reshape((max_plate_slots, vocab_size))
-    probs = np.max(prediction, axis=-1)
-    prediction = np.argmax(prediction, axis=-1)
-    plate = list(map(lambda x: alphabet[x], prediction))
-    return plate, probs
-
-
-def display_predictions(
-    image: npt.NDArray, prediction: npt.NDArray, alphabet: str = MODEL_ALPHABET
 ) -> None:
     """
     Display plate and corresponding prediction.
     """
-    plate, probs = probs_to_plate(prediction, alphabet=alphabet)
+    plate, probs = utils.postprocess_model_output(
+        prediction=prediction,
+        alphabet=alphabet,
+        max_plate_slots=plate_slots,
+        vocab_size=vocab_size,
+    )
     plate_str = "".join(plate)
     logging.info("Plate: %s", plate_str)
     logging.info("Confidence: %s", probs)
@@ -180,7 +172,13 @@ def visualize_predictions(
             x = np.expand_dims(image, 0)
             prediction = model(x, training=False)
             prediction = keras.ops.stop_gradient(prediction).numpy()
-        display_predictions(image, prediction, alphabet=alphabet)
+        display_predictions(
+            image=image,
+            prediction=prediction,
+            alphabet=alphabet,
+            plate_slots=plate_slots,
+            vocab_size=vocab_size,
+        )
     cv2.destroyAllWindows()
 
 

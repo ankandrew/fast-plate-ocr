@@ -112,3 +112,19 @@ def log_time_taken(process_name: str) -> Iterator[None]:
         time_end: float = time.perf_counter()
         time_elapsed: float = time_end - time_start
         logging.info("Computation time of '%s' = %.3fms", process_name, 1000 * time_elapsed)
+
+
+def postprocess_model_output(
+    prediction: npt.NDArray,
+    alphabet: str = MODEL_ALPHABET,
+    max_plate_slots: int = MAX_PLATE_SLOTS,
+    vocab_size: int = VOCABULARY_SIZE,
+) -> tuple[str, npt.NDArray]:
+    """
+    Return plate text and confidence scores from raw model output.
+    """
+    prediction = prediction.reshape((max_plate_slots, vocab_size))
+    probs = np.max(prediction, axis=-1)
+    prediction = np.argmax(prediction, axis=-1)
+    plate = "".join([alphabet[x] for x in prediction])
+    return plate, probs
