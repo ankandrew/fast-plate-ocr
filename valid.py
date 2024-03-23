@@ -20,7 +20,7 @@ from fast_plate_ocr.dataset import LicensePlateDataset
     "--model",
     "model_path",
     required=True,
-    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path to the saved .keras model.",
 )
 @click.option(
@@ -28,7 +28,7 @@ from fast_plate_ocr.dataset import LicensePlateDataset
     "--annotations",
     default="assets/benchmark/annotations.csv",
     show_default=True,
-    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Annotations file used for validation.",
 )
 @click.option(

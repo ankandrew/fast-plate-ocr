@@ -100,7 +100,7 @@ def display_predictions(
     "--model",
     "model_path",
     required=True,
-    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path to the saved .keras model.",
 )
 @click.option(
