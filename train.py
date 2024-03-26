@@ -2,12 +2,13 @@
 Script for training the License Plate OCR models.
 """
 
-import os
 import pathlib
+from datetime import datetime
 
 import click
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard
 from keras.optimizers import Adam
+from keras.src.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
 from fast_plate_ocr.augmentation import TRAIN_AUGMENTATION
@@ -67,8 +68,8 @@ from fast_plate_ocr.models import modelo_1m_cpu, modelo_2m
 )
 @click.option(
     "--output-dir",
-    default=None,
-    type=str,
+    default="./trained-models",
+    type=click.Path(dir_okay=True, path_type=pathlib.Path),
     help="Output directory where model will be saved.",
 )
 @click.option(
@@ -114,7 +115,7 @@ def train(
     val_annotations: pathlib.Path,
     lr: float,
     batch_size: int,
-    output_dir: str,
+    output_dir: pathlib.Path,
     epochs: int,
     tensorboard: bool,
     tensorboard_dir: str,
@@ -169,43 +170,42 @@ def train(
         ],
     )
 
+    output_dir /= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    model_file_path = output_dir / (f"{model_type}-" + "{epoch:02d}-{val_plate_acc:.3f}.keras")
+
     callbacks = [
         # Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs
         ReduceLROnPlateau(
             "val_plate_acc",
-            verbose=1,
             patience=reduce_lr_patience,
             factor=0.5,
             min_lr=1e-5,
+            verbose=1,
         ),
         # Stop training when 'val_plate_acc' doesn't improve for X epochs
         EarlyStopping(
             monitor="val_plate_acc",
             patience=early_stopping_patience,
             mode="max",
-            restore_best_weights=True,
+            restore_best_weights=False,
+            verbose=1,
+        ),
+        # We don't use EarlyStopping restore_best_weights=True because it won't restore the best
+        # weights when it didn't manage to EarlyStop but finished all epochs
+        ModelCheckpoint(
+            model_file_path,
+            monitor="val_plate_acc",
+            mode="max",
+            save_best_only=True,
+            verbose=1,
         ),
     ]
 
     if tensorboard:
         callbacks.append(TensorBoard(log_dir=tensorboard_dir))
 
-    history = model.fit(
-        train_dataloader, epochs=epochs, validation_data=val_dataloader, callbacks=callbacks
-    )
-
-    best_vpa = max(history.history["val_plate_acc"])
-    epochs = len(history.epoch)
-    model_name = f"cnn-ocr_{best_vpa:.4}-vpa_epochs-{epochs}"
-    # Make dir for trained model
-    if output_dir is None:
-        model_folder = f"./trained/{model_name}"
-        if not os.path.exists(model_folder):
-            os.makedirs(model_folder)
-        output_path = model_folder
-    else:
-        output_path = output_dir
-    model.save(os.path.join(output_path, f"{model_name}.keras"))
+    model.fit(train_dataloader, epochs=epochs, validation_data=val_dataloader, callbacks=callbacks)
 
 
 if __name__ == "__main__":
