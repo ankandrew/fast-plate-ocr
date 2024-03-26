@@ -17,6 +17,8 @@ tensorboard = "^2.16.2"
 torch = "^2.2.1"
 click = "^8.1.7"
 tensorflow = "^2.16.1"
+pydantic = "^2.0.0"
+pyyaml = "^6.0.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
@@ -26,6 +28,7 @@ mypy = "*"
 ruff = "^0.3.1"
 pandas-stubs = "^2.2.0.240218"
 pylint = "^3.1.0"
+types-pyyaml = "^6.0.12.20240311"
 
 [tool.ruff]
 line-length = 100
