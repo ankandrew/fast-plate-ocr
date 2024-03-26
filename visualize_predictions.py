@@ -10,82 +10,12 @@ import click
 import cv2
 import keras
 import numpy as np
-import numpy.typing as npt
 
 from fast_plate_ocr import utils
 from fast_plate_ocr.config import load_config_from_yaml
+from fast_plate_ocr.utils import display_predictions
 
 logging.basicConfig(level=logging.INFO)
-
-
-def check_low_conf(probs, thresh=0.3):
-    """
-    Add position of chars. that are < thresh
-    """
-    return [i for i, prob in enumerate(probs) if prob < thresh]
-
-
-def display_predictions(
-    image: npt.NDArray,
-    prediction: npt.NDArray,
-    alphabet: str,
-    plate_slots: int,
-    vocab_size: int,
-) -> None:
-    """
-    Display plate and corresponding prediction.
-    """
-    plate, probs = utils.postprocess_model_output(
-        prediction=prediction,
-        alphabet=alphabet,
-        max_plate_slots=plate_slots,
-        vocab_size=vocab_size,
-    )
-    plate_str = "".join(plate)
-    logging.info("Plate: %s", plate_str)
-    logging.info("Confidence: %s", probs)
-    image_to_show = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_LINEAR)
-    # Converting to BGR for color text
-    image_to_show = cv2.cvtColor(image_to_show, cv2.COLOR_GRAY2RGB)
-    # Average probabilities
-    avg_prob = np.mean(probs) * 100
-    cv2.putText(
-        image_to_show,
-        f"{plate_str}  {avg_prob:.{2}f}%",
-        org=(5, 30),
-        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-        fontScale=1,
-        color=(0, 0, 0),
-        lineType=1,
-        thickness=6,
-    )
-    cv2.putText(
-        image_to_show,
-        f"{plate_str}  {avg_prob:.{2}f}%",
-        org=(5, 30),
-        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-        fontScale=1,
-        color=(255, 255, 255),
-        lineType=1,
-        thickness=2,
-    )
-    # Display character with low confidence
-    low_conf_chars = "Low conf. on: " + " ".join(
-        [plate[i] for i in check_low_conf(probs, thresh=0.15)]
-    )
-    cv2.putText(
-        image_to_show,
-        low_conf_chars,
-        org=(5, 200),
-        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-        fontScale=0.7,
-        color=(0, 0, 220),
-        lineType=1,
-        thickness=2,
-    )
-    cv2.imshow("plates", image_to_show)
-    if cv2.waitKey(0) & 0xFF == ord("q"):
-        return
 
 
 @click.command(context_settings={"max_content_width": 140})

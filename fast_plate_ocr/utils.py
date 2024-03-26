@@ -118,3 +118,71 @@ def postprocess_model_output(
     prediction = np.argmax(prediction, axis=-1)
     plate = "".join([alphabet[x] for x in prediction])
     return plate, probs
+
+
+def low_confidence_positions(probs, thresh=0.3) -> npt.NDArray:
+    """Returns indices of elements in `probs` less than `thresh`, indicating low confidence."""
+    return np.where(np.array(probs) < thresh)[0]
+
+
+def display_predictions(
+    image: npt.NDArray,
+    prediction: npt.NDArray,
+    alphabet: str,
+    plate_slots: int,
+    vocab_size: int,
+) -> None:
+    """
+    Display plate and corresponding prediction.
+    """
+    plate, probs = postprocess_model_output(
+        prediction=prediction,
+        alphabet=alphabet,
+        max_plate_slots=plate_slots,
+        vocab_size=vocab_size,
+    )
+    plate_str = "".join(plate)
+    logging.info("Plate: %s", plate_str)
+    logging.info("Confidence: %s", probs)
+    image_to_show = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_LINEAR)
+    # Converting to BGR for color text
+    image_to_show = cv2.cvtColor(image_to_show, cv2.COLOR_GRAY2RGB)
+    # Average probabilities
+    avg_prob = np.mean(probs) * 100
+    cv2.putText(
+        image_to_show,
+        f"{plate_str}  {avg_prob:.{2}f}%",
+        org=(5, 30),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        color=(0, 0, 0),
+        lineType=1,
+        thickness=6,
+    )
+    cv2.putText(
+        image_to_show,
+        f"{plate_str}  {avg_prob:.{2}f}%",
+        org=(5, 30),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        color=(255, 255, 255),
+        lineType=1,
+        thickness=2,
+    )
+    # Display character with low confidence
+    low_conf_chars = "Low conf. on: " + " ".join(
+        [plate[i] for i in low_confidence_positions(probs, thresh=0.15)]
+    )
+    cv2.putText(
+        image_to_show,
+        low_conf_chars,
+        org=(5, 200),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=0.7,
+        color=(0, 0, 220),
+        lineType=1,
+        thickness=2,
+    )
+    cv2.imshow("plates", image_to_show)
+    if cv2.waitKey(0) & 0xFF == ord("q"):
+        return
