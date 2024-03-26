@@ -131,6 +131,7 @@ def display_predictions(
     alphabet: str,
     plate_slots: int,
     vocab_size: int,
+    low_conf_thresh: float,
 ) -> None:
     """
     Display plate and corresponding prediction.
@@ -171,7 +172,7 @@ def display_predictions(
     )
     # Display character with low confidence
     low_conf_chars = "Low conf. on: " + " ".join(
-        [plate[i] for i in low_confidence_positions(probs, thresh=0.15)]
+        [plate[i] for i in low_confidence_positions(probs, thresh=low_conf_thresh)]
     )
     cv2.putText(
         image_to_show,

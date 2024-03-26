@@ -49,10 +49,19 @@ logging.basicConfig(level=logging.INFO)
     is_flag=True,
     help="Log time taken to run predictions.",
 )
+@click.option(
+    "-l",
+    "--low-conf-thresh",
+    type=float,
+    default=0.2,
+    show_default=True,
+    help="Threshold for displaying low confidence characters.",
+)
 def visualize_predictions(
     model_path: pathlib.Path,
     config_file: pathlib.Path,
     img_dir: pathlib.Path,
+    low_conf_thresh: float,
     time: bool,
 ):
     config = load_config_from_yaml(config_file)
@@ -73,6 +82,7 @@ def visualize_predictions(
             alphabet=config.alphabet,
             plate_slots=config.max_plate_slots,
             vocab_size=config.vocabulary_size,
+            low_conf_thresh=low_conf_thresh,
         )
     cv2.destroyAllWindows()
 
