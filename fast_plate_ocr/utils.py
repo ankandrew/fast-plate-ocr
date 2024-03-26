@@ -14,26 +14,18 @@ import keras
 import numpy as np
 import numpy.typing as npt
 
-from fast_plate_ocr.config import (
-    DEFAULT_IMG_HEIGHT,
-    DEFAULT_IMG_WIDTH,
-    MAX_PLATE_SLOTS,
-    MODEL_ALPHABET,
-    PAD_CHAR,
-    VOCABULARY_SIZE,
-)
 from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
 
 
-def one_hot_plate(plate: str, alphabet: str = MODEL_ALPHABET) -> list[list[int]]:
+def one_hot_plate(plate: str, alphabet: str) -> list[list[int]]:
     return [[0 if char != letter else 1 for char in alphabet] for letter in plate]
 
 
 def target_transform(
     plate_text: str,
-    max_plate_slots: int = MAX_PLATE_SLOTS,
-    alphabet: str = MODEL_ALPHABET,
-    pad_char: str = PAD_CHAR,
+    max_plate_slots: int,
+    alphabet: str,
+    pad_char: str,
 ) -> npt.NDArray[np.uint8]:
     # Pad the plates which length is smaller than 'max_plate_slots'
     plate_text = plate_text.ljust(max_plate_slots, pad_char)
@@ -42,9 +34,7 @@ def target_transform(
     return encoded_plate
 
 
-def read_plate_image(
-    image_path: str, img_height: int = DEFAULT_IMG_HEIGHT, img_width: int = DEFAULT_IMG_WIDTH
-) -> npt.NDArray:
+def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.NDArray:
     """
     Read and resize a license plate image.
 
@@ -61,8 +51,8 @@ def read_plate_image(
 
 def load_keras_model(
     model_path: pathlib.Path,
-    vocab_size: int = VOCABULARY_SIZE,
-    max_plate_slots: int = MAX_PLATE_SLOTS,
+    vocab_size: int,
+    max_plate_slots: int,
 ) -> keras.Model:
     """
     Utility helper function to load the keras OCR model.
@@ -83,8 +73,8 @@ IMG_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".
 
 def load_images_from_folder(
     img_dir: pathlib.Path,
-    width: int = DEFAULT_IMG_WIDTH,
-    height: int = DEFAULT_IMG_HEIGHT,
+    width: int,
+    height: int,
     shuffle: bool = False,
     limit: int | None = None,
 ) -> list[npt.NDArray]:
@@ -116,9 +106,9 @@ def log_time_taken(process_name: str) -> Iterator[None]:
 
 def postprocess_model_output(
     prediction: npt.NDArray,
-    alphabet: str = MODEL_ALPHABET,
-    max_plate_slots: int = MAX_PLATE_SLOTS,
-    vocab_size: int = VOCABULARY_SIZE,
+    alphabet: str,
+    max_plate_slots: int,
+    vocab_size: int,
 ) -> tuple[str, npt.NDArray]:
     """
     Return plate text and confidence scores from raw model output.

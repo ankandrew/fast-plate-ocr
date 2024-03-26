@@ -2,12 +2,35 @@
 Tests for config module
 """
 
-from fast_plate_ocr.config import MODEL_ALPHABET, PAD_CHAR, VOCABULARY_SIZE
+from pathlib import Path
+from test import PROJECT_ROOT_DIR
+
+import pytest
+
+from fast_plate_ocr.config import PlateOCRConfig, load_config_from_yaml
 
 
-def test_pad_char_in_model_alphabet() -> None:
-    assert PAD_CHAR in MODEL_ALPHABET
+@pytest.mark.parametrize(
+    "file_path",
+    [f for f in PROJECT_ROOT_DIR.joinpath("config").iterdir() if f.suffix in (".yaml", ".yml")],
+)
+def test_yaml_configs(file_path: Path) -> None:
+    load_config_from_yaml(file_path)
 
 
-def test_vocabulary_size_is_model_vocab_length() -> None:
-    assert len(MODEL_ALPHABET) == VOCABULARY_SIZE
+@pytest.mark.parametrize(
+    "raw_config",
+    [
+        {
+            "max_plate_slots": 7,
+            # Pad char not in alphabet, should raise exception
+            "alphabet": "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "pad_char": "_",
+            "img_height": 70,
+            "img_width": 140,
+        }
+    ],
+)
+def test_invalid_config_raises(raw_config: dict) -> None:
+    with pytest.raises(ValueError):
+        PlateOCRConfig(**raw_config)

@@ -2,15 +2,54 @@
 Config values used throughout the code.
 """
 
-MAX_PLATE_SLOTS: int = 7
-"""Max number of plate slots supported. This represents the number of model classification heads."""
-VOCABULARY_SIZE: int = 37
-"""Vocabulary size, which influences the output size of each head."""
-MODEL_ALPHABET: str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_"
-"""All the possible character set for the model output."""
-PAD_CHAR: str = "_"
-"""Padding character for plates which length is smaller than MAX_PLATE_SLOTS."""
-DEFAULT_IMG_HEIGHT: int = 70
-"""Default image height which is fed to the model."""
-DEFAULT_IMG_WIDTH: int = 140
-"""Default image width which is fed to the model."""
+import yaml
+from pydantic import BaseModel, computed_field, model_validator
+
+from fast_plate_ocr.custom_types import FilePath
+
+
+class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
+    """
+    Model License Plate OCR config.
+    """
+
+    max_plate_slots: int
+    """
+    Max number of plate slots supported. This represents the number of model classification heads.
+    """
+
+    alphabet: str
+    """
+    All the possible character set for the model output.
+    """
+    pad_char: str
+    """
+    Padding character for plates which length is smaller than MAX_PLATE_SLOTS.
+    """
+    img_height: int
+    """
+    Image height which is fed to the model.
+    """
+    img_width: int
+    """
+    Image width which is fed to the model.
+    """
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def vocabulary_size(self) -> int:
+        return len(self.alphabet)
+
+    @model_validator(mode="after")
+    def check_passwords_match(self) -> "PlateOCRConfig":
+        if self.pad_char not in self.alphabet:
+            raise ValueError("Pad character must be present in model alphabet.")
+        return self
+
+
+def load_config_from_yaml(yaml_file_path: FilePath) -> PlateOCRConfig:
+    """Read and parse a yaml containing the Plate OCR config."""
+    with open(yaml_file_path, encoding="utf-8") as f_in:
+        yaml_content = yaml.safe_load(f_in)
+    config = PlateOCRConfig(**yaml_content)
+    return config

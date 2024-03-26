@@ -17,16 +17,15 @@ from keras.layers import (
 )
 from keras.models import Model
 
-from fast_plate_ocr.config import MAX_PLATE_SLOTS, VOCABULARY_SIZE
 from fast_plate_ocr.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 
 
 def modelo_2m(
     h: int,
     w: int,
+    max_plate_slots: int,
+    vocabulary_size: int,
     dense: bool = True,
-    max_plate_slots: int = MAX_PLATE_SLOTS,
-    vocabulary_size: int = VOCABULARY_SIZE,
 ) -> Model:
     """
     2M parameter model that uses normal Convolutional layers (not Depthwise Convolutional layers).
@@ -63,9 +62,9 @@ def modelo_2m(
 def modelo_1m_cpu(
     h: int,
     w: int,
+    max_plate_slots: int,
+    vocabulary_size: int,
     dense: bool = True,
-    max_plate_slots: int = MAX_PLATE_SLOTS,
-    vocabulary_size: int = VOCABULARY_SIZE,
 ) -> Model:
     """
     1.2M parameter model that uses Depthwise Convolutional layers, more suitable for low-end devices
@@ -95,7 +94,7 @@ def modelo_1m_cpu(
     return Model(inputs=input_tensor, outputs=x)
 
 
-def head(x, max_plate_slots: int = MAX_PLATE_SLOTS, vocabulary_size: int = VOCABULARY_SIZE):
+def head(x, max_plate_slots: int, vocabulary_size: int):
     """
     Model's head with Fully Connected (FC) layers.
     """
@@ -110,7 +109,7 @@ def head(x, max_plate_slots: int = MAX_PLATE_SLOTS, vocabulary_size: int = VOCAB
     return x
 
 
-def head_no_fc(x, max_plate_slots: int = MAX_PLATE_SLOTS, vocabulary_size: int = VOCABULARY_SIZE):
+def head_no_fc(x, max_plate_slots: int, vocabulary_size: int):
     """
     Model's head without Fully Connected (FC) layers.
     """

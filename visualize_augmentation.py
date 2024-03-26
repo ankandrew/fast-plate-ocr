@@ -13,7 +13,6 @@ import numpy.typing as npt
 
 from fast_plate_ocr import utils
 from fast_plate_ocr.augmentation import TRAIN_AUGMENTATION
-from fast_plate_ocr.config import DEFAULT_IMG_HEIGHT, DEFAULT_IMG_WIDTH
 
 
 def _set_seed(seed: int | None) -> None:
@@ -112,7 +111,7 @@ def display_images(
     "--height",
     "-h",
     type=int,
-    default=DEFAULT_IMG_HEIGHT,
+    default=70,
     show_default=True,
     help="Height to which the images will be resize.",
 )
@@ -120,7 +119,7 @@ def display_images(
     "--width",
     "-w",
     type=int,
-    default=DEFAULT_IMG_WIDTH,
+    default=140,
     show_default=True,
     help="Width to which the images will be resize.",
 )

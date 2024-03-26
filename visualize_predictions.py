@@ -13,13 +13,7 @@ import numpy as np
 import numpy.typing as npt
 
 from fast_plate_ocr import utils
-from fast_plate_ocr.config import (
-    DEFAULT_IMG_HEIGHT,
-    DEFAULT_IMG_WIDTH,
-    MAX_PLATE_SLOTS,
-    MODEL_ALPHABET,
-    VOCABULARY_SIZE,
-)
+from fast_plate_ocr.config import load_config_from_yaml
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,9 +28,9 @@ def check_low_conf(probs, thresh=0.3):
 def display_predictions(
     image: npt.NDArray,
     prediction: npt.NDArray,
-    alphabet: str = MODEL_ALPHABET,
-    plate_slots: int = MAX_PLATE_SLOTS,
-    vocab_size: int = VOCABULARY_SIZE,
+    alphabet: str,
+    plate_slots: int,
+    vocab_size: int,
 ) -> None:
     """
     Display plate and corresponding prediction.
@@ -104,6 +98,13 @@ def display_predictions(
     help="Path to the saved .keras model.",
 )
 @click.option(
+    "--config-file",
+    default="./config/arg_plates.yaml",
+    show_default=True,
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="Path pointing to the model license plate OCR config.",
+)
+@click.option(
     "-d",
     "--img-dir",
     type=click.Path(exists=True, dir_okay=True, file_okay=False, path_type=pathlib.Path),
@@ -118,55 +119,19 @@ def display_predictions(
     is_flag=True,
     help="Log time taken to run predictions.",
 )
-@click.option(
-    "--height",
-    "-h",
-    type=int,
-    default=DEFAULT_IMG_HEIGHT,
-    show_default=True,
-    help="Height to which the images will be resize.",
-)
-@click.option(
-    "--width",
-    "-w",
-    type=int,
-    default=DEFAULT_IMG_WIDTH,
-    show_default=True,
-    help="Width to which the images will be resize.",
-)
-@click.option(
-    "--plate-slots",
-    default=MAX_PLATE_SLOTS,
-    show_default=True,
-    type=int,
-    help="Max number of plate slots supported. Plates with less slots will be padded.",
-)
-@click.option(
-    "--alphabet",
-    default=MODEL_ALPHABET,
-    show_default=True,
-    type=str,
-    help="Model vocabulary. This must include the padding symbol.",
-)
-@click.option(
-    "--vocab-size",
-    default=VOCABULARY_SIZE,
-    show_default=True,
-    type=int,
-    help="Size of the vocabulary. This should match '--alphabet' length.",
-)
 def visualize_predictions(
     model_path: pathlib.Path,
+    config_file: pathlib.Path,
     img_dir: pathlib.Path,
-    height: int,
-    width: int,
-    plate_slots: int,
-    alphabet: str,
-    vocab_size: int,
     time: bool,
 ):
-    model = utils.load_keras_model(model_path, vocab_size=vocab_size, max_plate_slots=plate_slots)
-    images = utils.load_images_from_folder(img_dir, width=width, height=height)
+    config = load_config_from_yaml(config_file)
+    model = utils.load_keras_model(
+        model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
+    )
+    images = utils.load_images_from_folder(
+        img_dir, width=config.img_width, height=config.img_height
+    )
     for image in images:
         with utils.log_time_taken("Prediction time") if time else nullcontext():
             x = np.expand_dims(image, 0)
@@ -175,9 +140,9 @@ def visualize_predictions(
         display_predictions(
             image=image,
             prediction=prediction,
-            alphabet=alphabet,
-            plate_slots=plate_slots,
-            vocab_size=vocab_size,
+            alphabet=config.alphabet,
+            plate_slots=config.max_plate_slots,
+            vocab_size=config.vocabulary_size,
         )
     cv2.destroyAllWindows()
 

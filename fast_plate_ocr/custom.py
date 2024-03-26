@@ -4,13 +4,8 @@ Custom metrics and loss functions.
 
 from keras import losses, metrics, ops
 
-from fast_plate_ocr.config import MAX_PLATE_SLOTS, VOCABULARY_SIZE
 
-
-def cat_acc_metric(
-    max_plate_slots: int = MAX_PLATE_SLOTS,
-    vocabulary_size: int = VOCABULARY_SIZE,
-):
+def cat_acc_metric(max_plate_slots: int, vocabulary_size: int):
     """
     Categorical accuracy metric.
     """
@@ -28,10 +23,7 @@ def cat_acc_metric(
     return cat_acc
 
 
-def plate_acc_metric(
-    max_plate_slots: int = MAX_PLATE_SLOTS,
-    vocabulary_size: int = VOCABULARY_SIZE,
-):
+def plate_acc_metric(max_plate_slots: int, vocabulary_size: int):
     """
     Plate accuracy metric.
     """
@@ -50,7 +42,7 @@ def plate_acc_metric(
     return plate_acc
 
 
-def top_3_k_metric(vocabulary_size: int = VOCABULARY_SIZE):
+def top_3_k_metric(vocabulary_size: int):
     """
     Top 3 K categorical accuracy metric.
     """
@@ -69,7 +61,7 @@ def top_3_k_metric(vocabulary_size: int = VOCABULARY_SIZE):
 
 
 # Custom loss
-def cce_loss(vocabulary_size: int = VOCABULARY_SIZE):
+def cce_loss(vocabulary_size: int):
     """
     Categorical cross-entropy loss.
     """

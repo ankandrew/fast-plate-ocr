@@ -8,7 +8,7 @@ import click
 from torch.utils.data import DataLoader
 
 from fast_plate_ocr import utils
-from fast_plate_ocr.config import MAX_PLATE_SLOTS, MODEL_ALPHABET, PAD_CHAR, VOCABULARY_SIZE
+from fast_plate_ocr.config import load_config_from_yaml
 
 # Custom metris / losses
 from fast_plate_ocr.dataset import LicensePlateDataset
@@ -22,6 +22,13 @@ from fast_plate_ocr.dataset import LicensePlateDataset
     required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path to the saved .keras model.",
+)
+@click.option(
+    "--config-file",
+    default="./config/arg_plates.yaml",
+    show_default=True,
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="Path pointing to the model license plate OCR config.",
 )
 @click.option(
     "-a",
@@ -39,51 +46,18 @@ from fast_plate_ocr.dataset import LicensePlateDataset
     type=int,
     help="Batch size.",
 )
-@click.option(
-    "--plate-slots",
-    default=MAX_PLATE_SLOTS,
-    show_default=True,
-    type=int,
-    help="Max number of plate slots supported. Plates with less slots will be padded.",
-)
-@click.option(
-    "--alphabet",
-    default=MODEL_ALPHABET,
-    show_default=True,
-    type=str,
-    help="Model vocabulary. This must include the padding symbol.",
-)
-@click.option(
-    "--vocab-size",
-    default=VOCABULARY_SIZE,
-    show_default=True,
-    type=int,
-    help="Size of the vocabulary. This should match '--alphabet' length.",
-)
-@click.option(
-    "--pad-char",
-    default=PAD_CHAR,
-    show_default=True,
-    type=str,
-    help="Padding char for plates with length less than '--plate-slots'.",
-)
 def valid(
     model_path: pathlib.Path,
+    config_file: pathlib.Path,
     annotations: pathlib.Path,
     batch_size: int,
-    plate_slots: int,
-    alphabet: str,
-    vocab_size: int,
-    pad_char: str,
 ) -> None:
     """Validate a model for a given annotated data."""
-    model = utils.load_keras_model(model_path, vocab_size=vocab_size, max_plate_slots=plate_slots)
-    val_torch_dataset = LicensePlateDataset(
-        annotations_file=annotations,
-        max_plate_slots=plate_slots,
-        alphabet=alphabet,
-        pad_char=pad_char,
+    config = load_config_from_yaml(config_file)
+    model = utils.load_keras_model(
+        model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
     )
+    val_torch_dataset = LicensePlateDataset(annotations_file=annotations, config=config)
     val_dataloader = DataLoader(val_torch_dataset, batch_size=batch_size, shuffle=False)
     model.evaluate(val_dataloader)
 
