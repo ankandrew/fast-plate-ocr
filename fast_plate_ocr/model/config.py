@@ -2,10 +2,10 @@
 Config values used throughout the code.
 """
 
+from os import PathLike
+
 import yaml
 from pydantic import BaseModel, computed_field, model_validator
-
-from fast_plate_ocr.custom_types import FilePath
 
 
 class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
@@ -47,7 +47,7 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
         return self
 
 
-def load_config_from_yaml(yaml_file_path: FilePath) -> PlateOCRConfig:
+def load_config_from_yaml(yaml_file_path: str | PathLike[str]) -> PlateOCRConfig:
     """Read and parse a yaml containing the Plate OCR config."""
     with open(yaml_file_path, encoding="utf-8") as f_in:
         yaml_content = yaml.safe_load(f_in)

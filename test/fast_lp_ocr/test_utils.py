@@ -4,7 +4,7 @@ Test utils module.
 
 import pytest
 
-from fast_plate_ocr import utils
+from fast_plate_ocr.utilities import utils
 
 
 @pytest.mark.parametrize(

@@ -3,8 +3,10 @@ Utils for Keras supported backends.
 """
 
 import os
+from typing import Literal, TypeAlias
 
-from fast_plate_ocr.custom_types import Framework
+Framework: TypeAlias = Literal["jax", "tensorflow", "torch"]
+"""Supported backend frameworks for Keras."""
 
 
 def set_jax_backend() -> None:

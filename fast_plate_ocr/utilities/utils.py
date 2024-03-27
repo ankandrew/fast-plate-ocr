@@ -14,7 +14,7 @@ import keras
 import numpy as np
 import numpy.typing as npt
 
-from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
+from fast_plate_ocr.model.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
 
 
 def one_hot_plate(plate: str, alphabet: str) -> list[list[int]]:

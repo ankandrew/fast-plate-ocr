@@ -2,19 +2,20 @@
 Dataset module.
 """
 
+from os import PathLike
+
 import albumentations as A
 import pandas as pd
 from torch.utils.data import Dataset
 
-from fast_plate_ocr import utils
-from fast_plate_ocr.config import PlateOCRConfig
-from fast_plate_ocr.custom_types import FilePath
+from fast_plate_ocr.model.config import PlateOCRConfig
+from fast_plate_ocr.utilities import utils
 
 
 class LicensePlateDataset(Dataset):
     def __init__(
         self,
-        annotations_file: FilePath,
+        annotations_file: str | PathLike[str],
         config: PlateOCRConfig,
         transform: A.Compose | None = None,
     ):

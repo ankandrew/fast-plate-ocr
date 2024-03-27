@@ -17,7 +17,7 @@ from keras.layers import (
 )
 from keras.models import Model
 
-from fast_plate_ocr.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
+from fast_plate_ocr.model.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
 
 
 def modelo_2m(

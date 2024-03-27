@@ -7,7 +7,7 @@ from test import PROJECT_ROOT_DIR
 
 import pytest
 
-from fast_plate_ocr.config import PlateOCRConfig, load_config_from_yaml
+from fast_plate_ocr.model.config import PlateOCRConfig, load_config_from_yaml
 
 
 @pytest.mark.parametrize(
