@@ -11,9 +11,8 @@ import cv2
 import keras
 import numpy as np
 
-from fast_plate_ocr import utils
-from fast_plate_ocr.config import load_config_from_yaml
-from fast_plate_ocr.utils import display_predictions
+from fast_plate_ocr.model.config import load_config_from_yaml
+from fast_plate_ocr.utilities import utils
 
 logging.basicConfig(level=logging.INFO)
 
@@ -76,7 +75,7 @@ def visualize_predictions(
             x = np.expand_dims(image, 0)
             prediction = model(x, training=False)
             prediction = keras.ops.stop_gradient(prediction).numpy()
-        display_predictions(
+        utils.display_predictions(
             image=image,
             prediction=prediction,
             alphabet=config.alphabet,

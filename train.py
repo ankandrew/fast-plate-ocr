@@ -11,11 +11,11 @@ from keras.optimizers import Adam
 from keras.src.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
-from fast_plate_ocr.augmentation import TRAIN_AUGMENTATION
-from fast_plate_ocr.config import load_config_from_yaml
-from fast_plate_ocr.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
-from fast_plate_ocr.dataset import LicensePlateDataset
-from fast_plate_ocr.models import modelo_1m_cpu, modelo_2m
+from fast_plate_ocr.data.augmentation import TRAIN_AUGMENTATION
+from fast_plate_ocr.data.dataset import LicensePlateDataset
+from fast_plate_ocr.model.config import load_config_from_yaml
+from fast_plate_ocr.model.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
+from fast_plate_ocr.model.models import modelo_1m_cpu, modelo_2m
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
