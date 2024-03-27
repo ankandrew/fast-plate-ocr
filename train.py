@@ -7,7 +7,7 @@ from datetime import datetime
 
 import click
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard
-from keras.optimizers import Adam
+from keras.optimizers import AdamW
 from keras.src.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
@@ -107,6 +107,13 @@ from fast_plate_ocr.model.models import modelo_1m_cpu, modelo_2m
     type=int,
     help="Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs.",
 )
+@click.option(
+    "--weight-decay",
+    default=0.01,
+    show_default=True,
+    type=float,
+    help="Weight decay value.",
+)
 def train(
     model_type: str,
     dense: bool,
@@ -121,6 +128,7 @@ def train(
     tensorboard_dir: str,
     early_stopping_patience: int,
     reduce_lr_patience: int,
+    weight_decay: float,
 ) -> None:
     config = load_config_from_yaml(config_file)
     train_torch_dataset = LicensePlateDataset(
@@ -158,7 +166,7 @@ def train(
         )
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size),
-        optimizer=Adam(lr),
+        optimizer=AdamW(lr, weight_decay=weight_decay),
         metrics=[
             cat_acc_metric(
                 max_plate_slots=config.max_plate_slots, vocabulary_size=config.vocabulary_size
