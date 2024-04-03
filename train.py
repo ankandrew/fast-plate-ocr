@@ -5,6 +5,7 @@ Script for training the License Plate OCR models.
 import pathlib
 from datetime import datetime
 
+import albumentations as A
 import click
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard
 from keras.optimizers import Adam
@@ -46,6 +47,11 @@ from fast_plate_ocr.model.models import cnn_ocr_model
     required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the train validation CSV file.",
+)
+@click.option(
+    "--augmentation-path",
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="YAML file pointing to the augmentation pipeline saved with Albumentations.save(...)",
 )
 @click.option(
     "--lr",
@@ -90,14 +96,14 @@ from fast_plate_ocr.model.models import cnn_ocr_model
 )
 @click.option(
     "--early-stopping-patience",
-    default=120,
+    default=100,
     show_default=True,
     type=int,
     help="Stop training when 'val_plate_acc' doesn't improve for X epochs.",
 )
 @click.option(
     "--reduce-lr-patience",
-    default=100,
+    default=60,
     show_default=True,
     type=int,
     help="Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs.",
@@ -107,6 +113,7 @@ def train(
     config_file: pathlib.Path,
     annotations: pathlib.Path,
     val_annotations: pathlib.Path,
+    augmentation_path: pathlib.Path | None,
     lr: float,
     batch_size: int,
     output_dir: pathlib.Path,
@@ -116,10 +123,13 @@ def train(
     early_stopping_patience: int,
     reduce_lr_patience: int,
 ) -> None:
+    train_augmentation = (
+        A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
+    )
     config = load_config_from_yaml(config_file)
     train_torch_dataset = LicensePlateDataset(
         annotations_file=annotations,
-        transform=TRAIN_AUGMENTATION,
+        transform=train_augmentation,
         config=config,
     )
     train_dataloader = DataLoader(train_torch_dataset, batch_size=batch_size, shuffle=True)
