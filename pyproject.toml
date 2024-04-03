@@ -19,6 +19,8 @@ click = "^8.1.7"
 tensorflow = "^2.16.1"
 pydantic = "^2.0.0"
 pyyaml = "^6.0.1"
+tf2onnx = "^1.16.1"
+onnxruntime = "^1.17.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
@@ -70,9 +72,8 @@ max-args = 8
 [tool.ruff.format]
 line-ending = "lf"
 
-[[tool.mypy.overrides]]
-module = ["keras.*", "tensorflow.*", "albumentations"]
-ignore_missing_imports = true
+[tool.mypy]
+disable_error_code = "import-untyped"
 
 [tool.pylint.typecheck]
 generated-members = ["cv2.*"]
