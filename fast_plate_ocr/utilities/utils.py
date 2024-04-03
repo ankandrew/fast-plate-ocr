@@ -50,7 +50,7 @@ def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.ND
 
 
 def load_keras_model(
-    model_path: pathlib.Path,
+    model_path: str | pathlib.Path,
     vocab_size: int,
     max_plate_slots: int,
 ) -> keras.Model:
