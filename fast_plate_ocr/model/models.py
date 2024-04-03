@@ -17,10 +17,10 @@ from keras.layers import (
 )
 from keras.models import Model
 
-from fast_plate_ocr.model.layer_blocks import block_bn, block_bn_sep_conv_l2, block_no_activation
+from fast_plate_ocr.model.layer_blocks import block_bn, block_no_activation
 
 
-def modelo_2m(
+def cnn_ocr_model(
     h: int,
     w: int,
     max_plate_slots: int,
@@ -28,7 +28,7 @@ def modelo_2m(
     dense: bool = True,
 ) -> Model:
     """
-    2M parameter model that uses normal Convolutional layers (not Depthwise Convolutional layers).
+    OCR model implemented with just CNN layers.
     """
     input_tensor = Input((h, w, 1))
     x = Rescaling(1.0 / 255)(input_tensor)
@@ -48,41 +48,6 @@ def modelo_2m(
     x, _ = block_bn(x, k=3, n_c=256, s=1, padding="same")
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
     x, _ = block_bn(x, k=1, n_c=512, s=1, padding="same")
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
-    x, _ = block_bn(x, k=1, n_c=1024, s=1, padding="same")
-    x = (
-        head(x, max_plate_slots, vocabulary_size)
-        if dense
-        else head_no_fc(x, max_plate_slots, vocabulary_size)
-    )
-    return Model(inputs=input_tensor, outputs=x)
-
-
-def modelo_1m_cpu(
-    h: int,
-    w: int,
-    max_plate_slots: int,
-    vocabulary_size: int,
-    dense: bool = True,
-) -> Model:
-    """
-    1.2M parameter model that uses Depthwise Convolutional layers, more suitable for low-end devices
-    """
-    input_tensor = Input((h, w, 1))
-    x = Rescaling(1.0 / 255)(input_tensor)
-    x, _ = block_bn(x, k=3, n_c=32, s=1, padding="same")
-    x, _ = block_bn(x, k=3, n_c=64, s=1, padding="same")
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
-    x, _ = block_bn(x, k=3, n_c=64, s=1, padding="same")
-    x, _ = block_bn(x, k=3, n_c=128, s=1, padding="same")
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
-    x, _ = block_bn(x, k=1, n_c=128, s=1, padding="same")
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
-    x, _ = block_bn_sep_conv_l2(x, k=3, n_c=128, s=1, padding="same", depth_multiplier=1)
-    x, _ = block_bn(x, k=1, n_c=256, s=1, padding="same")
-    x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
-    x, _ = block_bn_sep_conv_l2(x, k=3, n_c=256, s=1, padding="same", depth_multiplier=1)
-    x, _ = block_bn_sep_conv_l2(x, k=1, n_c=512, s=1, padding="same", depth_multiplier=1)
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
     x, _ = block_bn(x, k=1, n_c=1024, s=1, padding="same")
     x = (

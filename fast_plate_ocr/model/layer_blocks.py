@@ -54,7 +54,6 @@ def block_bn_no_l2(i, k=3, n_c=64, s=1, padding="same"):
     return x2, x1
 
 
-# Para CPU
 def block_bn_sep_conv_l2(i, k=3, n_c=64, s=1, padding="same", depth_multiplier=1):
     l2_kernel_reg = regularizers.l2(0.01)
     x1 = SeparableConv2D(

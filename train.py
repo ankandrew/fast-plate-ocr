@@ -15,18 +15,13 @@ from fast_plate_ocr.data.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.data.dataset import LicensePlateDataset
 from fast_plate_ocr.model.config import load_config_from_yaml
 from fast_plate_ocr.model.custom import cat_acc_metric, cce_loss, plate_acc_metric, top_3_k_metric
-from fast_plate_ocr.model.models import modelo_1m_cpu, modelo_2m
+from fast_plate_ocr.model.models import cnn_ocr_model
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
 
 
 @click.command(context_settings={"max_content_width": 140})
-@click.option(
-    "--model-type",
-    type=click.Choice(["1m_cpu", "2m"]),
-    help="Type of model to train. See fast_plate_ocr/models.py module.",
-)
 @click.option(
     "--dense/--no-dense",
     default=True,
@@ -108,7 +103,6 @@ from fast_plate_ocr.model.models import modelo_1m_cpu, modelo_2m
     help="Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs.",
 )
 def train(
-    model_type: str,
     dense: bool,
     config_file: pathlib.Path,
     annotations: pathlib.Path,
@@ -140,22 +134,13 @@ def train(
         val_dataloader = None
 
     # Train
-    if model_type == "1m_cpu":
-        model = modelo_1m_cpu(
-            h=config.img_height,
-            w=config.img_width,
-            dense=dense,
-            max_plate_slots=config.max_plate_slots,
-            vocabulary_size=config.vocabulary_size,
-        )
-    else:
-        model = modelo_2m(
-            h=config.img_height,
-            w=config.img_width,
-            dense=dense,
-            max_plate_slots=config.max_plate_slots,
-            vocabulary_size=config.vocabulary_size,
-        )
+    model = cnn_ocr_model(
+        h=config.img_height,
+        w=config.img_width,
+        dense=dense,
+        max_plate_slots=config.max_plate_slots,
+        vocabulary_size=config.vocabulary_size,
+    )
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size),
         optimizer=Adam(lr),
@@ -172,7 +157,7 @@ def train(
 
     output_dir /= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     output_dir.mkdir(parents=True, exist_ok=True)
-    model_file_path = output_dir / (f"{model_type}-" + "{epoch:02d}-{val_plate_acc:.3f}.keras")
+    model_file_path = output_dir / "{epoch:02d}-{val_plate_acc:.3f}.keras"
 
     callbacks = [
         # Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs
