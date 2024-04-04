@@ -7,10 +7,11 @@ import pathlib
 import click
 from torch.utils.data import DataLoader
 
+from fast_plate_ocr.train.data.dataset import LicensePlateDataset
+
 # Custom metris / losses
-from fast_plate_ocr.data.dataset import LicensePlateDataset
-from fast_plate_ocr.model.config import load_config_from_yaml
-from fast_plate_ocr.utilities import utils
+from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.utilities import utils
 
 
 @click.command(context_settings={"max_content_width": 140})

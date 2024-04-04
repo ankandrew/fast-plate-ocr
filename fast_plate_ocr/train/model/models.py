@@ -17,7 +17,7 @@ from keras.layers import (
 )
 from keras.models import Model
 
-from fast_plate_ocr.model.layer_blocks import block_bn, block_no_activation
+from fast_plate_ocr.train.model.layer_blocks import block_bn, block_no_activation
 
 
 def cnn_ocr_model(

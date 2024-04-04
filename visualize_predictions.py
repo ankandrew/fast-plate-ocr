@@ -11,8 +11,8 @@ import cv2
 import keras
 import numpy as np
 
-from fast_plate_ocr.model.config import load_config_from_yaml
-from fast_plate_ocr.utilities import utils
+from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.utilities import utils
 
 logging.basicConfig(level=logging.INFO)
 

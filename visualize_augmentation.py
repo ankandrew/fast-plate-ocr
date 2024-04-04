@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 
-from fast_plate_ocr.data.augmentation import TRAIN_AUGMENTATION
-from fast_plate_ocr.utilities import utils
+from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
+from fast_plate_ocr.train.utilities import utils
 
 
 def _set_seed(seed: int | None) -> None:

@@ -5,7 +5,7 @@ Test the custom metric/losses module.
 # ruff: noqa: E402
 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
 # fmt: off
-from fast_plate_ocr.utilities.backend_utils import set_pytorch_backend
+from fast_plate_ocr.train.utilities.backend_utils import set_pytorch_backend
 
 set_pytorch_backend()
 # fmt: on
@@ -13,7 +13,7 @@ set_pytorch_backend()
 import pytest
 import torch
 
-from fast_plate_ocr.model.custom import cat_acc_metric, plate_acc_metric
+from fast_plate_ocr.train.model.custom import cat_acc_metric, plate_acc_metric
 
 
 @pytest.mark.parametrize(

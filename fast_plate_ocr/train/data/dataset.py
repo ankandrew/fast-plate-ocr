@@ -8,8 +8,8 @@ import albumentations as A
 import pandas as pd
 from torch.utils.data import Dataset
 
-from fast_plate_ocr.model.config import PlateOCRConfig
-from fast_plate_ocr.utilities import utils
+from fast_plate_ocr.train.model.config import PlateOCRConfig
+from fast_plate_ocr.train.utilities import utils
 
 
 class LicensePlateDataset(Dataset):

@@ -12,8 +12,8 @@ import tensorflow as tf
 import tf2onnx
 from tf2onnx import constants as tf2onnx_constants
 
-from fast_plate_ocr.model.config import load_config_from_yaml
-from fast_plate_ocr.utilities.utils import load_keras_model, log_time_taken
+from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.utilities.utils import load_keras_model, log_time_taken
 
 logging.basicConfig(level=logging.INFO)
 
