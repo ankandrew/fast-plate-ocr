@@ -2613,6 +2613,26 @@ opt-einsum = ["opt-einsum (>=3.3)"]
 optree = ["optree (>=0.9.1)"]
 
 [[package]]
+name = "tqdm"
+version = "4.66.2"
+description = "Fast, Extensible Progress Meter"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tqdm-4.66.2-py3-none-any.whl", hash = "sha256:1ee4f8a893eb9bef51c6e35730cebf234d5d0b6bd112b0271e10ed7c24a02bd9"},
+    {file = "tqdm-4.66.2.tar.gz", hash = "sha256:6cd52cdf0fef0e0f543299cfc96fec90d7b8a7e88745f411ec33eb44d5ed3531"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout", "pytest-xdist"]
+notebook = ["ipywidgets (>=6)"]
+slack = ["slack-sdk"]
+telegram = ["requests"]
+
+[[package]]
 name = "triton"
 version = "2.2.0"
 description = "A language and compiler for custom Deep Learning operations"
@@ -2809,4 +2829,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4027f1faa123a56520fca524e21b88db2777062252fea64c494f4a5ee7c5b82c"
+content-hash = "8aa561c41ffdbb6c6bac7daccb3fc66bc1d096221fb8942db7fedd6efa9cd44b"
