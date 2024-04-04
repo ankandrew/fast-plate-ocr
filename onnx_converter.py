@@ -67,8 +67,7 @@ def export_model_as_onnx(
         output_path=output_path,
     )
     output_names = [n.name for n in model_proto.graph.output]
-    x = np.random.randint(0, 256, size=(config.img_height, config.img_width, 1), dtype=np.uint8)
-    x = np.expand_dims(x, 0)
+    x = np.random.randint(0, 256, size=(1, config.img_height, config.img_width, 1), dtype=np.uint8)
     providers = ["CPUExecutionProvider"]
     # Run dummy inference and log time taken
     m = rt.InferenceSession(output_path, providers=providers)
