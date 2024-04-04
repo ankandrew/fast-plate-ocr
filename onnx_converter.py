@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.INFO)
     help="Path to the saved .keras model.",
 )
 @click.option(
-    "--out-name",
+    "--output-path",
     required=True,
     type=str,
     help="Output name for ONNX model",
@@ -48,7 +48,7 @@ logging.basicConfig(level=logging.INFO)
 )
 def export_model_as_onnx(
     model_path: pathlib.Path,
-    out_name: str,
+    output_path: str,
     config_file: pathlib.Path,
     opset: int,
 ) -> None:
@@ -59,7 +59,6 @@ def export_model_as_onnx(
         max_plate_slots=config.max_plate_slots,
     )
     spec = (tf.TensorSpec((None, config.img_height, config.img_width, 1), tf.uint8, name="input"),)
-    output_path = f"{out_name}.onnx"
     # Convert from Keras to ONNX using tf2onnx library
     model_proto, _ = tf2onnx.convert.from_keras(
         model,
