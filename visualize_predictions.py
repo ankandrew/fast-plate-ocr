@@ -11,6 +11,7 @@ import cv2
 import keras
 import numpy as np
 
+import fast_plate_ocr.common.utils
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
 
@@ -71,7 +72,9 @@ def visualize_predictions(
         img_dir, width=config.img_width, height=config.img_height
     )
     for image in images:
-        with utils.log_time_taken("Prediction time") if time else nullcontext():
+        with (
+            fast_plate_ocr.common.utils.log_time_taken("Prediction time") if time else nullcontext()
+        ):
             x = np.expand_dims(image, 0)
             prediction = model(x, training=False)
             prediction = keras.ops.stop_gradient(prediction).numpy()

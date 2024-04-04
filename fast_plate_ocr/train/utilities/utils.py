@@ -5,9 +5,6 @@ Utility functions module
 import logging
 import pathlib
 import random
-import time
-from collections.abc import Iterator
-from contextlib import contextmanager
 
 import cv2
 import keras
@@ -95,18 +92,6 @@ def load_images_from_folder(
         random.shuffle(image_paths)
     images = [read_plate_image(i, img_height=height, img_width=width) for i in image_paths]
     return images
-
-
-@contextmanager
-def log_time_taken(process_name: str) -> Iterator[None]:
-    """A concise context manager to time code snippets and log the result."""
-    time_start: float = time.perf_counter()
-    try:
-        yield
-    finally:
-        time_end: float = time.perf_counter()
-        time_elapsed: float = time_end - time_start
-        logging.info("Computation time of '%s' = %.3fms", process_name, 1000 * time_elapsed)
 
 
 def postprocess_model_output(
