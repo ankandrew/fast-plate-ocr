@@ -13,7 +13,7 @@ import tf2onnx
 from tf2onnx import constants as tf2onnx_constants
 
 from fast_plate_ocr.model.config import load_config_from_yaml
-from fast_plate_ocr.utilities.utils import load_keras_model, log_time_taken, read_plate_image
+from fast_plate_ocr.utilities.utils import load_keras_model, log_time_taken
 
 logging.basicConfig(level=logging.INFO)
 
@@ -70,11 +70,7 @@ def export_model_as_onnx(
         output_path=output_path,
     )
     output_names = [n.name for n in model_proto.graph.output]
-    x = read_plate_image(
-        "assets/benchmark/imgs/night_50226_98.png",
-        config.img_height,
-        config.img_width,
-    )
+    x = np.random.randint(0, 256, size=(config.img_height, config.img_width, 1), dtype=np.uint8)
     x = np.expand_dims(x, 0)
     providers = ["CPUExecutionProvider"]
     # Run dummy inference and log time taken
