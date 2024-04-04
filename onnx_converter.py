@@ -28,9 +28,14 @@ logging.basicConfig(level=logging.INFO)
     help="Path to the saved .keras model.",
 )
 @click.option(
+    "--out-name",
+    required=True,
+    type=str,
+    help="Output name for ONNX model",
+)
+@click.option(
     "--config-file",
-    default="./config/arg_plates.yaml",
-    show_default=True,
+    required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
 )
@@ -41,18 +46,11 @@ logging.basicConfig(level=logging.INFO)
     show_default=True,
     help="Opset version for ONNX.",
 )
-@click.option(
-    "--out-name",
-    default="cnn_ocr_model",
-    type=str,
-    show_default=True,
-    help="Output name for ONNX model",
-)
 def export_model_as_onnx(
     model_path: pathlib.Path,
+    out_name: str,
     config_file: pathlib.Path,
     opset: int,
-    out_name: str,
 ) -> None:
     config = load_config_from_yaml(config_file)
     model = load_keras_model(
