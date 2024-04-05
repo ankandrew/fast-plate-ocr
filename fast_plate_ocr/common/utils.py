@@ -4,8 +4,8 @@ Common utilities used across the package.
 
 import logging
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 
 @contextmanager
