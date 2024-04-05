@@ -5,6 +5,7 @@ ONNX inference module.
 import logging
 from contextlib import nullcontext
 
+import numpy as np
 import numpy.typing as npt
 import onnxruntime as ort
 
@@ -14,6 +15,28 @@ from fast_plate_ocr.inference import hub
 from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
 
 logging.basicConfig(level=logging.INFO)
+
+
+def _load_image_from_source(source: str | list[str] | npt.NDArray) -> npt.NDArray:
+    """
+    Loads an image from a given source.
+
+    :param source: Path to the input image file or numpy array representing the image.
+    :return: Numpy array representing the input image.
+    """
+    if isinstance(source, str):
+        return read_plate_image(source)
+
+    if isinstance(source, list) and isinstance(source[0], str):
+        return np.array([read_plate_image(i) for i in source])
+
+    if isinstance(source, np.ndarray):
+        if source.ndim > 3:
+            raise ValueError("Expected source to be of shape (H, W, 1) or (H, W) or (1, H, W, 1)")
+        source = source.squeeze()
+        return source
+
+    raise ValueError("Unsupported input type. Only file path or numpy array is supported.")
 
 
 class ONNXInference:
@@ -45,17 +68,17 @@ class ONNXInference:
 
     def run(
         self,
-        image_path: str,
+        source: str | list[str] | npt.NDArray,
         return_confidence: bool = False,
     ) -> tuple[list[str], npt.NDArray] | list[str]:
         """
         Runs inference on an image.
 
-        :param image_path: Path to the input image file.
+        :param source: Path to the input image file or numpy array representing the image.
         :param return_confidence: Whether to return confidence scores along with plate predictions.
         :return: Decoded license plate characters as a list.
         """
-        x = read_plate_image(image_path)
+        x = _load_image_from_source(source)
         with log_time_taken("Pre-process") if self.log_time else nullcontext():
             x = preprocess_image(x, self.config["img_height"], self.config["img_width"])
         with log_time_taken("Model run") if self.log_time else nullcontext():
