@@ -95,6 +95,7 @@ disable = ["missing-class-docstring", "missing-function-docstring"]
 
 [tool.pylint.design]
 max-args = 8
+min-public-methods = 1
 
 [tool.pylint.basic]
 no-docstring-rgx = "^__|^test_"
