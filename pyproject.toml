@@ -23,12 +23,18 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
+# Packages required for doing inference
 numpy = "*"
 onnxruntime = "*"
 opencv-python = "*"
 pyyaml = "*"
 tqdm = "*"
 
+# By default, we install onnx CPU runtime
+# Since onnxruntime-gpu depends on CUDA, don't install on macOS
+onnxruntime-gpu = { version = "*", markers = "sys_platform != 'darwin'", optional = true}
+
+# Training packages are optional
 albumentations = { version = "*", optional = true }
 click = { version = "*", optional = true }
 keras = { version = ">=3.1.1", optional = true }
@@ -41,6 +47,7 @@ tf2onnx = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 
 [tool.poetry.extras]
+inference_gpu = ["onnxruntime-gpu"]
 train = [
     "albumentations",
     "click",

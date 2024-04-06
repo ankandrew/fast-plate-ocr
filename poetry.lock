@@ -1459,6 +1459,33 @@ protobuf = "*"
 sympy = "*"
 
 [[package]]
+name = "onnxruntime-gpu"
+version = "1.17.1"
+description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
+optional = true
+python-versions = "*"
+files = [
+    {file = "onnxruntime_gpu-1.17.1-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:a55fe84ee11a59ea069c6a790ee960f1c7da0d7d6c74822b2a8b357027c93646"},
+    {file = "onnxruntime_gpu-1.17.1-cp310-cp310-win_amd64.whl", hash = "sha256:a9abefceb32879cbee9f57977d6bb8d58cbac501f8a64bf96bca2f4fdff157fe"},
+    {file = "onnxruntime_gpu-1.17.1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:b2cd54f2b0a05e6bc9ab30182b859364d30115a19c31be24aa2edef40be00277"},
+    {file = "onnxruntime_gpu-1.17.1-cp311-cp311-win_amd64.whl", hash = "sha256:bdffcced8a5f6275c0df202220e9232138b336f868cd671c9d2c571e834d2a80"},
+    {file = "onnxruntime_gpu-1.17.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:a1c871e8d0ae4121ea6528fc9410a5a7cbc5e43714b30521d5514fd10b987c83"},
+    {file = "onnxruntime_gpu-1.17.1-cp312-cp312-win_amd64.whl", hash = "sha256:9a0a94eda080e9f4a8e5035fdf0b3c24f5533e7861d88833a94493e63fca0812"},
+    {file = "onnxruntime_gpu-1.17.1-cp38-cp38-manylinux_2_28_x86_64.whl", hash = "sha256:624fdb65a632833f13de36854855818680be4f77942d8114524491d58f60d3ab"},
+    {file = "onnxruntime_gpu-1.17.1-cp38-cp38-win_amd64.whl", hash = "sha256:29fa78d232bbb5a5be3a3e0a022148a7b3df2ca66b4c21a11eef56e6f22859e9"},
+    {file = "onnxruntime_gpu-1.17.1-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:b0f8c70f2f9aeae825f3a397cc0c5f45124f9ae7c173263cf13c495982b0b99a"},
+    {file = "onnxruntime_gpu-1.17.1-cp39-cp39-win_amd64.whl", hash = "sha256:b1a27a104334461b690e4fc62775e1e71c68936399874932225d7fea21a0c261"},
+]
+
+[package.dependencies]
+coloredlogs = "*"
+flatbuffers = "*"
+numpy = ">=1.21.6"
+packaging = "*"
+protobuf = "*"
+sympy = "*"
+
+[[package]]
 name = "opencv-python"
 version = "4.9.0.80"
 description = "Wrapper package for OpenCV python bindings."
@@ -2830,9 +2857,10 @@ files = [
 ]
 
 [extras]
+inference-gpu = ["onnxruntime-gpu"]
 train = ["albumentations", "click", "keras", "matplotlib", "pandas", "pydantic", "tensorboard", "tensorflow", "tf2onnx", "torch"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b960a8032116bfa783eaa3227526a474815fb339b162800d310d271a645ed189"
+content-hash = "4ea60388842240b61706492fb85553baf51718a12eebbe2cf647cc059b130490"
