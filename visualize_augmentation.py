@@ -1,11 +1,12 @@
 """
-Script for visualize the augmented plates used during training.
+Script to visualize the augmented plates used during training.
 """
 
 import pathlib
 import random
 from math import ceil
 
+import albumentations as A
 import click
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,11 +29,12 @@ def load_images(
     shuffle: bool,
     height: int,
     width: int,
+    augmentation: A.Compose,
 ) -> tuple[list[npt.NDArray[np.uint8]], list[npt.NDArray[np.uint8]]]:
     images = utils.load_images_from_folder(
         img_dir, height=height, width=width, shuffle=shuffle, limit=num_images
     )
-    augmented_images = [TRAIN_AUGMENTATION(image=i)["image"] for i in images]
+    augmented_images = [augmentation(image=i)["image"] for i in images]
     return images, augmented_images
 
 
@@ -68,7 +70,11 @@ def display_images(
 # pylint: disable=too-many-arguments,too-many-locals
 
 
-@click.command()
+@click.command(
+    help="Script to visualize the augmented plates used during training. The augmentation can be "
+    "the predefined one or a custom Albumentations augmentation pipeline.",
+    context_settings={"max_content_width": 120},
+)
 @click.option(
     "--img-dir",
     "-d",
@@ -83,6 +89,11 @@ def display_images(
     default=1_000,
     show_default=True,
     help="Maximum number of images to visualize.",
+)
+@click.option(
+    "--augmentation-path",
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="YAML file pointing to the augmentation pipeline saved with Albumentations.save(...)",
 )
 @click.option(
     "--shuffle",
@@ -137,6 +148,7 @@ def display_images(
 def visualize_augmentation(
     img_dir: pathlib.Path,
     num_images: int,
+    augmentation_path: pathlib.Path | None,
     shuffle: bool,
     columns: int,
     rows: int,
@@ -146,7 +158,8 @@ def visualize_augmentation(
     show_original: bool,
 ) -> None:
     _set_seed(seed)
-    images, augmented_images = load_images(img_dir, num_images, shuffle, height, width)
+    aug = A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
+    images, augmented_images = load_images(img_dir, num_images, shuffle, height, width, aug)
     display_images(images, augmented_images, columns, rows, show_original)
 
 
