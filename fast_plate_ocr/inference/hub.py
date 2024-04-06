@@ -40,7 +40,7 @@ def _download_with_progress(url: str, filename: pathlib.Path) -> None:
             raise ValueError(f"Failed to download file from {url}. Status code: {response.status}")
 
         file_size = int(response.headers.get("Content-Length", 0))
-        desc = "(Unknown total file size)" if file_size == 0 else ""
+        desc = f"Downloading {filename.name}"
 
         with tqdm.wrapattr(out_file, "write", total=file_size, desc=desc) as f_out:
             shutil.copyfileobj(response, f_out)
