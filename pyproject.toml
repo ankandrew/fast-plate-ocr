@@ -22,21 +22,36 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-opencv-python = "^4.9.0.80"
-matplotlib = "^3.8.3"
-pandas = "^2.2.1"
-numpy = "^1.26.4"
-keras = "^3.0.5"
-albumentations = "^1.4.1"
-tensorboard = "^2.16.2"
-torch = "^2.2.1"
-click = "^8.1.7"
-tensorflow = "^2.16.1"
-pydantic = "^2.0.0"
-pyyaml = "^6.0.1"
-tf2onnx = "^1.16.1"
-onnxruntime = "^1.17.1"
+numpy = "*"
+onnxruntime = "*"
+opencv-python = "*"
+pyyaml = "*"
 tqdm = "*"
+
+albumentations = { version = "*", optional = true }
+click = { version = "*", optional = true }
+keras = { version = ">=3.1.1", optional = true }
+matplotlib = { version = "*", optional = true }
+pandas = { version   = "*", optional = true }
+pydantic = { version = "^2.0.0", optional = true }
+tensorboard = { version = "*", optional = true }
+tensorflow = { version = "*", optional = true }
+tf2onnx = { version = "*", optional = true }
+torch = { version = "*", optional = true }
+
+[tool.poetry.extras]
+train = [
+    "albumentations",
+    "click",
+    "keras",
+    "matplotlib",
+    "pandas",
+    "pydantic",
+    "tensorboard",
+    "tensorflow",
+    "tf2onnx",
+    "torch",
+]
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
