@@ -21,7 +21,7 @@ jobs:
           cache: 'poetry'
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --all-extras
 
       - name: Check format
         run: make check_format
