@@ -16,7 +16,7 @@ def read_plate_image(image_path: str) -> npt.NDArray:
     :param str image_path: The path to the license plate image.
     :return: The image as a NumPy array.
     """
-    if os.path.exists(image_path):
+    if not os.path.exists(image_path):
         raise ValueError(f"{image_path} file doesn't exist!")
     return cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
