@@ -1,11 +1,5 @@
 # Directories
-SRC_PATHS := fast_plate_ocr/ \
-            test/ \
-            train.py \
-            valid.py \
-            visualize_augmentation.py \
-            visualize_predictions.py \
-            onnx_converter.py
+SRC_PATHS := fast_plate_ocr/ test/
 
 # Tasks
 .PHONY: help

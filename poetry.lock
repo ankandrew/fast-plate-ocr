@@ -2863,4 +2863,4 @@ train = ["albumentations", "click", "keras", "matplotlib", "pandas", "pydantic",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4ea60388842240b61706492fb85553baf51718a12eebbe2cf647cc059b130490"
+content-hash = "a0cf7f7dbb319c63116ff4ab165bb79884db9191503642922fbe591c40c65155"

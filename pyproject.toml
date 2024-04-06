@@ -71,6 +71,9 @@ pandas-stubs = "^2.2.0.240218"
 pylint = "^3.1.0"
 types-pyyaml = "^6.0.12.20240311"
 
+[tool.poetry.scripts]
+plate_ocr = "fast_plate_ocr.cli.cli:main_cli"
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
