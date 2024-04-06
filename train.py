@@ -27,7 +27,10 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 # pylint: disable=too-many-arguments,too-many-locals
 
 
-@click.command(context_settings={"max_content_width": 140})
+@click.command(
+    help="Script for training the License Plate OCR models.",
+    context_settings={"max_content_width": 140},
+)
 @click.option(
     "--dense/--no-dense",
     default=True,

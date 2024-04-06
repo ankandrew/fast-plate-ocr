@@ -18,7 +18,10 @@ from fast_plate_ocr.train.utilities import utils
 logging.basicConfig(level=logging.INFO)
 
 
-@click.command(context_settings={"max_content_width": 140})
+@click.command(
+    help="Script for displaying an image with the OCR model predictions.",
+    context_settings={"max_content_width": 140},
+)
 @click.option(
     "-m",
     "--model",

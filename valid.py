@@ -14,7 +14,9 @@ from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
 
 
-@click.command(context_settings={"max_content_width": 140})
+@click.command(
+    help="Script for validating trained OCR models.", context_settings={"max_content_width": 140}
+)
 @click.option(
     "-m",
     "--model",

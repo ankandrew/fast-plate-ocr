@@ -19,7 +19,10 @@ from fast_plate_ocr.train.utilities.utils import load_keras_model
 logging.basicConfig(level=logging.INFO)
 
 
-@click.command(context_settings={"max_content_width": 140})
+@click.command(
+    help="Script for converting Keras models to ONNX format.",
+    context_settings={"max_content_width": 140},
+)
 @click.option(
     "-m",
     "--model",
