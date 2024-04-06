@@ -1,8 +1,8 @@
-name: test
-run-name: Test
-on: [ push ]
+name: Test and Deploy
+on: push
 jobs:
   test:
+    name: Test
     strategy:
       fail-fast: false
       matrix:
@@ -31,3 +31,31 @@ jobs:
 
       - name: Run tests
         run: make test
+
+  publish-to-pypi:
+    name: Build and Publish to PyPI
+    needs:
+      - test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fast-plate-ocr
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Build a binary wheel
+        run: poetry build
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
