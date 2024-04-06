@@ -18,10 +18,7 @@ from fast_plate_ocr.train.utilities import utils
 logging.basicConfig(level=logging.INFO)
 
 
-@click.command(
-    help="Script for displaying an image with the OCR model predictions.",
-    context_settings={"max_content_width": 140},
-)
+@click.command(context_settings={"max_content_width": 120})
 @click.option(
     "-m",
     "--model",
@@ -32,17 +29,15 @@ logging.basicConfig(level=logging.INFO)
 )
 @click.option(
     "--config-file",
-    default="./config/arg_plates.yaml",
-    show_default=True,
+    required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
 )
 @click.option(
     "-d",
     "--img-dir",
+    required=True,
     type=click.Path(exists=True, dir_okay=True, file_okay=False, path_type=pathlib.Path),
-    default="assets/benchmark/imgs",
-    show_default=True,
     help="Directory containing the images to make predictions from.",
 )
 @click.option(
@@ -67,6 +62,9 @@ def visualize_predictions(
     low_conf_thresh: float,
     time: bool,
 ):
+    """
+    Visualize OCR model predictions on unlabeled data.
+    """
     config = load_config_from_yaml(config_file)
     model = utils.load_keras_model(
         model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots

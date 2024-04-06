@@ -14,9 +14,7 @@ from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
 
 
-@click.command(
-    help="Script for validating trained OCR models.", context_settings={"max_content_width": 140}
-)
+@click.command(context_settings={"max_content_width": 120})
 @click.option(
     "-m",
     "--model",
@@ -27,16 +25,14 @@ from fast_plate_ocr.train.utilities import utils
 )
 @click.option(
     "--config-file",
-    default="./config/arg_plates.yaml",
-    show_default=True,
+    required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
 )
 @click.option(
     "-a",
     "--annotations",
-    default="assets/benchmark/annotations.csv",
-    show_default=True,
+    required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Annotations file used for validation.",
 )
@@ -54,7 +50,9 @@ def valid(
     annotations: pathlib.Path,
     batch_size: int,
 ) -> None:
-    """Validate a model for a given annotated data."""
+    """
+    Validate the trained OCR model on a labeled set.
+    """
     config = load_config_from_yaml(config_file)
     model = utils.load_keras_model(
         model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots

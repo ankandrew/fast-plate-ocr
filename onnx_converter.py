@@ -19,10 +19,7 @@ from fast_plate_ocr.train.utilities.utils import load_keras_model
 logging.basicConfig(level=logging.INFO)
 
 
-@click.command(
-    help="Script for converting Keras models to ONNX format.",
-    context_settings={"max_content_width": 140},
-)
+@click.command(context_settings={"max_content_width": 120})
 @click.option(
     "-m",
     "--model",
@@ -50,12 +47,15 @@ logging.basicConfig(level=logging.INFO)
     show_default=True,
     help="Opset version for ONNX.",
 )
-def export_model_as_onnx(
+def export_onnx(
     model_path: pathlib.Path,
     output_path: str,
     config_file: pathlib.Path,
     opset: int,
 ) -> None:
+    """
+    Export Keras models to ONNX format.
+    """
     config = load_config_from_yaml(config_file)
     model = load_keras_model(
         model_path,
@@ -83,4 +83,4 @@ def export_model_as_onnx(
 
 
 if __name__ == "__main__":
-    export_model_as_onnx()
+    export_onnx()

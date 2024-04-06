@@ -27,10 +27,7 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 # pylint: disable=too-many-arguments,too-many-locals
 
 
-@click.command(
-    help="Script for training the License Plate OCR models.",
-    context_settings={"max_content_width": 140},
-)
+@click.command(context_settings={"max_content_width": 120})
 @click.option(
     "--dense/--no-dense",
     default=True,
@@ -39,8 +36,7 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 )
 @click.option(
     "--config-file",
-    default="./config/arg_plates.yaml",
-    show_default=True,
+    required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
 )
@@ -131,6 +127,9 @@ def train(
     early_stopping_patience: int,
     reduce_lr_patience: int,
 ) -> None:
+    """
+    Train the License Plate OCR model.
+    """
     train_augmentation = (
         A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
     )

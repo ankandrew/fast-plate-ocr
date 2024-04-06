@@ -70,16 +70,12 @@ def display_images(
 # pylint: disable=too-many-arguments,too-many-locals
 
 
-@click.command(
-    help="Script to visualize the augmented plates used during training. The augmentation can be "
-    "the predefined one or a custom Albumentations augmentation pipeline.",
-    context_settings={"max_content_width": 120},
-)
+@click.command(context_settings={"max_content_width": 120})
 @click.option(
     "--img-dir",
     "-d",
+    required=True,
     type=click.Path(exists=True, dir_okay=True, path_type=pathlib.Path),
-    default="assets/benchmark/imgs",
     help="Path to the images that will be augmented and visualized.",
 )
 @click.option(
@@ -157,6 +153,9 @@ def visualize_augmentation(
     seed: int | None,
     show_original: bool,
 ) -> None:
+    """
+    Visualize augmentation pipeline applied to raw images.
+    """
     _set_seed(seed)
     aug = A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
     images, augmented_images = load_images(img_dir, num_images, shuffle, height, width, aug)
