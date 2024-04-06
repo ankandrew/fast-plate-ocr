@@ -24,15 +24,15 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 # Packages required for doing inference
-numpy = "*"
-onnxruntime = "*"
+numpy = ">=1.17"
+onnxruntime = ">=1.4.0"
 opencv-python = "*"
-pyyaml = "*"
+pyyaml = ">=5.1"
 tqdm = "*"
 
 # By default, we install onnx CPU runtime
 # Since onnxruntime-gpu depends on CUDA, don't install on macOS
-onnxruntime-gpu = { version = "*", markers = "sys_platform != 'darwin'", optional = true}
+onnxruntime-gpu = { version = ">=1.4.0", markers = "sys_platform != 'darwin'", optional = true}
 
 # Training packages are optional
 albumentations = { version = "*", optional = true }
