@@ -41,7 +41,7 @@ def _load_image_from_source(source: str | list[str] | npt.NDArray) -> npt.NDArra
     raise ValueError("Unsupported input type. Only file path or numpy array is supported.")
 
 
-class ONNXInference:
+class FastPlateOCR:
     """
     ONNX inference class for performing license plates OCR.
     """
