@@ -14,7 +14,9 @@ from fast_plate_ocr.common.utils import log_time_taken
 from fast_plate_ocr.inference import hub
 from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 
 def _load_image_from_source(source: str | list[str] | npt.NDArray) -> npt.NDArray:

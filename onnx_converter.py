@@ -16,7 +16,9 @@ from fast_plate_ocr.common.utils import log_time_taken
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.utilities.utils import load_keras_model
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 
 @click.command(context_settings={"max_content_width": 120})
