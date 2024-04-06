@@ -157,3 +157,6 @@ cython_debug/
 
 # CUDA DNN
 cudnn64_7.dll
+
+# Train folder
+train_val_set/
