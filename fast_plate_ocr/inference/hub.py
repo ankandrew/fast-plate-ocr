@@ -54,8 +54,7 @@ def download_model(
     """
     Download an OCR model and the config to a given directory.
 
-    :param model_name: Which model to download. Current available models are
-     ('argentinian-plates-cnn-model', ).
+    :param model_name: Which model to download.
     :param save_directory: Directory to save the OCR model. It should point to a folder. If not
      supplied, this will point to '~/.cache/<model_name>'
     :param force_download: Force and download the model if it already exists in `save_directory`.

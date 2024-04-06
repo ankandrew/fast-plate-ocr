@@ -48,7 +48,9 @@ class FastPlateOCR:
 
     def __init__(self, ocr_model: str, use_gpu: bool = False, log_time: bool = False):
         """
-        Initialize ONNXInference.
+        The current OCR models available are:
+
+        - 'argentinian-plates-cnn-model': OCR for Argentinian license plates.
 
         :param ocr_model: Name of the OCR model to use.
         :param use_gpu: Flag indicating whether to use GPU backend.
