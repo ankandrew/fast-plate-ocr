@@ -1,3 +1,7 @@
+# Config example for Argentinian License Plates
+# The old license plates contain 6 slots/characters (i.e. JUH697)
+# and new 'Mercosur' contain 7 slots/characters (i.e. AB123CD)
+
 # Max number of plate slots supported. This represents the number of model classification heads.
 max_plate_slots: 7
 # All the possible character set for the model output.
