@@ -52,7 +52,7 @@ lint: ruff pylint mypy
 .PHONY: test
 test:
 	@echo "=====> Running tests..."
-	@poetry run pytest
+	@poetry run pytest test/
 
 .PHONY: clean
 clean:
