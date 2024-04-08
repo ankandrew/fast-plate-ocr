@@ -12,8 +12,8 @@ import pytest
 from fast_plate_ocr import ONNXPlateRecognizer
 
 
-@pytest.fixture(scope="module")
-def onnx_model() -> Iterator[ONNXPlateRecognizer]:
+@pytest.fixture(scope="module", name="onnx_model")
+def onnx_model_fixture() -> Iterator[ONNXPlateRecognizer]:
     yield ONNXPlateRecognizer("argentinian-plates-cnn-model", device="cpu")
 
 
