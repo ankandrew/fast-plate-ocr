@@ -40,9 +40,9 @@ def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.ND
     """
     Read and resize a license plate image.
 
-    :param str image_path: The path to the license plate image.
-    :param int img_height: The desired height of the resized image.
-    :param int img_width: The desired width of the resized image.
+    :param image_path: The path to the license plate image.
+    :param img_height: The desired height of the resized image.
+    :param img_width: The desired width of the resized image.
     :return: The resized license plate image as a NumPy array.
     """
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
