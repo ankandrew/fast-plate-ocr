@@ -114,7 +114,7 @@ class ONNXPlateRecognizer:
         )
         self.logger.info("Using ONNX Runtime with %s.", self.provider[0])
 
-    def benchmark(self, n_iter: int = 1_000, include_processing: bool = False) -> None:
+    def benchmark(self, n_iter: int = 10_000, include_processing: bool = False) -> None:
         """
         Benchmark time taken to run the OCR model. This reports the average inference time and the
         throughput in plates per second.
