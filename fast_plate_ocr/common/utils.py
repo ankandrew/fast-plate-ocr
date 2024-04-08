@@ -4,7 +4,7 @@ Common utilities used across the package.
 
 import logging
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 
 
@@ -26,4 +26,19 @@ def log_time_taken(process_name: str) -> Iterator[None]:
         time_end: float = time.perf_counter()
         time_elapsed: float = time_end - time_start
         logger = logging.getLogger(__name__)
-        logger.info("Computation time of '%s' = %.3fms", process_name, 1000 * time_elapsed)
+        logger.info("Computation time of '%s' = %.3fms", process_name, 1_000 * time_elapsed)
+
+
+@contextmanager
+def measure_time() -> Iterator[Callable[[], float]]:
+    """
+    A context manager for measuring execution time (in milliseconds) within its code block.
+
+    usage:
+        with code_timer() as timer:
+            # Code snippet to be timed
+        print(f"Code took: {timer()} seconds")
+    """
+    start_time = end_time = time.perf_counter()
+    yield lambda: (end_time - start_time) * 1_000
+    end_time = time.perf_counter()
