@@ -17,23 +17,37 @@ from fast_plate_ocr.inference.config import load_config_from_yaml
 from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
 
 
-def _load_image_from_source(source: str | list[str] | npt.NDArray) -> npt.NDArray:
+def _load_image_from_source(
+    source: str | list[str] | npt.NDArray | list[npt.NDArray],
+) -> npt.NDArray | list[npt.NDArray]:
     """
     Loads an image from a given source.
 
-    :param source: Path to the input image file or numpy array representing the image.
-    :return: Numpy array representing the input image.
+    :param source: Path to the input image file, list of paths, or numpy array representing one or
+     multiple images.
+    :return: Numpy array representing the input image(s) or a list of numpy arrays.
     """
     if isinstance(source, str):
+        # Shape returned (H, W)
         return read_plate_image(source)
 
-    if isinstance(source, list) and isinstance(source[0], str):
-        return np.array([read_plate_image(i) for i in source])
+    if isinstance(source, list):
+        # Are image paths
+        if all(isinstance(s, str) for s in source):
+            # List returned with array item of shape (H, W)
+            return [read_plate_image(i) for i in source]  # type: ignore[arg-type]
+        # Are list of numpy arrays
+        if all(isinstance(a, np.ndarray) for a in source):
+            # List returned with array item of shape (H, W)
+            return source  # type: ignore[return-value]
+        raise ValueError("Expected source to be a list of `str` or `np.ndarray`!")
 
     if isinstance(source, np.ndarray):
-        if source.ndim > 3:
-            raise ValueError("Expected source to be of shape (H, W, 1) or (H, W) or (1, H, W, 1)")
+        # Squeeze grayscale channel dimension if supplied
         source = source.squeeze()
+        if source.ndim != 2:
+            raise ValueError("Expected source array to be of shape (H, W) or (H, W, 1).")
+        # Shape returned (H, W)
         return source
 
     raise ValueError("Unsupported input type. Only file path or numpy array is supported.")
@@ -46,7 +60,7 @@ class ONNXPlateRecognizer:
 
     def __init__(
         self,
-        ocr_model: str,
+        ocr_model: Literal["argentinian-plates-cnn-model"],
         device: Literal["gpu", "cpu", "auto"] = "auto",
         sess_options: ort.SessionOptions | None = None,
     ):
@@ -117,25 +131,30 @@ class ONNXPlateRecognizer:
 
     def run(
         self,
-        source: str | list[str] | npt.NDArray,
+        source: str | list[str] | npt.NDArray | list[npt.NDArray],
         return_confidence: bool = False,
     ) -> tuple[list[str], npt.NDArray] | list[str]:
         """
-        Runs inference on an image.
+        Performs OCR to recognize license plate characters from an image or a list of images.
 
-        :param source: Path to the input image file or numpy array representing the image.
+        :param source: The path(s) to the image(s), a numpy array representing an image or a list
+         of NumPy arrays. If a numpy array is provided, it is expected to already be in grayscale
+         format, with shape (H, W) or (H, W, 1). A list of numpy arrays with different image sizes
+         may also be provided.
         :param return_confidence: Whether to return confidence scores along with plate predictions.
-        :return: Decoded license plate characters as a list.
+        :return: A list of plates for each input image. If `return_confidence` is True, a numpy
+         array is returned with the shape (N, plate_slots), where N is the batch size and each
+         plate_slot is the confidence for the recognized license plate character.
         """
         x = _load_image_from_source(source)
-        with log_time_taken("Pre-process") if self.log_time else nullcontext():
-            x = preprocess_image(x, self.config["img_height"], self.config["img_width"])
-        with log_time_taken("Model run") if self.log_time else nullcontext():
-            y: list[npt.NDArray] = self.model.run(None, {"input": x})
-        with log_time_taken("Post-process") if self.log_time else nullcontext():
-            return postprocess_output(
-                y[0],
-                self.config["max_plate_slots"],
-                self.config["alphabet"],
-                return_confidence=return_confidence,
-            )
+        # Preprocess
+        x = preprocess_image(x, self.config["img_height"], self.config["img_width"])
+        # Run model
+        y: list[npt.NDArray] = self.model.run(None, {"input": x})
+        # Postprocess model output
+        return postprocess_output(
+            y[0],
+            self.config["max_plate_slots"],
+            self.config["alphabet"],
+            return_confidence=return_confidence,
+        )
