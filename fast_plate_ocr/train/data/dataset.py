@@ -2,6 +2,7 @@
 Dataset module.
 """
 
+import os
 from os import PathLike
 
 import albumentations as A
@@ -20,6 +21,11 @@ class LicensePlateDataset(Dataset):
         transform: A.Compose | None = None,
     ):
         self.annotations = pd.read_csv(annotations_file)
+        self.annotations["image_path"] = (
+            os.path.dirname(os.path.realpath(annotations_file))
+            + os.sep
+            + self.annotations["image_path"]
+        )
         assert (
             self.annotations["plate_text"].str.len() <= config.max_plate_slots
         ).all(), "Plates are longer than max_plate_slots specified param. Change the parameter."
