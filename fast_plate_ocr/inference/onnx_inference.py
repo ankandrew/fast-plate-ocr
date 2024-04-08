@@ -4,19 +4,16 @@ ONNX inference module.
 
 import logging
 from contextlib import nullcontext
+from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
 import onnxruntime as ort
 
-import fast_plate_ocr.inference.config
 from fast_plate_ocr.common.utils import log_time_taken
 from fast_plate_ocr.inference import hub
+from fast_plate_ocr.inference.config import load_config_from_yaml
 from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-)
 
 
 def _load_image_from_source(source: str | list[str] | npt.NDArray) -> npt.NDArray:
@@ -41,34 +38,46 @@ def _load_image_from_source(source: str | list[str] | npt.NDArray) -> npt.NDArra
     raise ValueError("Unsupported input type. Only file path or numpy array is supported.")
 
 
-class FastPlateOCR:
+class ONNXPlateRecognizer:
     """
     ONNX inference class for performing license plates OCR.
     """
 
-    def __init__(self, ocr_model: str, use_gpu: bool = False, log_time: bool = False):
+    def __init__(
+        self,
+        ocr_model: str,
+        device: Literal["gpu", "cpu", "auto"] = "auto",
+        sess_options: ort.SessionOptions | None = None,
+        log_time: bool = False,
+    ):
         """
         The current OCR models available are:
 
         - 'argentinian-plates-cnn-model': OCR for Argentinian license plates.
 
         :param ocr_model: Name of the OCR model to use.
-        :param use_gpu: Flag indicating whether to use GPU backend.
+        :param device: Device type for inference. Should be one of ('cpu', 'gpu', 'auto'). If
+         'auto' mode, the device will be deduced from `onnxruntime.get_available_providers()`.
+        :param sess_options: Advanced session options for ONNX Runtime.
+        :param log_time: Whether to log time taken for inference (pre-/post-process, run, etc.).
+        :return: None.
         """
         self.logger = logging.getLogger(__name__)
         self.log_time = log_time
 
-        if use_gpu:
-            self.providers = ["CUDAExecutionProvider"]
-            self.device = "GPU"
+        if device == "gpu":
+            provider = ["CUDAExecutionProvider"]
+        elif device == "cpu":
+            provider = ["CPUExecutionProvider"]
+        elif device == "auto":
+            provider = ort.get_available_providers()
         else:
-            self.providers = ["CPUExecutionProvider"]
-            self.device = "CPU"
+            raise ValueError(f"Device should be one of ('cpu', 'gpu', 'auto'). Got '{device}'.")
 
         model_path, config_path = hub.download_model(model_name=ocr_model)
-        self.config = fast_plate_ocr.inference.config.load_config_from_yaml(config_path)
-        self.model = ort.InferenceSession(model_path, providers=self.providers)
-        self.logger.info("Using ONNX Runtime with %s device.", self.device)
+        self.config = load_config_from_yaml(config_path)
+        self.model = ort.InferenceSession(model_path, providers=provider, sess_options=sess_options)
+        self.logger.info("Using ONNX Runtime with %s.", provider[0])
 
     def run(
         self,
