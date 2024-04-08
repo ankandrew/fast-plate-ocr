@@ -3,6 +3,8 @@ ONNX inference module.
 """
 
 import logging
+import os
+import pathlib
 from typing import Literal
 
 import numpy as np
@@ -60,25 +62,28 @@ class ONNXPlateRecognizer:
 
     def __init__(
         self,
-        ocr_model: Literal["argentinian-plates-cnn-model"],
+        hub_ocr_model: Literal["argentinian-plates-cnn-model"] | None = None,
         device: Literal["gpu", "cpu", "auto"] = "auto",
         sess_options: ort.SessionOptions | None = None,
+        model_path: str | os.PathLike[str] | None = None,
+        config_path: str | os.PathLike[str] | None = None,
     ):
         """
         Initializes the ONNXPlateRecognizer with the specified OCR model and inference device.
 
-        The current OCR models available are:
+        The current OCR models available from the HUB are:
 
         - 'argentinian-plates-cnn-model': OCR for Argentinian license plates.
 
-        :param ocr_model: Name of the OCR model to use.
+        :param hub_ocr_model: Name of the OCR model to use from the HUB.
         :param device: Device type for inference. Should be one of ('cpu', 'gpu', 'auto'). If
          'auto' mode, the device will be deduced from `onnxruntime.get_available_providers()`.
         :param sess_options: Advanced session options for ONNX Runtime.
+        :param model_path: Path to ONNX model file to use (In case you want to use a custom one).
+        :param config_path: Path to config file to use (In case you want to use a custom one).
         :return: None.
         """
         self.logger = logging.getLogger(__name__)
-        self.ocr_model = ocr_model
 
         if device == "gpu":
             self.provider = ["CUDAExecutionProvider"]
@@ -89,7 +94,20 @@ class ONNXPlateRecognizer:
         else:
             raise ValueError(f"Device should be one of ('cpu', 'gpu', 'auto'). Got '{device}'.")
 
-        model_path, config_path = hub.download_model(model_name=self.ocr_model)
+        if model_path and config_path:
+            model_path = pathlib.Path(model_path)
+            config_path = pathlib.Path(config_path)
+            if not model_path.exists() or not config_path.exists():
+                raise FileNotFoundError("Missing model/config file!")
+            self.model_name = model_path.stem
+        elif hub_ocr_model:
+            self.model_name = hub_ocr_model
+            model_path, config_path = hub.download_model(model_name=hub_ocr_model)
+        else:
+            raise ValueError(
+                "Either provide a model from the HUB or a custom model_path and config_path"
+            )
+
         self.config = load_config_from_yaml(config_path)
         self.model = ort.InferenceSession(
             model_path, providers=self.provider, sess_options=sess_options
@@ -121,7 +139,7 @@ class ONNXPlateRecognizer:
         avg_time = (cum_time / n_iter) if n_iter > 0 else 0.0
         avg_pps = (1_000 / avg_time) if n_iter > 0 else 0.0
 
-        table = Table(title=f"Benchmark '{self.ocr_model}' model")
+        table = Table(title=f"Benchmark '{self.model_name}' model")
         table.add_column("Executor", justify="center", style="cyan", no_wrap=True)
         table.add_column("Average ms", style="magenta", justify="center")
         table.add_column("Plates/second", style="magenta", justify="center")
