@@ -3,14 +3,15 @@ ONNX inference module.
 """
 
 import logging
-from contextlib import nullcontext
 from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
 import onnxruntime as ort
+from rich.console import Console
+from rich.table import Table
 
-from fast_plate_ocr.common.utils import log_time_taken
+from fast_plate_ocr.common.utils import measure_time
 from fast_plate_ocr.inference import hub
 from fast_plate_ocr.inference.config import load_config_from_yaml
 from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
@@ -48,9 +49,10 @@ class ONNXPlateRecognizer:
         ocr_model: str,
         device: Literal["gpu", "cpu", "auto"] = "auto",
         sess_options: ort.SessionOptions | None = None,
-        log_time: bool = False,
     ):
         """
+        Initializes the ONNXPlateRecognizer with the specified OCR model and inference device.
+
         The current OCR models available are:
 
         - 'argentinian-plates-cnn-model': OCR for Argentinian license plates.
@@ -59,25 +61,59 @@ class ONNXPlateRecognizer:
         :param device: Device type for inference. Should be one of ('cpu', 'gpu', 'auto'). If
          'auto' mode, the device will be deduced from `onnxruntime.get_available_providers()`.
         :param sess_options: Advanced session options for ONNX Runtime.
-        :param log_time: Whether to log time taken for inference (pre-/post-process, run, etc.).
         :return: None.
         """
         self.logger = logging.getLogger(__name__)
-        self.log_time = log_time
+        self.ocr_model = ocr_model
 
         if device == "gpu":
-            provider = ["CUDAExecutionProvider"]
+            self.provider = ["CUDAExecutionProvider"]
         elif device == "cpu":
-            provider = ["CPUExecutionProvider"]
+            self.provider = ["CPUExecutionProvider"]
         elif device == "auto":
-            provider = ort.get_available_providers()
+            self.provider = ort.get_available_providers()
         else:
             raise ValueError(f"Device should be one of ('cpu', 'gpu', 'auto'). Got '{device}'.")
 
-        model_path, config_path = hub.download_model(model_name=ocr_model)
+        model_path, config_path = hub.download_model(model_name=self.ocr_model)
         self.config = load_config_from_yaml(config_path)
-        self.model = ort.InferenceSession(model_path, providers=provider, sess_options=sess_options)
-        self.logger.info("Using ONNX Runtime with %s.", provider[0])
+        self.model = ort.InferenceSession(
+            model_path, providers=self.provider, sess_options=sess_options
+        )
+        self.logger.info("Using ONNX Runtime with %s.", self.provider[0])
+
+    def benchmark(self, n_iter: int = 1_000, include_processing: bool = False) -> None:
+        """
+        Benchmark time taken to run the OCR model. This reports the average inference time and the
+        throughput in plates per second.
+
+        :param n_iter: The number of iterations to run the benchmark. This determines how many times
+         the inference will be executed to compute the average performance metrics.
+        :param include_processing: Indicates whether the benchmark should include preprocessing and
+         postprocessing times in the measurement.
+        """
+        cum_time = 0.0
+        x = np.random.randint(
+            0, 256, size=(1, self.config["img_height"], self.config["img_width"], 1), dtype=np.uint8
+        )
+        for _ in range(n_iter):
+            with measure_time() as time_taken:
+                if include_processing:
+                    self.run(x)
+                else:
+                    self.model.run(None, {"input": x})
+            cum_time += time_taken()
+
+        avg_time = (cum_time / n_iter) if n_iter > 0 else 0.0
+        avg_pps = (1_000 / avg_time) if n_iter > 0 else 0.0
+
+        table = Table(title=f"Benchmark '{self.ocr_model}' model")
+        table.add_column("Executor", justify="center", style="cyan", no_wrap=True)
+        table.add_column("Average ms", style="magenta", justify="center")
+        table.add_column("Plates/second", style="magenta", justify="center")
+        table.add_row(self.provider[0], f"{avg_time:.4f}", f"{avg_pps:.4f}")
+        console = Console()
+        console.print(table)
 
     def run(
         self,

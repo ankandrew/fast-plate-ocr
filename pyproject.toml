@@ -29,6 +29,7 @@ onnxruntime = ">=1.4.0"
 opencv-python = "*"
 pyyaml = ">=5.1"
 tqdm = "*"
+rich = "*"
 
 # By default, we install onnx CPU runtime
 # Since onnxruntime-gpu depends on CUDA, don't install on macOS
