@@ -1,0 +1,147 @@
+[tool.poetry]
+name = "fast-plate-ocr"
+version = "0.1.0"
+description = "Fast & Lightweight OCR for vehicle license plates."
+authors = ["ankandrew <61120139+ankandrew@users.noreply.github.com>"]
+readme = "README.md"
+repository = "https://github.com/ankandrew/fast-plate-ocr/"
+keywords = ["plate-recognition", "license-plate-recognition", "license-plate-ocr"]
+license = "MIT"
+classifiers = [
+    "Typing :: Typed",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+# Packages required for doing inference
+numpy = ">=1.17"
+onnxruntime = ">=1.4.0"
+opencv-python = "*"
+pyyaml = ">=5.1"
+tqdm = "*"
+rich = "*"
+
+# By default, we install onnx CPU runtime
+# Since onnxruntime-gpu depends on CUDA, don't install on macOS
+onnxruntime-gpu = { version = ">=1.4.0", markers = "sys_platform != 'darwin'", optional = true}
+
+# Training packages are optional
+albumentations = { version = "*", optional = true }
+click = { version = "*", optional = true }
+keras = { version = ">=3.1.1", optional = true }
+matplotlib = { version = "*", optional = true }
+pandas = { version   = "*", optional = true }
+pydantic = { version = "^2.0.0", optional = true }
+tensorboard = { version = "*", optional = true }
+tensorflow = { version = "*", optional = true }
+tf2onnx = { version = "*", optional = true }
+torch = { version = "*", optional = true }
+
+[tool.poetry.extras]
+inference_gpu = ["onnxruntime-gpu"]
+train = [
+    "albumentations",
+    "click",
+    "keras",
+    "matplotlib",
+    "pandas",
+    "pydantic",
+    "tensorboard",
+    "tensorflow",
+    "tf2onnx",
+    "torch",
+]
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "*"
+ruff = "^0.3.1"
+pandas-stubs = "^2.2.0.240218"
+pylint = "^3.1.0"
+types-pyyaml = "^6.0.12.20240311"
+
+[tool.poetry.scripts]
+fast_plate_ocr = "fast_plate_ocr.cli.cli:main_cli"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # pep8-naming
+    "N",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # flake8-unused-arguments
+    "ARG",
+    # Pylint
+    "PL",
+    # Perflint
+    "PERF",
+    # Ruff-specific rules
+    "RUF",
+    # pandas-vet
+    "PD",
+]
+ignore = ["N812", "PLR2004", "PD011"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.pylint]
+max-args = 8
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.mypy]
+disable_error_code = "import-untyped"
+
+[tool.pylint.typecheck]
+generated-members = ["cv2.*"]
+signature-mutators = [
+    "click.decorators.option",
+    "click.decorators.argument",
+    "click.decorators.version_option",
+    "click.decorators.help_option",
+    "click.decorators.pass_context",
+    "click.decorators.confirmation_option"
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = ["missing-class-docstring", "missing-function-docstring"]
+
+[tool.pylint.design]
+max-args = 8
+min-public-methods = 1
+
+[tool.pylint.basic]
+no-docstring-rgx = "^__|^test_"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
