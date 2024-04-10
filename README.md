@@ -64,7 +64,7 @@ _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See metrics section._
 
 </details>
 
-#### Inference
+### Inference
 
 For inference only, install:
 
@@ -78,7 +78,7 @@ For doing inference on GPU, install:
 pip install fast_plate_ocr[inference_gpu]
 ```
 
-##### Usage
+#### Usage
 
 To predict from disk image:
 
@@ -112,9 +112,9 @@ m.benchmark()
 
 </details>
 
-#### CLI
+### CLI
 
-<img src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/cli_screenshot.png?raw=true" width=40% height=40% alt="CLI">
+<img src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/cli_screenshot.png?raw=true" width=50% height=50% alt="CLI">
 
 To train or use the CLI tool, you'll need to install:
 
@@ -122,12 +122,12 @@ To train or use the CLI tool, you'll need to install:
 pip install fast_plate_ocr[train]
 ```
 
-##### Train Model
+#### Train Model
 
 To train the model you will need:
 
-1. A configuration used for the OCR model. Depending on your use case, you might have more plate slots or diffent
-   characters. Take a look at the config for Argentinian license plate as an example:
+1. A configuration used for the OCR model. Depending on your use case, you might have more plate slots or different set
+   of characters. Take a look at the config for Argentinian license plate as an example:
     ```yaml
     # Config example for Argentinian License Plates
     # The old license plates contain 6 slots/characters (i.e. JUH697)
@@ -144,46 +144,50 @@ To train the model you will need:
     # Image width which is fed to the model.
     img_width: 140
     ```
-2. A labeled dataset, see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_dataset.zip) for the expected data format.
+2. A labeled dataset,
+   see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_dataset.zip)
+   for the expected data format.
 3. Run train script:
-```shell
-# You can set the backend to either TensorFlow, JAX or PyTorch
-# (just make sure it is installed)
-!KERAS_BACKEND=tensorflow fast_plate_ocr train \
-    --annotations path_to_the_train.csv \
-    --val-annotations path_to_the_val.csv \
-    --batch-size 128 \
-    --epochs 750 \
-    --dense \
-    --early-stopping-patience 100 \
-    --reduce-lr-patience 50
-```
+    ```shell
+    # You can set the backend to either TensorFlow, JAX or PyTorch
+    # (just make sure it is installed)
+    !KERAS_BACKEND=tensorflow fast_plate_ocr train \
+        --annotations path_to_the_train.csv \
+        --val-annotations path_to_the_val.csv \
+        --batch-size 128 \
+        --epochs 750 \
+        --dense \
+        --early-stopping-patience 100 \
+        --reduce-lr-patience 50
+    ```
 
 You will probably want to change the augmentation pipeline to apply to your dataset. In order to do this
 
-1. Define Albumentations pipeline:
-    ```python
-    import albumentations as A
+Define Albumentations pipeline:
 
-    transform_pipeline = A.Compose(
-        [
-            # ...
-            A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
-            A.MotionBlur(blur_limit=(3, 5), p=0.1),
-            A.CoarseDropout(max_holes=10, max_height=4, max_width=4, p=0.3),
-            # ... and any other augmentation ...
-        ]
-    )
+```python
+import albumentations as A
 
-    # Export to a file (this resultant YAML can be used by the train script)
-    A.save(transform_pipeline, "./transform_pipeline.yaml", data_format="yaml")
-    ```
-2. Train using the custom transform_pipeline through the `--augmentation-path` option in the train script.
+transform_pipeline = A.Compose(
+    [
+        # ...
+        A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
+        A.MotionBlur(blur_limit=(3, 5), p=0.1),
+        A.CoarseDropout(max_holes=10, max_height=4, max_width=4, p=0.3),
+        # ... and any other augmentation ...
+    ]
+)
 
-##### Visualize Augmentation
+# Export to a file (this resultant YAML can be used by the train script)
+A.save(transform_pipeline, "./transform_pipeline.yaml", data_format="yaml")
+```
 
-It's useful to visualize the augmentation/transform pipeline before training the model. This helps us to identify
-if we should apply more heavy augmentation or less, as it might hurt the model.
+And then you can train using the custom transformation pipeline with the `--augmentation-path` option.
+
+#### Visualize Augmentation
+
+It's useful to visualize the augmentation pipeline before training the model. This helps us to identify
+if we should apply more heavy augmentation or less, as it can hurt the model.
 
 You might want to see the augmented image next to the original, to see how much it changed:
 
@@ -199,7 +203,7 @@ You will see something like:
 
 ![Augmented Images](https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/image_augmentation.gif?raw=true)
 
-##### Validate Model
+#### Validate Model
 
 After finishing training you can validate the model on a labeled test dataset.
 
@@ -212,7 +216,7 @@ fast_plate_ocr valid \
     --annotations benchmark/annotations.csv
 ```
 
-##### Visualize Predictions
+#### Visualize Predictions
 
 Once you finish training your model, you can view the model predictions on raw data with:
 
@@ -227,7 +231,7 @@ You will see something like:
 
 ![Visualize Predictions](https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/visualize_predictions.gif?raw=true)
 
-##### Export as ONNX
+#### Export as ONNX
 
 Exporting the Keras model to ONNX format might be beneficial to speed-up inference time.
 
@@ -239,7 +243,7 @@ fast_plate_ocr export-onnx \
 	--config-file arg_cnn_ocr_config.yaml
 ```
 
-##### Keras Backend
+### Keras Backend
 
 To train the model, you can install the ML Framework you like the most. Keras 3 has
 support for TensorFlow, JAX and PyTorch backends.
@@ -285,7 +289,7 @@ During training, you will see the following metrics
 
 _Metrics are defined in this [custom.py](fast_plate_ocr/train/model/custom.py) module._
 
-#### Contributing
+### Contributing
 
 Contributions to the repo are greatly appreciated. Whether it's bug fixes, feature enhancements, or new models,
 your contributions are warmly welcomed.
@@ -307,7 +311,7 @@ To start contributing or to begin development, you can follow these steps:
 
 If you want to train a model and share it, we'll add it to the HUB 🚀
 
-#### TODO
+### TODO
 
 - [ ] Expand model zoo.
 - [ ] Use synthetic image plates.
