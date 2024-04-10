@@ -20,6 +20,15 @@ the trained models for inference.
 
 The idea is to use this after a plate object detector, since the OCR expects the cropped plates.
 
+### Features
+
+- **Keras 3 Backend Support**: Compatible with **TensorFlow**, **JAX**, and **PyTorch** backends 🧠
+- **Augmentation Variety**: Diverse augmentations via **Albumentations** library 🖼️
+- **Efficient Execution**: **Lightweight** models that are cheap to run 💰
+- **ONNX Runtime Inference**: **Fast** and **optimized** inference with ONNX runtime ⚡
+- **User-Friendly CLI**: Simplified **CLI** for **training** and **validating** OCR models 🛠️
+- **Model HUB**: Access to a collection of pre-trained models ready for inference 🌟
+
 ### Available Models
 
 |          Model Name          | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> |                                                      Dataset                                                      | Accuracy<sup>[2]</sup> |              Dataset              |
