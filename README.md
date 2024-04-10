@@ -35,7 +35,7 @@ The idea is to use this after a plate object detector, since the OCR expects the
 |:----------------------------:|:--------------------------------:|:----------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|:----------------------:|:---------------------------------:|
 | argentinian-plates-cnn-model |              2.0964              |                      477                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_dataset.zip) |         94.05%         | Non-synthetic, plates up to 2020. |
 
-_<sup>[1]</sup>Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
+_<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
 by 5x._
 
 _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See metrics section._
@@ -255,8 +255,8 @@ fast_plate_ocr export-onnx \
 
 ### Keras Backend
 
-To train the model, you can install the ML Framework you like the most. Keras 3 has
-support for TensorFlow, JAX and PyTorch backends.
+To train the model, you can install the ML Framework you like the most. **Keras 3** has
+support for **TensorFlow**, **JAX** and **PyTorch** backends.
 
 To change the Keras backend you can either:
 
@@ -272,7 +272,7 @@ _Note: You will probably need to install your desired framework for training._
 
 The current model architecture is quite simple but effective.
 See [cnn_ocr_model](https://github.com/ankandrew/cnn-ocr-lp/blob/e59b738bad86d269c82101dfe7a3bef49b3a77c7/fast_plate_ocr/train/model/models.py#L23-L23)
-the code.
+for implementation details.
 
 The model output consists of several heads. Each head represents the prediction of a character of the
 plate. If the plate consists of 7 characters at most (`max_plate_slots=7`), then the model would have 7 heads.
