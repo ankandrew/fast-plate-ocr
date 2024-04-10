@@ -40,6 +40,7 @@ by 5x._
 
 _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See metrics section._
 
+
 <details>
   <summary>Reproduce results.</summary>
 
@@ -123,7 +124,7 @@ m.benchmark()
 
 ### CLI
 
-<img src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/cli_screenshot.png?raw=true" width=50% height=50% alt="CLI">
+<img src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/cli_screenshot.png?raw=true" alt="CLI">
 
 To train or use the CLI tool, you'll need to install:
 
