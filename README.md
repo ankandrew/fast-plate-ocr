@@ -324,4 +324,4 @@ If you want to train a model and share it, we'll add it to the HUB 🚀
 - [ ] Expand model zoo.
 - [ ] Use synthetic image plates.
 - [ ] Finish and push TorchServe files.
-
+- [ ] Use Google docstring style
