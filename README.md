@@ -58,7 +58,7 @@ _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See metrics section._
   m = ONNXPlateRecognizer("argentinian-plates-cnn-model")
   m.benchmark()
   ```
-* Calculate Model accuracy
+* Calculate Model accuracy:
 
   ```shell
   pip install fast-plate-ocr[train]
@@ -296,8 +296,6 @@ During training, you will see the following metrics
   classified correctly), but 83.3% (5/6).
 * **top_3_k**: Calculates how often the true character is found in the top-3 predictions (the 3 with the highest
   probability).
-
-_Metrics are defined in this [custom.py](fast_plate_ocr/train/model/custom.py) module._
 
 ### Contributing
 
