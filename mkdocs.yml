@@ -9,6 +9,7 @@ theme:
     - navigation.instant.progress
     - search.suggest
     - search.highlight
+    - content.code.copy
 nav:
   - Introduction: index.md
   - Installation: installation.md
