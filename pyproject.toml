@@ -47,6 +47,11 @@ tensorflow = { version = "*", optional = true }
 tf2onnx = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 
+# Optional packages for creating the docs
+mkdocs-material = { version = "*", optional = true }
+mkdocstrings = {version = "*", extras = ["python"], optional = true}
+mike = { version = "*", optional = true }
+
 [tool.poetry.extras]
 inference_gpu = ["onnxruntime-gpu"]
 train = [
@@ -61,15 +66,16 @@ train = [
     "tf2onnx",
     "torch",
 ]
+docs = ["mkdocs-material", "mkdocstrings", "mike"]
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "*"
-ruff = "^0.3.1"
+ruff = "*"
 pandas-stubs = "^2.2.0.240218"
-pylint = "^3.1.0"
+pylint = "*"
 types-pyyaml = "^6.0.12.20240311"
 
 [tool.poetry.scripts]
