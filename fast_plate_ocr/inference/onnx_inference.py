@@ -67,21 +67,25 @@ class ONNXPlateRecognizer:
         sess_options: ort.SessionOptions | None = None,
         model_path: str | os.PathLike[str] | None = None,
         config_path: str | os.PathLike[str] | None = None,
-    ):
+    ) -> None:
         """
         Initializes the ONNXPlateRecognizer with the specified OCR model and inference device.
 
         The current OCR models available from the HUB are:
 
-        - 'argentinian-plates-cnn-model': OCR for Argentinian license plates.
+        - `argentinian-plates-cnn-model`: OCR for Argentinian license plates.
 
-        :param hub_ocr_model: Name of the OCR model to use from the HUB.
-        :param device: Device type for inference. Should be one of ('cpu', 'gpu', 'auto'). If
-         'auto' mode, the device will be deduced from `onnxruntime.get_available_providers()`.
-        :param sess_options: Advanced session options for ONNX Runtime.
-        :param model_path: Path to ONNX model file to use (In case you want to use a custom one).
-        :param config_path: Path to config file to use (In case you want to use a custom one).
-        :return: None.
+        Args:
+            hub_ocr_model: Name of the OCR model to use from the HUB.
+            device: Device type for inference. Should be one of ('cpu', 'gpu', 'auto'). If
+                'auto' mode, the device will be deduced from
+                `onnxruntime.get_available_providers()`.
+            sess_options: Advanced session options for ONNX Runtime.
+            model_path: Path to ONNX model file to use (In case you want to use a custom one).
+            config_path: Path to config file to use (In case you want to use a custom one).
+
+        Returns:
+            None.
         """
         self.logger = logging.getLogger(__name__)
 
@@ -119,10 +123,11 @@ class ONNXPlateRecognizer:
         Benchmark time taken to run the OCR model. This reports the average inference time and the
         throughput in plates per second.
 
-        :param n_iter: The number of iterations to run the benchmark. This determines how many times
-         the inference will be executed to compute the average performance metrics.
-        :param include_processing: Indicates whether the benchmark should include preprocessing and
-         postprocessing times in the measurement.
+        Args:
+            n_iter: The number of iterations to run the benchmark. This determines how many times
+                the inference will be executed to compute the average performance metrics.
+            include_processing: Indicates whether the benchmark should include preprocessing and
+                postprocessing times in the measurement.
         """
         cum_time = 0.0
         x = np.random.randint(
@@ -155,14 +160,17 @@ class ONNXPlateRecognizer:
         """
         Performs OCR to recognize license plate characters from an image or a list of images.
 
-        :param source: The path(s) to the image(s), a numpy array representing an image or a list
-         of NumPy arrays. If a numpy array is provided, it is expected to already be in grayscale
-         format, with shape (H, W) or (H, W, 1). A list of numpy arrays with different image sizes
-         may also be provided.
-        :param return_confidence: Whether to return confidence scores along with plate predictions.
-        :return: A list of plates for each input image. If `return_confidence` is True, a numpy
-         array is returned with the shape (N, plate_slots), where N is the batch size and each
-         plate_slot is the confidence for the recognized license plate character.
+        Args:
+            source: The path(s) to the image(s), a numpy array representing an image or a list
+                of NumPy arrays. If a numpy array is provided, it is expected to already be in
+                grayscale format, with shape `(H, W) `or `(H, W, 1)`. A list of numpy arrays with
+                different image sizes may also be provided.
+            return_confidence: Whether to return confidence scores along with plate predictions.
+
+        Returns:
+            A list of plates for each input image. If `return_confidence` is True, a numpy
+                array is returned with the shape `(N, plate_slots)`, where N is the batch size and
+                each plate slot is the confidence for the recognized license plate character.
         """
         x = _load_image_from_source(source)
         # Preprocess
