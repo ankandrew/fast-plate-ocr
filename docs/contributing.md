@@ -16,4 +16,5 @@ To start contributing or to begin development, you can follow these steps:
     make checks
     ```
 
-If you want to train a model and share it, we'll add it to the HUB 🚀
+???+ tip
+    If you want to train a model and share it, we'll add it to the HUB 🚀
