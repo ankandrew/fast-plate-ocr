@@ -91,7 +91,7 @@ jobs:
   update_docs:
     name: Update documentation
     needs:
-      - test  # FIXME
+      - github-release
     runs-on: ubuntu-latest
 
     steps:
