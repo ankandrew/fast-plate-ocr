@@ -16,8 +16,8 @@ BASE_URL: str = "https://github.com/ankandrew/cnn-ocr-lp/releases/download"
 
 AVAILABLE_ONNX_MODELS: dict[str, tuple[str, str]] = {
     "argentinian-plates-cnn-model": (
-        f"{BASE_URL}/v1.0/arg_cnn_ocr.onnx",
-        f"{BASE_URL}/v1.0/arg_cnn_ocr_config.yaml",
+        f"{BASE_URL}/arg-plates/arg_cnn_ocr.onnx",
+        f"{BASE_URL}/arg-plates/arg_cnn_ocr_config.yaml",
     )
 }
 """Available ONNX models for doing inference."""

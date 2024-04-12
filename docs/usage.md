@@ -71,7 +71,7 @@ To train the model you will need:
     img_width: 140
     ```
 2. A labeled dataset,
-   see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_dataset.zip)
+   see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)
    for the expected data format.
 3. Run train script:
     ```shell

@@ -31,9 +31,9 @@ The idea is to use this after a plate object detector, since the OCR expects the
 
 ### Available Models
 
-|          Model Name          | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> |                                                      Dataset                                                      | Accuracy<sup>[2]</sup> |              Dataset              |
-|:----------------------------:|:--------------------------------:|:----------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|:----------------------:|:---------------------------------:|
-| argentinian-plates-cnn-model |              2.0964              |                      477                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_dataset.zip) |         94.05%         | Non-synthetic, plates up to 2020. |
+|          Model Name          | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> |                                                         Dataset                                                         | Accuracy<sup>[2]</sup> |              Dataset              |
+|:----------------------------:|:--------------------------------:|:----------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------:|:----------------------:|:---------------------------------:|
+| argentinian-plates-cnn-model |              2.0964              |                      477                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip) |         94.05%         | Non-synthetic, plates up to 2020. |
 
 _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
 by 5x._
@@ -62,9 +62,9 @@ _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See metrics section._
 
   ```shell
   pip install fast-plate-ocr[train]
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_cnn_ocr_config.yaml
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_cnn_ocr.keras
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_benchmark.zip
+  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr_config.yaml
+  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr.keras
+  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_benchmark.zip
   unzip arg_plate_benchmark.zip
   fast_plate_ocr valid \
       -m arg_cnn_ocr.keras \
@@ -157,7 +157,7 @@ To train the model you will need:
     img_width: 140
     ```
 2. A labeled dataset,
-   see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/v1.0/arg_plate_dataset.zip)
+   see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)
    for the expected data format.
 3. Run train script:
     ```shell
