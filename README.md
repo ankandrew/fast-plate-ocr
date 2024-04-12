@@ -122,6 +122,8 @@ m.benchmark()
 
 </details>
 
+Make sure to check out the [docs](https://ankandrew.github.io/fast-plate-ocr) for more information.
+
 ### CLI
 
 <img src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/cli_screenshot.png?raw=true" alt="CLI">
