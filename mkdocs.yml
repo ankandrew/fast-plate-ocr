@@ -36,6 +36,8 @@ plugins:
           show_signature_annotations: true
           signature_crossrefs: true
 extra:
+  version:
+    provider: mike
   generator: false
 markdown_extensions:
   - admonition
