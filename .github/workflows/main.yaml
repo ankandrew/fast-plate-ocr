@@ -105,9 +105,6 @@ jobs:
           python-version: '3.10'
           cache: 'poetry'
 
-      - name: Install dependencies
-        run: poetry install -E docs
-
       - name: Configure Git user
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
