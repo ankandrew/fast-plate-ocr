@@ -120,4 +120,9 @@ jobs:
           skip_env_check: true
 
       - name: Deploy the docs
-        run: poetry run mike deploy -b docs-site ${{ steps.check-version.outputs.VERSION_MAJOR_MINOR }} latest --update-aliases --push
+        run: |
+          poetry run mike deploy \
+              --update-aliases \
+              --push \
+              --branch docs-site \
+              ${{ steps.check-version.outputs.VERSION_MAJOR_MINOR }} latest
