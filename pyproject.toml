@@ -5,6 +5,7 @@ description = "Fast & Lightweight OCR for vehicle license plates."
 authors = ["ankandrew <61120139+ankandrew@users.noreply.github.com>"]
 readme = "README.md"
 repository = "https://github.com/ankandrew/fast-plate-ocr/"
+documentation = "https://ankandrew.github.io/fast-plate-ocr"
 keywords = ["plate-recognition", "license-plate-recognition", "license-plate-ocr"]
 license = "MIT"
 classifiers = [
