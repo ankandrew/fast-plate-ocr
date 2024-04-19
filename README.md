@@ -163,7 +163,7 @@ To train the model you will need:
     ```shell
     # You can set the backend to either TensorFlow, JAX or PyTorch
     # (just make sure it is installed)
-    !KERAS_BACKEND=tensorflow fast_plate_ocr train \
+    KERAS_BACKEND=tensorflow fast_plate_ocr train \
         --annotations path_to_the_train.csv \
         --val-annotations path_to_the_val.csv \
         --batch-size 128 \
