@@ -87,9 +87,9 @@ To train the model you will need:
         --reduce-lr-patience 50
     ```
 
-You will probably want to change the augmentation pipeline to apply to your dataset. In order to do this
+You will probably want to change the augmentation pipeline to apply to your dataset.
 
-Define Albumentations pipeline:
+In order to do this define an Albumentations pipeline:
 
 ```python
 import albumentations as A

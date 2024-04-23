@@ -19,11 +19,14 @@ prediction for a single plate will be of shape `(max_plate_slots, vocabulary_siz
 
 During training, you will see the following metrics
 
-* **plate_acc**: Compute how many plates were correctly classified. For a single plate, if ground truth is `ABC123`, and
-  the prediction is 'ABC 123', then this would give a score of 1. If the prediction was ABD 123, it would
-  score 0.
-* **cat_acc**: Calculates how many characters of the plate were correctly classified. Example if the correct label is
-  `ABC123` and `ABC133` is predicted, it will not give a precision of 0% like plate_acc (not completely
-  classified correctly), but 83.3% (5/6).
-* **top_3_k**: Calculates how often the true character is found in the top-3 predictions (the 3 with the highest
-  probability).
+* **plate_acc**: Compute the number of **license plates** that were **fully classified**. For a single plate, if the
+  ground truth is `ABC123` and the prediction is also `ABC123`, it would score 1. However, if the prediction was
+  `ABD123`, it would score 0, as **not all characters** were correctly classified.
+
+* **cat_acc**: Calculate the accuracy of **individual characters** within the license plates that were
+  **correctly classified**. For example, if the correct label is `ABC123` and the prediction is `ABC133`, it would yield
+  a precision of 83.3% (5 out of 6 characters correctly classified), rather than 0% as in plate_acc, because it's not
+  completely classified correctly.
+
+* **top_3_k**: Calculate how frequently the true character is included in the **top-3 predictions**
+  (the three predictions with the highest probability).
