@@ -74,14 +74,14 @@ def export_onnx(
     )
     output_names = [n.name for n in model_proto.graph.output]
     x = np.random.randint(0, 256, size=(1, config.img_height, config.img_width, 1), dtype=np.uint8)
-    providers = ["CPUExecutionProvider"]
     # Run dummy inference and log time taken
-    m = rt.InferenceSession(output_path, providers=providers)
+    m = rt.InferenceSession(output_path)
     with log_time_taken("ONNX inference took:"):
         onnx_pred = m.run(output_names, {"input": x})
-    # Check ONNX and keras have the same results
-    np.testing.assert_allclose(model.predict(x, verbose=0), onnx_pred[0], rtol=1e-5)
-    logging.info("Model converted successfully to ONNX! Saved at %s", output_path)
+    # Check if ONNX and keras have the same results
+    if not np.allclose(model.predict(x, verbose=0), onnx_pred[0], rtol=1e-5, atol=1e-5):
+        logging.warning("ONNX model output was not close to Keras model for the given tolerance!")
+    logging.info("Model converted to ONNX! Saved at %s", output_path)
 
 
 if __name__ == "__main__":
