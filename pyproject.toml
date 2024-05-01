@@ -25,7 +25,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 # Packages required for doing inference
-numpy = ">=1.17"
+numpy = ">=1.20"
 onnxruntime = ">=1.4.0"
 opencv-python = "*"
 pyyaml = ">=5.1"
