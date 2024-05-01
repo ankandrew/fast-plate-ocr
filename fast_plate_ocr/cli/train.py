@@ -72,6 +72,13 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     help="Batch size for training.",
 )
 @click.option(
+    "--num-workers",
+    default=0,
+    show_default=True,
+    type=int,
+    help="How many subprocesses to load data, used in the torch DataLoader.",
+)
+@click.option(
     "--output-dir",
     default="./trained-models",
     type=click.Path(dir_okay=True, path_type=pathlib.Path),
@@ -120,6 +127,7 @@ def train(
     augmentation_path: pathlib.Path | None,
     lr: float,
     batch_size: int,
+    num_workers: int,
     output_dir: pathlib.Path,
     epochs: int,
     tensorboard: bool,
@@ -139,14 +147,18 @@ def train(
         transform=train_augmentation,
         config=config,
     )
-    train_dataloader = DataLoader(train_torch_dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(
+        train_torch_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True
+    )
 
     if val_annotations:
         val_torch_dataset = LicensePlateDataset(
             annotations_file=val_annotations,
             config=config,
         )
-        val_dataloader = DataLoader(val_torch_dataset, batch_size=batch_size, shuffle=False)
+        val_dataloader = DataLoader(
+            val_torch_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False
+        )
     else:
         val_dataloader = None
 
