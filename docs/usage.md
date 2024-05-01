@@ -80,6 +80,7 @@ To train the model you will need:
     KERAS_BACKEND=tensorflow fast_plate_ocr train \
         --annotations path_to_the_train.csv \
         --val-annotations path_to_the_val.csv \
+        --config-file config.yaml \
         --batch-size 128 \
         --epochs 750 \
         --dense \
