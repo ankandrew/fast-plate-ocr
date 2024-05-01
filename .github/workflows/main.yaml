@@ -1,5 +1,11 @@
 name: Test and Deploy
-on: push
+on:
+  push:
+    branches:
+      - master
+  create:
+    tags:
+      - 'v*'
 jobs:
   test:
     name: Test
