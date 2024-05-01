@@ -510,14 +510,21 @@ prediction for a single plate will be of shape <code>(max_plate_slots, vocabular
 <h3 id="model-metrics">Model Metrics<a class="headerlink" href="#model-metrics" title="Permanent link">&para;</a></h3>
 <p>During training, you will see the following metrics</p>
 <ul>
-<li><strong>plate_acc</strong>: Compute how many plates were correctly classified. For a single plate, if ground truth is <code>ABC123</code>, and
-  the prediction is 'ABC 123', then this would give a score of 1. If the prediction was ABD 123, it would
-  score 0.</li>
-<li><strong>cat_acc</strong>: Calculates how many characters of the plate were correctly classified. Example if the correct label is
-  <code>ABC123</code> and <code>ABC133</code> is predicted, it will not give a precision of 0% like plate_acc (not completely
-  classified correctly), but 83.3% (5/6).</li>
-<li><strong>top_3_k</strong>: Calculates how often the true character is found in the top-3 predictions (the 3 with the highest
-  probability).</li>
+<li>
+<p><strong>plate_acc</strong>: Compute the number of <strong>license plates</strong> that were <strong>fully classified</strong>. For a single plate, if the
+  ground truth is <code>ABC123</code> and the prediction is also <code>ABC123</code>, it would score 1. However, if the prediction was
+  <code>ABD123</code>, it would score 0, as <strong>not all characters</strong> were correctly classified.</p>
+</li>
+<li>
+<p><strong>cat_acc</strong>: Calculate the accuracy of <strong>individual characters</strong> within the license plates that were
+  <strong>correctly classified</strong>. For example, if the correct label is <code>ABC123</code> and the prediction is <code>ABC133</code>, it would yield
+  a precision of 83.3% (5 out of 6 characters correctly classified), rather than 0% as in plate_acc, because it's not
+  completely classified correctly.</p>
+</li>
+<li>
+<p><strong>top_3_k</strong>: Calculate how frequently the true character is included in the <strong>top-3 predictions</strong>
+  (the three predictions with the highest probability).</p>
+</li>
 </ul>
 
 
