@@ -4,16 +4,15 @@ Script for displaying an image with the OCR model predictions.
 
 import logging
 import pathlib
-from contextlib import nullcontext
 
 import click
 import cv2
 import keras
 import numpy as np
 
-import fast_plate_ocr.common.utils
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
+from fast_plate_ocr.train.utilities.utils import postprocess_model_output
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
@@ -43,26 +42,25 @@ logging.basicConfig(
     help="Directory containing the images to make predictions from.",
 )
 @click.option(
-    "-t",
-    "--time",
-    default=True,
-    is_flag=True,
-    help="Log time taken to run predictions.",
-)
-@click.option(
     "-l",
     "--low-conf-thresh",
     type=float,
-    default=0.2,
+    default=0.35,
     show_default=True,
     help="Threshold for displaying low confidence characters.",
+)
+@click.option(
+    "-l",
+    "--filter-conf",
+    type=float,
+    help="Display plates that any of the plate characters are below this number.",
 )
 def visualize_predictions(
     model_path: pathlib.Path,
     config_file: pathlib.Path,
     img_dir: pathlib.Path,
     low_conf_thresh: float,
-    time: bool,
+    filter_conf: float | None,
 ):
     """
     Visualize OCR model predictions on unlabeled data.
@@ -75,20 +73,19 @@ def visualize_predictions(
         img_dir, width=config.img_width, height=config.img_height
     )
     for image in images:
-        with (
-            fast_plate_ocr.common.utils.log_time_taken("Prediction time") if time else nullcontext()
-        ):
-            x = np.expand_dims(image, 0)
-            prediction = model(x, training=False)
-            prediction = keras.ops.stop_gradient(prediction).numpy()
-        utils.display_predictions(
-            image=image,
+        x = np.expand_dims(image, 0)
+        prediction = model(x, training=False)
+        prediction = keras.ops.stop_gradient(prediction).numpy()
+        plate, probs = postprocess_model_output(
             prediction=prediction,
             alphabet=config.alphabet,
-            plate_slots=config.max_plate_slots,
+            max_plate_slots=config.max_plate_slots,
             vocab_size=config.vocabulary_size,
-            low_conf_thresh=low_conf_thresh,
         )
+        if not filter_conf or (filter_conf and np.any(probs < filter_conf)):
+            utils.display_predictions(
+                image=image, plate=plate, probs=probs, low_conf_thresh=low_conf_thresh
+            )
     cv2.destroyAllWindows()
 
 

@@ -117,21 +117,13 @@ def low_confidence_positions(probs, thresh=0.3) -> npt.NDArray:
 
 def display_predictions(
     image: npt.NDArray,
-    prediction: npt.NDArray,
-    alphabet: str,
-    plate_slots: int,
-    vocab_size: int,
+    plate: str,
+    probs: npt.NDArray,
     low_conf_thresh: float,
 ) -> None:
     """
     Display plate and corresponding prediction.
     """
-    plate, probs = postprocess_model_output(
-        prediction=prediction,
-        alphabet=alphabet,
-        max_plate_slots=plate_slots,
-        vocab_size=vocab_size,
-    )
     plate_str = "".join(plate)
     logging.info("Plate: %s", plate_str)
     logging.info("Confidence: %s", probs)
