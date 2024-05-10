@@ -3342,9 +3342,9 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [extras]
 docs = ["mike", "mkdocs-material", "mkdocstrings"]
 inference-gpu = ["onnxruntime-gpu"]
-train = ["albumentations", "click", "keras", "matplotlib", "pandas", "pydantic", "tensorboard", "tensorflow", "tf2onnx", "torch"]
+train = ["albumentations", "click", "keras", "matplotlib", "onnxsim", "pandas", "pydantic", "tensorboard", "tensorflow", "tf2onnx", "torch"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a689922b2239b1395aa564cd630b295faa46c0456fe6ba3cf957a71d7b17d354"
+content-hash = "2979d4cc9987eb6cd095927b25fb374d84899be105c462b1c798e88c6ba17538"
