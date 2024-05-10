@@ -1724,6 +1724,34 @@ protobuf = "*"
 sympy = "*"
 
 [[package]]
+name = "onnxsim"
+version = "0.4.36"
+description = "Simplify your ONNX model"
+optional = true
+python-versions = ">=3.7"
+files = [
+    {file = "onnxsim-0.4.36-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:7498e7b9584c4b354b455564dfba66d460ce2c205b71dae169cfa9b6704e03fd"},
+    {file = "onnxsim-0.4.36-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ce87837f8975beebdcc98cc01d6d13e84b10900eb2c14035ce1066c3d670d96d"},
+    {file = "onnxsim-0.4.36-cp310-cp310-win_amd64.whl", hash = "sha256:f92bec8c6c0d4f8463e10021277711d2faac900e4eb890238001b3eadb5c03bc"},
+    {file = "onnxsim-0.4.36-cp311-cp311-macosx_10_15_universal2.whl", hash = "sha256:150b9a3a409af2f3161af3fecda2113e0e6e296fb015b5205a9ddf645765acad"},
+    {file = "onnxsim-0.4.36-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fa7596e6b806ed19077f7652788a50ee576c172b4d16d421f0593aef1a6fa4c4"},
+    {file = "onnxsim-0.4.36-cp311-cp311-win_amd64.whl", hash = "sha256:91fb32def04f2f89d5f76527c852332366957752e5e61ac25be0b2d7bb410f89"},
+    {file = "onnxsim-0.4.36-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9c616b1e48e92d916e762bae405563f5b2fd8d0718fbbafef2ceb81570202716"},
+    {file = "onnxsim-0.4.36-cp37-cp37m-win_amd64.whl", hash = "sha256:7c0aa3de159fc9c4560b62ddccc0d1146fef035aeba5eb3797f6550889a2f96a"},
+    {file = "onnxsim-0.4.36-cp38-cp38-macosx_10_15_universal2.whl", hash = "sha256:369815cd292ae1b3cb37d5692428abf69ed3917c7794d895155c4d4d1f8b374e"},
+    {file = "onnxsim-0.4.36-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:19c881a9c9af4e7238c856da8b677e158f9a74f3eeaedbdb447fb109a4d08ce3"},
+    {file = "onnxsim-0.4.36-cp38-cp38-win_amd64.whl", hash = "sha256:f17c2b81ad97e7bb91f6f049282b7d9bc8e4dc93d23d2bdf59e8bf3f5b3e63c7"},
+    {file = "onnxsim-0.4.36-cp39-cp39-macosx_10_15_universal2.whl", hash = "sha256:6ae38cb9a23b759202d8ecc6c25392a2cecd156499b036fc48720d048833bece"},
+    {file = "onnxsim-0.4.36-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e937abb8e20a6609f27ae19639d21dc5e8621c4a5e44ebbafab9292451f75497"},
+    {file = "onnxsim-0.4.36-cp39-cp39-win_amd64.whl", hash = "sha256:1a23f32bc6ab3829ee69d9b737e4cfeb457d91720c4040788dabbc88e11dfacc"},
+    {file = "onnxsim-0.4.36.tar.gz", hash = "sha256:6e0ee9d6d4a83042bdef7319fbe58352d9fda5f253386be2b267c7c27f0638ee"},
+]
+
+[package.dependencies]
+onnx = "*"
+rich = "*"
+
+[[package]]
 name = "opencv-python"
 version = "4.9.0.80"
 description = "Wrapper package for OpenCV python bindings."
@@ -3319,4 +3347,4 @@ train = ["albumentations", "click", "keras", "matplotlib", "pandas", "pydantic",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "dc4b92be3a90e703f7baf245be5f6ac2fa4f5cb91490998539e292a363e8db9f"
+content-hash = "a689922b2239b1395aa564cd630b295faa46c0456fe6ba3cf957a71d7b17d354"

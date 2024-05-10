@@ -52,6 +52,7 @@ torch = { version = "*", optional = true }
 mkdocs-material = { version = "*", optional = true }
 mkdocstrings = {version = "*", extras = ["python"], optional = true}
 mike = { version = "*", optional = true }
+onnxsim = { version = ">0.4.10", optional = true }
 
 [tool.poetry.extras]
 inference-gpu = ["onnxruntime-gpu"]
