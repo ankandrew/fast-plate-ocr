@@ -67,6 +67,7 @@ train = [
     "tensorflow",
     "tf2onnx",
     "torch",
+    "onnxsim",
 ]
 docs = ["mkdocs-material", "mkdocstrings", "mike"]
 
