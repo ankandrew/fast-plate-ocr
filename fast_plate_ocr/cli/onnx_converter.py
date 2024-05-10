@@ -45,7 +45,7 @@ logging.basicConfig(
 )
 @click.option(
     "--simplify/--no-simplify",
-    default=True,
+    default=False,
     show_default=True,
     help="Simplify ONNX model using onnxsim.",
 )
