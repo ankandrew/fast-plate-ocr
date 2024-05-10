@@ -50,7 +50,7 @@ logging.basicConfig(
     help="Threshold for displaying low confidence characters.",
 )
 @click.option(
-    "-l",
+    "-f",
     "--filter-conf",
     type=float,
     help="Display plates that any of the plate characters are below this number.",
