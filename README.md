@@ -49,7 +49,7 @@ _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See [metrics section](#m
   ```shell
   pip install fast_plate_ocr  # CPU
   # or
-  pip install fast_plate_ocr[inference_gpu]  # GPU
+  pip install fast_plate_ocr[inference-gpu]  # GPU
   ```
 
   ```python
@@ -85,7 +85,7 @@ pip install fast_plate_ocr
 For doing inference on GPU, install:
 
 ```shell
-pip install fast_plate_ocr[inference_gpu]
+pip install fast_plate_ocr[inference-gpu]
 ```
 
 #### Usage

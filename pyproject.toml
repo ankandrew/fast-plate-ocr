@@ -54,7 +54,7 @@ mkdocstrings = {version = "*", extras = ["python"], optional = true}
 mike = { version = "*", optional = true }
 
 [tool.poetry.extras]
-inference_gpu = ["onnxruntime-gpu"]
+inference-gpu = ["onnxruntime-gpu"]
 train = [
     "albumentations",
     "click",

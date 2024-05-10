@@ -9,7 +9,7 @@ pip install fast_plate_ocr
 For doing **inference** on **GPU**, install:
 
 ```shell
-pip install fast_plate_ocr[inference_gpu]
+pip install fast_plate_ocr[inference-gpu]
 ```
 
 ### Train

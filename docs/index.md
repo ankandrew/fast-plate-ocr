@@ -37,7 +37,7 @@ Calculate Inference Time:
   ```shell
   pip install fast_plate_ocr  # CPU
   # or
-  pip install fast_plate_ocr[inference_gpu]  # GPU
+  pip install fast_plate_ocr[inference-gpu]  # GPU
   ```
 
   ```python
