@@ -16,6 +16,7 @@ from rich.table import Table
 from fast_plate_ocr.common.utils import measure_time
 from fast_plate_ocr.inference import hub
 from fast_plate_ocr.inference.config import load_config_from_yaml
+from fast_plate_ocr.inference.hub import OcrModel
 from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
 
 
@@ -62,11 +63,12 @@ class ONNXPlateRecognizer:
 
     def __init__(
         self,
-        hub_ocr_model: Literal["argentinian-plates-cnn-model"] | None = None,
-        device: Literal["gpu", "cpu", "auto"] = "auto",
+        hub_ocr_model: OcrModel | None = None,
+        device: Literal["cuda", "cpu", "auto"] = "auto",
         sess_options: ort.SessionOptions | None = None,
         model_path: str | os.PathLike[str] | None = None,
         config_path: str | os.PathLike[str] | None = None,
+        force_download: bool = False,
     ) -> None:
         """
         Initializes the ONNXPlateRecognizer with the specified OCR model and inference device.
@@ -77,26 +79,26 @@ class ONNXPlateRecognizer:
 
         Args:
             hub_ocr_model: Name of the OCR model to use from the HUB.
-            device: Device type for inference. Should be one of ('cpu', 'gpu', 'auto'). If
+            device: Device type for inference. Should be one of ('cpu', 'cuda', 'auto'). If
                 'auto' mode, the device will be deduced from
                 `onnxruntime.get_available_providers()`.
             sess_options: Advanced session options for ONNX Runtime.
             model_path: Path to ONNX model file to use (In case you want to use a custom one).
             config_path: Path to config file to use (In case you want to use a custom one).
-
+            force_download: Force and download the model, even if it already exists.
         Returns:
             None.
         """
         self.logger = logging.getLogger(__name__)
 
-        if device == "gpu":
+        if device == "cuda":
             self.provider = ["CUDAExecutionProvider"]
         elif device == "cpu":
             self.provider = ["CPUExecutionProvider"]
         elif device == "auto":
             self.provider = ort.get_available_providers()
         else:
-            raise ValueError(f"Device should be one of ('cpu', 'gpu', 'auto'). Got '{device}'.")
+            raise ValueError(f"Device should be one of ('cpu', 'cuda', 'auto'). Got '{device}'.")
 
         if model_path and config_path:
             model_path = pathlib.Path(model_path)
@@ -106,7 +108,9 @@ class ONNXPlateRecognizer:
             self.model_name = model_path.stem
         elif hub_ocr_model:
             self.model_name = hub_ocr_model
-            model_path, config_path = hub.download_model(model_name=hub_ocr_model)
+            model_path, config_path = hub.download_model(
+                model_name=hub_ocr_model, force_download=force_download
+            )
         else:
             raise ValueError(
                 "Either provide a model from the HUB or a custom model_path and config_path"

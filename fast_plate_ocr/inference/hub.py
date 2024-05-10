@@ -7,18 +7,25 @@ import pathlib
 import shutil
 import urllib.request
 from http import HTTPStatus
+from typing import Literal
 
 from tqdm.asyncio import tqdm
 
 from fast_plate_ocr.inference.utils import safe_write
 
 BASE_URL: str = "https://github.com/ankandrew/cnn-ocr-lp/releases/download"
+OcrModel = Literal["argentinian-plates-cnn-model", "argentinian-plates-cnn-synth-model"]
 
-AVAILABLE_ONNX_MODELS: dict[str, tuple[str, str]] = {
+
+AVAILABLE_ONNX_MODELS: dict[OcrModel, tuple[str, str]] = {
     "argentinian-plates-cnn-model": (
         f"{BASE_URL}/arg-plates/arg_cnn_ocr.onnx",
         f"{BASE_URL}/arg-plates/arg_cnn_ocr_config.yaml",
-    )
+    ),
+    "argentinian-plates-cnn-synth-model": (
+        f"{BASE_URL}/arg-plates/arg_cnn_ocr_synth.onnx",
+        f"{BASE_URL}/arg-plates/arg_cnn_ocr_config.yaml",
+    ),
 }
 """Available ONNX models for doing inference."""
 
@@ -45,7 +52,7 @@ def _download_with_progress(url: str, filename: pathlib.Path) -> None:
 
 
 def download_model(
-    model_name: str,
+    model_name: OcrModel,
     save_directory: pathlib.Path | None = None,
     force_download: bool = False,
 ) -> tuple[pathlib.Path, pathlib.Path]:
