@@ -528,11 +528,19 @@ models from scratch or use the trained models for inference.</p>
 <tbody>
 <tr>
 <td style="text-align: center;"><code>argentinian-plates-cnn-model</code></td>
-<td style="text-align: center;">2.0964</td>
-<td style="text-align: center;">477</td>
+<td style="text-align: center;">2.1</td>
+<td style="text-align: center;">476</td>
 <td style="text-align: center;"><a href="https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip">arg_plate_dataset.zip</a></td>
 <td style="text-align: center;">94.05%</td>
 <td style="text-align: center;">Non-synthetic, plates up to 2020.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>argentinian-plates-cnn-synth-model</code></td>
+<td style="text-align: center;">2.1</td>
+<td style="text-align: center;">476</td>
+<td style="text-align: center;"><a href="https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip">arg_plate_dataset.zip</a></td>
+<td style="text-align: center;">94.19%</td>
+<td style="text-align: center;">Plates up to 2020 + synthetic plates.</td>
 </tr>
 </tbody>
 </table>
@@ -546,7 +554,7 @@ Calculate Inference Time:
 
   <div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>fast_plate_ocr<span class="w">  </span><span class="c1"># CPU</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># or</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pip<span class="w"> </span>install<span class="w"> </span>fast_plate_ocr<span class="o">[</span>inference_gpu<span class="o">]</span><span class="w">  </span><span class="c1"># GPU</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pip<span class="w"> </span>install<span class="w"> </span>fast_plate_ocr<span class="o">[</span>inference-gpu<span class="o">]</span><span class="w">  </span><span class="c1"># GPU</span>
 </span></code></pre></div>
 
   <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">fast_plate_ocr</span> <span class="kn">import</span> <span class="n">ONNXPlateRecognizer</span>
