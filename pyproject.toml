@@ -142,7 +142,7 @@ signature-mutators = [
 max-line-length = 100
 
 [tool.pylint."messages control"]
-disable = ["missing-class-docstring", "missing-function-docstring"]
+disable = ["missing-class-docstring", "missing-function-docstring", "wrong-import-order"]
 
 [tool.pylint.design]
 max-args = 8
