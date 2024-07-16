@@ -17,7 +17,11 @@ from keras.layers import (
 )
 from keras.models import Model
 
-from fast_plate_ocr.train.model.layer_blocks import block_bn, block_no_activation
+from fast_plate_ocr.train.model.layer_blocks import (
+    block_average_conv_down,
+    block_bn,
+    block_no_activation,
+)
 
 
 def cnn_ocr_model(
@@ -50,6 +54,40 @@ def cnn_ocr_model(
     x, _ = block_bn(x, k=1, n_c=512, s=1, padding="same")
     x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding="same")(x)
     x, _ = block_bn(x, k=1, n_c=1024, s=1, padding="same")
+    x = (
+        head(x, max_plate_slots, vocabulary_size)
+        if dense
+        else head_no_fc(x, max_plate_slots, vocabulary_size)
+    )
+    return Model(inputs=input_tensor, outputs=x)
+
+
+def cnn_ocr_model_v2(
+    h: int,
+    w: int,
+    max_plate_slots: int,
+    vocabulary_size: int,
+    dense: bool = True,
+    activation: str = "relu",
+) -> Model:
+    """
+    OCR model implemented with just CNN layers (v2).
+    """
+    input_tensor = Input((h, w, 1))
+    x = Rescaling(1.0 / 255)(input_tensor)
+    # Backbone
+    x = block_average_conv_down(x, n_c=32, padding="same", activation=activation)
+    x, _ = block_bn(x, k=3, n_c=64, s=1, padding="same", activation=activation)
+    x, _ = block_bn(x, k=1, n_c=64, s=1, padding="same", activation=activation)
+    x = block_average_conv_down(x, n_c=64, padding="same", activation=activation)
+    x, _ = block_bn(x, k=3, n_c=128, s=1, padding="same", activation=activation)
+    x, _ = block_bn(x, k=1, n_c=128, s=1, padding="same", activation=activation)
+    x = block_average_conv_down(x, n_c=128, padding="same", activation=activation)
+    x, _ = block_bn(x, k=3, n_c=128, s=1, padding="same", activation=activation)
+    x, _ = block_bn(x, k=1, n_c=256, s=1, padding="same", activation=activation)
+    x = block_average_conv_down(x, n_c=256, padding="same", activation=activation)
+    x, _ = block_bn(x, k=1, n_c=512, s=1, padding="same", activation=activation)
+    x, _ = block_bn(x, k=1, n_c=1024, s=1, padding="same", activation=activation)
     x = (
         head(x, max_plate_slots, vocabulary_size)
         if dense
