@@ -127,7 +127,7 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     type=float,
     help="Reduce the learning rate by this factor when 'val_plate_acc' doesn't improve.",
 )
-@print_params(c1_title="Parameter", c2_title="Details")
+@print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
     dense: bool,
     config_file: pathlib.Path,
