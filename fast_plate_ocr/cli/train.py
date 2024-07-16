@@ -12,7 +12,7 @@ from keras.optimizers import Adam
 from keras.src.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
-from fast_plate_ocr.cli.utils import print_params
+from fast_plate_ocr.cli.utils import print_params, print_train_details
 from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.train.data.dataset import LicensePlateDataset
 from fast_plate_ocr.train.model.config import load_config_from_yaml
@@ -152,6 +152,7 @@ def train(
         A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
     )
     config = load_config_from_yaml(config_file)
+    print_train_details(train_augmentation, config.model_dump())
     train_torch_dataset = LicensePlateDataset(
         annotations_file=annotations,
         transform=train_augmentation,

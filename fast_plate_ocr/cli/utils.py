@@ -8,32 +8,11 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+import albumentations as A
 from rich import box
 from rich.console import Console
+from rich.pretty import Pretty
 from rich.table import Table
-
-
-def color_for_dtype(value: Any) -> str:
-    """
-    Returns a color name based on the data type of the input value.
-
-    Args:
-        value (Any): The input value whose type is to be determined.
-
-    Returns:
-        str: The color name as a string.
-    """
-    if isinstance(value, bool):
-        return "green" if value else "red"
-    if isinstance(value, int):
-        return "cyan"
-    if isinstance(value, float):
-        return "magenta"
-    if isinstance(value, pathlib.Path):
-        return "yellow"
-    if value is None:
-        return "grey50"
-    return "white"
 
 
 def print_variables_as_table(
@@ -49,12 +28,16 @@ def print_variables_as_table(
         **kwargs (Any): Variable names and values to be printed.
     """
     console = Console()
-    table = Table(title=title, show_header=True, header_style="bold magenta", box=box.ROUNDED)
+    console.print("\n")
+    table = Table(title=title, show_header=True, header_style="bold blue", box=box.ROUNDED)
     table.add_column(c1_title, min_width=20, justify="left", style="bold")
     table.add_column(c2_title, min_width=60, justify="left", style="bold")
+
     for key, value in kwargs.items():
-        color = color_for_dtype(value)
-        table.add_row(f"[bold]{key}[/bold]", f"[{color}]{value}[/{color}]")
+        if isinstance(value, pathlib.Path):
+            value = str(value)  # noqa: PLW2901
+        table.add_row(f"[bold]{key}[/bold]", Pretty(value))
+
     console.print(table)
 
 
@@ -87,3 +70,14 @@ def print_params(
         return wrapper
 
     return decorator
+
+
+def print_train_details(augmentation: A.Compose, config: dict[str, Any]) -> None:
+    console = Console()
+    console.print("\n")
+    console.print("[bold blue]Augmentation Pipeline:[/bold blue]")
+    console.print(Pretty(augmentation))
+    console.print("\n")
+    console.print("[bold blue]Configuration:[/bold blue]")
+    console.print(Pretty(config))
+    console.print("\n")
