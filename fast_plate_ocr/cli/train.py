@@ -100,9 +100,9 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 @click.option(
     "--tensorboard-dir",
     "-l",
-    default="logs",
+    default="tensorboard_logs",
     show_default=True,
-    type=str,
+    type=click.Path(path_type=pathlib.Path),
     help="The path of the directory where to save the TensorBoard log files.",
 )
 @click.option(
@@ -117,7 +117,14 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     default=60,
     show_default=True,
     type=int,
-    help="Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs.",
+    help="Patience to reduce the learning rate if 'val_plate_acc' doesn't improve within X epochs.",
+)
+@click.option(
+    "--reduce-lr-factor",
+    default=0.85,
+    show_default=True,
+    type=float,
+    help="Reduce the learning rate by this factor when 'val_plate_acc' doesn't improve.",
 )
 def train(
     dense: bool,
@@ -131,9 +138,10 @@ def train(
     output_dir: pathlib.Path,
     epochs: int,
     tensorboard: bool,
-    tensorboard_dir: str,
+    tensorboard_dir: pathlib.Path,
     early_stopping_patience: int,
     reduce_lr_patience: int,
+    reduce_lr_factor: float,
 ) -> None:
     """
     Train the License Plate OCR model.
@@ -193,8 +201,8 @@ def train(
         ReduceLROnPlateau(
             "val_plate_acc",
             patience=reduce_lr_patience,
-            factor=0.5,
-            min_lr=1e-5,
+            factor=reduce_lr_factor,
+            min_lr=1e-6,
             verbose=1,
         ),
         # Stop training when 'val_plate_acc' doesn't improve for X epochs
@@ -217,7 +225,9 @@ def train(
     ]
 
     if tensorboard:
-        callbacks.append(TensorBoard(log_dir=tensorboard_dir))
+        run_dir = tensorboard_dir / datetime.now().strftime("run_%Y%m%d_%H%M%S")
+        run_dir.mkdir(parents=True, exist_ok=True)
+        callbacks.append(TensorBoard(log_dir=run_dir))
 
     model.fit(train_dataloader, epochs=epochs, validation_data=val_dataloader, callbacks=callbacks)
 
