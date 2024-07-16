@@ -12,6 +12,7 @@ from keras.optimizers import Adam
 from keras.src.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
+from fast_plate_ocr.cli.utils import print_params
 from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.train.data.dataset import LicensePlateDataset
 from fast_plate_ocr.train.model.config import load_config_from_yaml
@@ -80,7 +81,7 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 )
 @click.option(
     "--output-dir",
-    default="./trained-models",
+    default="./trained_models",
     type=click.Path(dir_okay=True, path_type=pathlib.Path),
     help="Output directory where model will be saved.",
 )
@@ -126,6 +127,7 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     type=float,
     help="Reduce the learning rate by this factor when 'val_plate_acc' doesn't improve.",
 )
+@print_params(c1_title="Parameter", c2_title="Details")
 def train(
     dense: bool,
     config_file: pathlib.Path,
