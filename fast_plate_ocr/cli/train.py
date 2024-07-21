@@ -200,8 +200,9 @@ def train(
     output_dir.mkdir(parents=True, exist_ok=True)
     model_file_path = output_dir / "cnn_ocr-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
-    # Copy configuration used
-    shutil.copy(config_file, output_dir)
+    # Save params and config used for training
+    shutil.copy(config_file.wit, output_dir)
+    A.save(train_augmentation, output_dir / "train_augmentation.yaml", "yaml")
 
     callbacks = [
         # Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs
