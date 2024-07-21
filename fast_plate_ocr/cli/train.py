@@ -23,7 +23,7 @@ from fast_plate_ocr.train.model.custom import (
     plate_acc_metric,
     top_3_k_metric,
 )
-from fast_plate_ocr.train.model.models import cnn_ocr_model
+from fast_plate_ocr.train.model.models import cnn_ocr_model_v2
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
@@ -175,12 +175,13 @@ def train(
         val_dataloader = None
 
     # Train
-    model = cnn_ocr_model(
+    model = cnn_ocr_model_v2(
         h=config.img_height,
         w=config.img_width,
         dense=dense,
         max_plate_slots=config.max_plate_slots,
         vocabulary_size=config.vocabulary_size,
+        activation="leaky_relu",
     )
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size),
@@ -201,7 +202,7 @@ def train(
     model_file_path = output_dir / "cnn_ocr-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
     # Save params and config used for training
-    shutil.copy(config_file.wit, output_dir)
+    shutil.copy(config_file, output_dir / "config.yaml")
     A.save(train_augmentation, output_dir / "train_augmentation.yaml", "yaml")
 
     callbacks = [
