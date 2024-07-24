@@ -41,7 +41,7 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
         return len(self.alphabet)
 
     @model_validator(mode="after")
-    def check_passwords_match(self) -> "PlateOCRConfig":
+    def check_pad_in_alphabet(self) -> "PlateOCRConfig":
         if self.pad_char not in self.alphabet:
             raise ValueError("Pad character must be present in model alphabet.")
         return self

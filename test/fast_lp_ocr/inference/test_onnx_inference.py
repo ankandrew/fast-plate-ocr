@@ -3,13 +3,13 @@ Tests for ONNX inference module.
 """
 
 from collections.abc import Iterator
-from test.assets import ASSETS_DIR
 
 import cv2
 import numpy.typing as npt
 import pytest
 
 from fast_plate_ocr import ONNXPlateRecognizer
+from test.assets import ASSETS_DIR
 
 
 @pytest.fixture(scope="module", name="onnx_model")
