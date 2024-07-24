@@ -33,7 +33,7 @@ def cnn_ocr_model(
     vocabulary_size: int,
     dense: bool = True,
     activation: str = "relu",
-    pool_layer: Literal["avg", "max"] = "avg",
+    pool_layer: Literal["avg", "max"] = "max",
 ) -> Model:
     """
     OCR model implemented with just CNN layers (v2).
