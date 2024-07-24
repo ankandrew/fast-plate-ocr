@@ -5,6 +5,7 @@ Script for training the License Plate OCR models.
 import pathlib
 import shutil
 from datetime import datetime
+from typing import Literal
 
 import albumentations as A
 import click
@@ -23,7 +24,7 @@ from fast_plate_ocr.train.model.custom import (
     plate_acc_metric,
     top_3_k_metric,
 )
-from fast_plate_ocr.train.model.models import cnn_ocr_model_v2
+from fast_plate_ocr.train.model.models import cnn_ocr_model
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
@@ -128,6 +129,20 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model_v2
     type=float,
     help="Reduce the learning rate by this factor when 'val_plate_acc' doesn't improve.",
 )
+@click.option(
+    "--activation",
+    default="relu",
+    show_default=True,
+    type=str,
+    help="Activation function to use.",
+)
+@click.option(
+    "--pool-layer",
+    default="max",
+    show_default=True,
+    type=click.Choice(["max", "avg"]),
+    help="Choose the pooling layer to use.",
+)
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
     dense: bool,
@@ -145,6 +160,8 @@ def train(
     early_stopping_patience: int,
     reduce_lr_patience: int,
     reduce_lr_factor: float,
+    activation: str,
+    pool_layer: Literal["max", "avg"],
 ) -> None:
     """
     Train the License Plate OCR model.
@@ -175,13 +192,14 @@ def train(
         val_dataloader = None
 
     # Train
-    model = cnn_ocr_model_v2(
+    model = cnn_ocr_model(
         h=config.img_height,
         w=config.img_width,
         dense=dense,
         max_plate_slots=config.max_plate_slots,
         vocabulary_size=config.vocabulary_size,
-        activation="leaky_relu",
+        activation=activation,
+        pool_layer=pool_layer,
     )
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size),
