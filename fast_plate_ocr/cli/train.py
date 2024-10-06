@@ -24,7 +24,7 @@ from fast_plate_ocr.train.model.custom import (
     plate_acc_metric,
     top_3_k_metric,
 )
-from fast_plate_ocr.train.model.models import cnn_ocr_model
+from fast_plate_ocr.train.model.models import vitstr_tiny
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
@@ -192,14 +192,19 @@ def train(
         val_dataloader = None
 
     # Train
-    model = cnn_ocr_model(
-        h=config.img_height,
-        w=config.img_width,
-        dense=dense,
+    # model = cnn_ocr_model(
+    #     h=config.img_height,
+    #     w=config.img_width,
+    #     dense=dense,
+    #     max_plate_slots=config.max_plate_slots,
+    #     vocabulary_size=config.vocabulary_size,
+    #     activation=activation,
+    #     pool_layer=pool_layer,
+    # )
+    model = vitstr_tiny(
         max_plate_slots=config.max_plate_slots,
         vocabulary_size=config.vocabulary_size,
-        activation=activation,
-        pool_layer=pool_layer,
+        input_shape=(config.img_height, config.img_width, 1),
     )
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size),
