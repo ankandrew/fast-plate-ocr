@@ -18,6 +18,7 @@ from keras.layers import (
 )
 from keras.models import Model
 
+from fast_plate_ocr.train.model.coord_conv import CoordinateChannel2D
 from fast_plate_ocr.train.model.layer_blocks import (
     block_average_conv_down,
     block_bn,
@@ -46,6 +47,7 @@ def cnn_ocr_model(
     elif pool_layer == "max":
         block_pool_conv = block_max_conv_down
     # Backbone
+    x = CoordinateChannel2D()(x)
     x = block_pool_conv(x, n_c=32, padding="same", activation=activation)
     x, _ = block_bn(x, k=3, n_c=64, s=1, padding="same", activation=activation)
     x, _ = block_bn(x, k=1, n_c=64, s=1, padding="same", activation=activation)
