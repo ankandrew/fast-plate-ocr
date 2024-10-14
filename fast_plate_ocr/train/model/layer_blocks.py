@@ -3,8 +3,14 @@ Layer blocks used in the OCR model.
 """
 
 from keras import regularizers
-from keras.layers import Activation, BatchNormalization, Conv2D, SeparableConv2D
-from keras.src.layers import AveragePooling2D, MaxPooling2D
+from keras.src.layers import (
+    Activation,
+    AveragePooling2D,
+    BatchNormalization,
+    Conv2D,
+    MaxPooling2D,
+    SeparableConv2D,
+)
 
 
 def block_no_bn(i, k=3, n_c=64, s=1, padding="same", activation: str = "relu"):

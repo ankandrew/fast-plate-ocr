@@ -4,8 +4,8 @@ Model definitions for the FastLP OCR.
 
 from typing import Literal
 
-from keras.activations import softmax
-from keras.layers import (
+from keras.src.activations import softmax
+from keras.src.layers import (
     Activation,
     Concatenate,
     Dense,
@@ -16,7 +16,7 @@ from keras.layers import (
     Reshape,
     Softmax,
 )
-from keras.models import Model
+from keras.src.models import Model
 
 from fast_plate_ocr.train.model.layer_blocks import (
     block_average_conv_down,
