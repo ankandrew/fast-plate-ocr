@@ -40,9 +40,7 @@ the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releas
 Calculate Inference Time:
 
   ```shell
-  pip install fast_plate_ocr  # CPU
-  # or
-  pip install fast_plate_ocr[inference-gpu]  # GPU
+  pip install fast_plate_ocr
   ```
 
   ```python

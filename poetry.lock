@@ -1833,7 +1833,7 @@ sympy = "*"
 name = "onnxruntime-gpu"
 version = "1.19.2"
 description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "onnxruntime_gpu-1.19.2-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a49740e079e7c5215830d30cde3df792e903df007aa0b0fd7aa797937061b27a"},
@@ -3542,10 +3542,9 @@ type = ["pytest-mypy"]
 
 [extras]
 docs = ["mike", "mkdocs-material", "mkdocstrings"]
-inference-gpu = ["onnxruntime-gpu"]
 train = ["albumentations", "click", "keras", "matplotlib", "onnxsim", "pandas", "pydantic", "tensorboard", "tensorflow", "tf2onnx", "torch"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2979d4cc9987eb6cd095927b25fb374d84899be105c462b1c798e88c6ba17538"
+content-hash = "83564bb72ca8638b0cfe9f8a107b63cc4726f48234ab2e589f70b7a696a848cc"

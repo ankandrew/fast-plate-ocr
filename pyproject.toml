@@ -26,15 +26,15 @@ classifiers = [
 python = "^3.10"
 # Packages required for doing inference
 numpy = ">=1.20"
-onnxruntime = ">=1.4.0"
 opencv-python = "*"
 pyyaml = ">=5.1"
 tqdm = "*"
 rich = "*"
 
-# By default, we install onnx CPU runtime
-# Since onnxruntime-gpu depends on CUDA, don't install on macOS
-onnxruntime-gpu = { version = ">=1.4.0", markers = "sys_platform != 'darwin'", optional = true}
+# Install onnxruntime-gpu only on systems other than macOS or Raspberry Pi
+onnxruntime-gpu = { version = ">=1.19.2", markers = "sys_platform != 'darwin' and platform_machine != 'armv7l' and platform_machine != 'aarch64' and (platform_system == 'Linux' or platform_system == 'Windows')" }
+# Fallback to onnxruntime for macOS, Raspberry Pi, and other unsupported platforms
+onnxruntime = { version = ">=1.19.2", markers = "sys_platform == 'darwin' or platform_machine == 'armv7l' or platform_machine == 'aarch64'" }
 
 # Training packages are optional
 albumentations = { version = "*", optional = true }
@@ -55,7 +55,6 @@ mike = { version = "*", optional = true }
 onnxsim = { version = ">0.4.10", optional = true }
 
 [tool.poetry.extras]
-inference-gpu = ["onnxruntime-gpu"]
 train = [
     "albumentations",
     "click",
