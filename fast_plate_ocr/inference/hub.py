@@ -14,7 +14,11 @@ from tqdm.asyncio import tqdm
 from fast_plate_ocr.inference.utils import safe_write
 
 BASE_URL: str = "https://github.com/ankandrew/cnn-ocr-lp/releases/download"
-OcrModel = Literal["argentinian-plates-cnn-model", "argentinian-plates-cnn-synth-model"]
+OcrModel = Literal[
+    "argentinian-plates-cnn-model",
+    "argentinian-plates-cnn-synth-model",
+    "european-plates-mobile-vit-v2-model",
+]
 
 
 AVAILABLE_ONNX_MODELS: dict[OcrModel, tuple[str, str]] = {
@@ -25,6 +29,10 @@ AVAILABLE_ONNX_MODELS: dict[OcrModel, tuple[str, str]] = {
     "argentinian-plates-cnn-synth-model": (
         f"{BASE_URL}/arg-plates/arg_cnn_ocr_synth.onnx",
         f"{BASE_URL}/arg-plates/arg_cnn_ocr_config.yaml",
+    ),
+    "european-plates-mobile-vit-v2-model": (
+        f"{BASE_URL}/arg-plates/european_mobile_vit_v2_ocr.onnx",
+        f"{BASE_URL}/arg-plates/european_mobile_vit_v2_ocr_config.yaml",
     ),
 }
 """Available ONNX models for doing inference."""

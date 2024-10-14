@@ -5,7 +5,7 @@ ONNX inference module.
 import logging
 import os
 import pathlib
-from typing import Literal
+from typing import Literal, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -65,6 +65,7 @@ class ONNXPlateRecognizer:
         self,
         hub_ocr_model: OcrModel | None = None,
         device: Literal["cuda", "cpu", "auto"] = "auto",
+        providers: Sequence[str | tuple[str, dict]] | None = None,
         sess_options: ort.SessionOptions | None = None,
         model_path: str | os.PathLike[str] | None = None,
         config_path: str | os.PathLike[str] | None = None,
@@ -75,13 +76,20 @@ class ONNXPlateRecognizer:
 
         The current OCR models available from the HUB are:
 
-        - `argentinian-plates-cnn-model`: OCR for Argentinian license plates.
+        - `argentinian-plates-cnn-model`: OCR for Argentinian license plates. Uses fully conv
+            architecture.
+        - `argentinian-plates-cnn-synth-model`: OCR for Argentinian license plates trained with
+            synthetic and real data. Uses fully conv architecture.
+        - `european-plates-mobile-vit-v2-model`: OCR for European license plates. Uses MobileVIT-2
+            for the backbone.
 
         Args:
             hub_ocr_model: Name of the OCR model to use from the HUB.
             device: Device type for inference. Should be one of ('cpu', 'cuda', 'auto'). If
                 'auto' mode, the device will be deduced from
                 `onnxruntime.get_available_providers()`.
+            providers: Optional sequence of providers in order of decreasing precedence. If not
+                specified, all available providers are used based on the device argument.
             sess_options: Advanced session options for ONNX Runtime.
             model_path: Path to ONNX model file to use (In case you want to use a custom one).
             config_path: Path to config file to use (In case you want to use a custom one).
@@ -91,14 +99,22 @@ class ONNXPlateRecognizer:
         """
         self.logger = logging.getLogger(__name__)
 
-        if device == "cuda":
-            self.provider = ["CUDAExecutionProvider"]
-        elif device == "cpu":
-            self.provider = ["CPUExecutionProvider"]
-        elif device == "auto":
-            self.provider = ort.get_available_providers()
+        if providers is not None:
+            self.providers = providers
+            self.logger.info("Using custom providers: %s", providers)
         else:
-            raise ValueError(f"Device should be one of ('cpu', 'cuda', 'auto'). Got '{device}'.")
+            if device == "cuda":
+                self.providers = ["CUDAExecutionProvider"]
+            elif device == "cpu":
+                self.providers = ["CPUExecutionProvider"]
+            elif device == "auto":
+                self.providers = ort.get_available_providers()
+            else:
+                raise ValueError(
+                    f"Device should be one of ('cpu', 'cuda', 'auto'). Got '{device}'."
+                )
+
+            self.logger.info("Using device '%s' with providers: %s", device, self.providers)
 
         if model_path and config_path:
             model_path = pathlib.Path(model_path)
@@ -118,9 +134,9 @@ class ONNXPlateRecognizer:
 
         self.config = load_config_from_yaml(config_path)
         self.model = ort.InferenceSession(
-            model_path, providers=self.provider, sess_options=sess_options
+            model_path, providers=self.providers, sess_options=sess_options
         )
-        self.logger.info("Using ONNX Runtime with %s.", self.provider[0])
+        self.logger.info("Using ONNX Runtime with %s.", self.providers[0])
 
     def benchmark(self, n_iter: int = 10_000, include_processing: bool = False) -> None:
         """
@@ -152,7 +168,7 @@ class ONNXPlateRecognizer:
         table.add_column("Executor", justify="center", style="cyan", no_wrap=True)
         table.add_column("Average ms", style="magenta", justify="center")
         table.add_column("Plates/second", style="magenta", justify="center")
-        table.add_row(self.provider[0], f"{avg_time:.4f}", f"{avg_pps:.4f}")
+        table.add_row(self.providers[0], f"{avg_time:.4f}", f"{avg_pps:.4f}")
         console = Console()
         console.print(table)
 

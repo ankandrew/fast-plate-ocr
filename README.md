@@ -31,16 +31,19 @@ The idea is to use this after a plate object detector, since the OCR expects the
 
 ### Available Models
 
-|              Model Name              | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> |                                                              Dataset                                                               | Accuracy<sup>[2]</sup> |                Dataset                |
-|:------------------------------------:|:--------------------------------:|:----------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------:|:----------------------:|:-------------------------------------:|
-|    `argentinian-plates-cnn-model`    |               2.1                |                      476                       |      [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)       |         94.05%         |   Non-synthetic, plates up to 2020.   |
-| `argentinian-plates-cnn-synth-model` |               2.1                |                      476                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip) |         94.19%         | Plates up to 2020 + synthetic plates. |
+|                 Model Name                  | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> |                                                              Dataset                                                               | Accuracy<sup>[2]</sup> |                Dataset                |
+|:-------------------------------------------:|:--------------------------------:|:----------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------:|:----------------------:|:-------------------------------------:|
+|       `argentinian-plates-cnn-model`        |               2.1                |                      476                       |      [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)       |         94.05%         |   Non-synthetic, plates up to 2020.   |
+|    `argentinian-plates-cnn-synth-model`     |               2.1                |                      476                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip) |         94.19%         | Plates up to 2020 + synthetic plates. |
+|  🆕 `european-plates-mobile-vit-v2-model`   |               2.9                |                      344                       |                                                                 -                                                                  |  92.5%<sup>[3]</sup>   |   European plates (+40 countries).    |
 
 _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
-by 5x._
+by 5x in the CNN models._
 
 _<sup>[2]</sup> Accuracy is what we refer as plate_acc. See [metrics section](#model-metrics)._
 
+_<sup>[3]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_results.json) and
+the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_val.zip) used._
 
 <details>
   <summary>Reproduce results.</summary>
