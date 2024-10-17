@@ -24,7 +24,7 @@ from fast_plate_ocr.train.model.custom import (
     plate_acc_metric,
     top_3_k_metric,
 )
-from fast_plate_ocr.train.model.models import cnn_ocr_model
+from fast_plate_ocr.train.model.models import cnn_transformer_ocr_model
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
@@ -192,10 +192,9 @@ def train(
         val_dataloader = None
 
     # Train
-    model = cnn_ocr_model(
+    model = cnn_transformer_ocr_model(
         h=config.img_height,
         w=config.img_width,
-        dense=dense,
         max_plate_slots=config.max_plate_slots,
         vocabulary_size=config.vocabulary_size,
         activation=activation,

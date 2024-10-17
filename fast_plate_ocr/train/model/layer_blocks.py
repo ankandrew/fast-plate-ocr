@@ -95,7 +95,7 @@ def block_bn_relu6_no_l2(i, k=3, n_c=64, s=1, padding="same", activation: str = 
 
 
 def block_average_conv_down(x, n_c, padding="same", activation: str = "relu"):
-    x = AveragePooling2D(pool_size=2, strides=1, padding="valid")(x)
+    x = AveragePooling2D(pool_size=2, strides=1, padding=padding)(x)
     x = Conv2D(
         filters=n_c,
         kernel_size=3,
@@ -110,7 +110,7 @@ def block_average_conv_down(x, n_c, padding="same", activation: str = "relu"):
 
 
 def block_max_conv_down(x, n_c, padding="same", activation: str = "relu"):
-    x = MaxPooling2D(pool_size=2, strides=1, padding="valid")(x)
+    x = MaxPooling2D(pool_size=2, strides=1, padding=padding)(x)
     x = Conv2D(
         filters=n_c,
         kernel_size=3,
