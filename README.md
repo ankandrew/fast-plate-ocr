@@ -23,9 +23,6 @@ the trained models for inference.
 
 The idea is to use this after a plate object detector, since the OCR expects the cropped plates.
 
-> [!TIP]
-> Try `fast-plate-ocr` pre-trained models in [Hugging Spaces](https://huggingface.co/spaces/ankandrew/fast-alpr).
-
 ### Features
 
 - **Keras 3 Backend Support**: Compatible with **[TensorFlow](https://www.tensorflow.org/)**, **[JAX](https://github.com/google/jax)**, and **[PyTorch](https://pytorch.org/)** backends 🧠
@@ -42,6 +39,9 @@ The idea is to use this after a plate object detector, since the OCR expects the
 |       `argentinian-plates-cnn-model`        |               2.1                |                      476                       |      [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)       |         94.05%         |   Non-synthetic, plates up to 2020.   |
 |    `argentinian-plates-cnn-synth-model`     |               2.1                |                      476                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip) |         94.19%         | Plates up to 2020 + synthetic plates. |
 |  🆕 `european-plates-mobile-vit-v2-model`   |               2.9                |                      344                       |                                                                 -                                                                  |  92.5%<sup>[3]</sup>   |   European plates (+40 countries).    |
+
+> [!TIP]
+> Try `fast-plate-ocr` pre-trained models in [Hugging Spaces](https://huggingface.co/spaces/ankandrew/fast-alpr).
 
 _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
 by 5x in the CNN models._
