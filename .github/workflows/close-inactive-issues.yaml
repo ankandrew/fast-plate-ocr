@@ -1,0 +1,23 @@
+name: Close inactive issues
+
+on:
+  schedule:
+    - cron: "30 1 * * *" # Runs daily at 1:30 AM UTC
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v5
+        with:
+          days-before-issue-stale: 90 # The number of days old an issue can be before marking it stale
+          days-before-issue-close: 14 # The number of days to wait to close an issue after it being marked stale
+          stale-issue-label: "stale"
+          stale-issue-message: "This issue is stale because it has been open for 90 days with no activity."
+          close-issue-message: "This issue was closed because it has been inactive for 14 days since being marked as stale."
+          days-before-pr-stale: -1 # Disables stale behavior for PRs
+          days-before-pr-close: -1 # Disables closing behavior for PRs
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
