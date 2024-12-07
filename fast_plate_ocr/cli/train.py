@@ -67,6 +67,13 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     help="Initial learning rate to use.",
 )
 @click.option(
+    "--label-smoothing",
+    default=0.05,
+    show_default=True,
+    type=float,
+    help="Amount of label smoothing to apply.",
+)
+@click.option(
     "--batch-size",
     default=128,
     show_default=True,
@@ -150,6 +157,7 @@ def train(
     val_annotations: pathlib.Path,
     augmentation_path: pathlib.Path | None,
     lr: float,
+    label_smoothing: float,
     batch_size: int,
     num_workers: int,
     output_dir: pathlib.Path,
@@ -201,7 +209,7 @@ def train(
         pool_layer=pool_layer,
     )
     model.compile(
-        loss=cce_loss(vocabulary_size=config.vocabulary_size),
+        loss=cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing),
         optimizer=Adam(lr),
         metrics=[
             cat_acc_metric(
