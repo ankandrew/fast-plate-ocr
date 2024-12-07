@@ -149,6 +149,11 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     type=click.Choice(["max", "avg"]),
     help="Choose the pooling layer to use.",
 )
+@click.option(
+    "--weights-path",
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="Path to the pretrained model weights file.",
+)
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
     dense: bool,
@@ -208,6 +213,10 @@ def train(
         activation=activation,
         pool_layer=pool_layer,
     )
+
+    if weights_path:
+        model.load_weights(weights_path)
+
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing),
         optimizer=Adam(lr),
