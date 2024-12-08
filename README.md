@@ -341,3 +341,4 @@ If you look to contribute to the repo, some cool things are in the backlog:
 - [ ] Implement [STN](https://arxiv.org/abs/1506.02025) using Keras 3 (With `keras.ops`)
 - [ ] Implement [SVTRv2](https://arxiv.org/abs/2411.15858).
 - [ ] Implement CTC loss function, so we can choose that or CE loss.
+- [ ] Extra head for country recognition, making it configurable.
