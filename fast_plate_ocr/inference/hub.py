@@ -18,6 +18,7 @@ OcrModel = Literal[
     "argentinian-plates-cnn-model",
     "argentinian-plates-cnn-synth-model",
     "european-plates-mobile-vit-v2-model",
+    "global-plates-mobile-vit-v2-model",
 ]
 
 
@@ -33,6 +34,10 @@ AVAILABLE_ONNX_MODELS: dict[OcrModel, tuple[str, str]] = {
     "european-plates-mobile-vit-v2-model": (
         f"{BASE_URL}/arg-plates/european_mobile_vit_v2_ocr.onnx",
         f"{BASE_URL}/arg-plates/european_mobile_vit_v2_ocr_config.yaml",
+    ),
+    "global-plates-mobile-vit-v2-model": (
+        f"{BASE_URL}/arg-plates/global_mobile_vit_v2_ocr.onnx",
+        f"{BASE_URL}/arg-plates/global_mobile_vit_v2_ocr_config.yaml",
     ),
 }
 """Available ONNX models for doing inference."""

@@ -85,6 +85,8 @@ class ONNXPlateRecognizer:
             synthetic and real data. Uses fully conv architecture.
         - `european-plates-mobile-vit-v2-model`: OCR for European license plates. Uses MobileVIT-2
             for the backbone.
+        - `global-plates-mobile-vit-v2-model`: OCR for Global license plates (+65 countries).
+            Uses MobileVIT-2 for the backbone.
 
         Args:
             hub_ocr_model: Name of the OCR model to use from the HUB.
