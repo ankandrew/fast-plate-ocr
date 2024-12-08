@@ -67,6 +67,13 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     help="Initial learning rate to use.",
 )
 @click.option(
+    "--label-smoothing",
+    default=0.05,
+    show_default=True,
+    type=float,
+    help="Amount of label smoothing to apply.",
+)
+@click.option(
     "--batch-size",
     default=128,
     show_default=True,
@@ -142,6 +149,11 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     type=click.Choice(["max", "avg"]),
     help="Choose the pooling layer to use.",
 )
+@click.option(
+    "--weights-path",
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="Path to the pretrained model weights file.",
+)
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
     dense: bool,
@@ -150,6 +162,7 @@ def train(
     val_annotations: pathlib.Path,
     augmentation_path: pathlib.Path | None,
     lr: float,
+    label_smoothing: float,
     batch_size: int,
     num_workers: int,
     output_dir: pathlib.Path,
@@ -161,6 +174,7 @@ def train(
     reduce_lr_factor: float,
     activation: str,
     pool_layer: Literal["max", "avg"],
+    weights_path: pathlib.Path | None,
 ) -> None:
     """
     Train the License Plate OCR model.
@@ -200,8 +214,12 @@ def train(
         activation=activation,
         pool_layer=pool_layer,
     )
+
+    if weights_path:
+        model.load_weights(weights_path)
+
     model.compile(
-        loss=cce_loss(vocabulary_size=config.vocabulary_size),
+        loss=cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing),
         optimizer=Adam(lr),
         metrics=[
             cat_acc_metric(
