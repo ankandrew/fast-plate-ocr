@@ -174,6 +174,7 @@ def train(
     reduce_lr_factor: float,
     activation: str,
     pool_layer: Literal["max", "avg"],
+    weights_path: pathlib.Path | None,
 ) -> None:
     """
     Train the License Plate OCR model.
