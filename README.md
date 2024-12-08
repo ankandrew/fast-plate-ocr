@@ -47,19 +47,18 @@ The idea is to use this after a plate object detector, since the OCR expects the
 <details>
   <summary>Notes</summary>
 
-  > [!NOTE]
-  > _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed by 5x in the CNN models._
-  >
-  > _<sup>[2]</sup> Accuracy is what we refer to as plate_acc. See [metrics section](#model-metrics)._
-  >
-  > _<sup>[3]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_results.json) and the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_val.zip) used._
-  >
-  > _<sup>[4]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/global_mobile_vit_v2_ocr_results.json)._
+  _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed by 5x in the CNN models._
+
+  _<sup>[2]</sup> Accuracy is what we refer to as plate_acc. See [metrics section](#model-metrics)._
+
+  _<sup>[3]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_results.json) and the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_val.zip) used._
+
+  _<sup>[4]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/global_mobile_vit_v2_ocr_results.json)._
 
 </details>
 
 <details>
-  <summary>Reproduce results.</summary>
+  <summary>Reproduce results</summary>
 
 * Calculate Inference Time:
 
@@ -337,9 +336,8 @@ To start contributing or to begin development, you can follow these steps:
 
 If you want to train a model and share it, we'll add it to the HUB 🚀
 
-### TODO
+If you look to contribute to the repo, some cool things are in the backlog:
 
-- [ ] Expand model zoo.
-- [ ] Use synthetic image plates.
-- [ ] Finish and push TorchServe files.
-- [ ] Use Google docstring style
+- [ ] Implement [STN](https://arxiv.org/abs/1506.02025) using Keras 3 (With `keras.ops`)
+- [ ] Implement [SVTRv2](https://arxiv.org/abs/2411.15858).
+- [ ] Implement CTC loss function, so we can choose that or CE loss.
