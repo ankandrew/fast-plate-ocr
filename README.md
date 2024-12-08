@@ -16,32 +16,15 @@
 
 ---
 
-<!-- TOC -->
-  * [Fast & Lightweight License Plate OCR](#fast--lightweight-license-plate-ocr)
-    * [Introduction](#introduction)
-    * [Features](#features)
-    * [Available Models](#available-models)
-    * [Inference](#inference)
-      * [Usage](#usage)
-    * [CLI](#cli)
-      * [Train Model](#train-model)
-      * [Visualize Augmentation](#visualize-augmentation)
-      * [Validate Model](#validate-model)
-      * [Visualize Predictions](#visualize-predictions)
-      * [Export as ONNX](#export-as-onnx)
-    * [Keras Backend](#keras-backend)
-    * [Model Architecture](#model-architecture)
-    * [Model Metrics](#model-metrics)
-    * [Contributing](#contributing)
-    * [TODO](#todo)
-<!-- TOC -->
-
 ### Introduction
 
 **Lightweight** and **fast** OCR models for license plate text recognition. You can train models from scratch or use
 the trained models for inference.
 
 The idea is to use this after a plate object detector, since the OCR expects the cropped plates.
+
+> [!TIP]
+> Try `fast-plate-ocr` pre-trained models in [Hugging Spaces](https://huggingface.co/spaces/ankandrew/fast-alpr).
 
 ### Features
 
@@ -60,8 +43,6 @@ The idea is to use this after a plate object detector, since the OCR expects the
 |    `argentinian-plates-cnn-synth-model`     |               2.1                |                      476                       | [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip) |         94.19%         | Plates up to 2020 + synthetic plates. |
 |  🆕 `european-plates-mobile-vit-v2-model`   |               2.9                |                      344                       |                                                                 -                                                                  |  92.5%<sup>[3]</sup>   |   European plates (+40 countries).    |
 
-> [!TIP]
-> Try `fast-plate-ocr` pre-trained models in [Hugging Spaces](https://huggingface.co/spaces/ankandrew/fast-alpr).
 
 > [!NOTE]
 > _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
