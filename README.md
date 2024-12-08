@@ -157,6 +157,9 @@ To train or use the CLI tool, you'll need to install:
 pip install fast_plate_ocr[train]
 ```
 
+> [!IMPORTANT]
+> Make sure you have installed a supported backend for Keras.
+
 #### Train Model
 
 To train the model you will need:
