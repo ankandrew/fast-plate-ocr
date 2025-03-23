@@ -1,25 +1,27 @@
+from collections.abc import Sequence
+
 import keras
 import numpy as np
 from keras import layers
 
-positional_emb = True
-conv_layers = 2
-projection_dim = 128
-
-num_heads = 2
-transformer_units = [
-    projection_dim,
-    projection_dim,
-]
-transformer_layers = 2
-stochastic_depth_rate = 0.1
-
-learning_rate = 0.001
-weight_decay = 0.0001
-batch_size = 128
-num_epochs = 30
-image_size = 32
-input_shape = (70, 140, 3)
+# positional_emb = True
+# conv_layers = 2
+# projection_dim = 128
+#
+# num_heads = 2
+# transformer_units = [
+#     projection_dim,
+#     projection_dim,
+# ]
+# transformer_layers = 2
+# stochastic_depth_rate = 0.1
+#
+# learning_rate = 0.001
+# weight_decay = 0.0001
+# batch_size = 128
+# num_epochs = 30
+# image_size = 32
+# input_shape = (70, 140, 3)
 
 
 class CCTTokenizer(layers.Layer):
@@ -30,9 +32,9 @@ class CCTTokenizer(layers.Layer):
         padding=1,
         pooling_kernel_size=3,
         pooling_stride=2,
-        num_conv_layers=conv_layers,
-        num_output_channels=[64, 128],
-        positional_emb=positional_emb,
+        num_conv_layers: int = 2,
+        num_output_channels: Sequence[int] = (64, 128),
+        positional_emb: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -217,11 +219,15 @@ data_augmentation = keras.Sequential(
 def create_cct_model(
     max_plate_slots: int,
     vocabulary_size: int,
-    input_shape=input_shape,
-    num_heads=num_heads,
-    projection_dim=projection_dim,
-    transformer_units=transformer_units,
+    transformer_layers: int,
+    conv_layers: int,
+    num_output_channels: Sequence[int],
+    input_shape: tuple[int, int, int],
+    num_heads: int,
+    projection_dim: int,
+    transformer_units: Sequence[int],
     stochastic_depth_rate: float = 0.1,
+    positional_emb: bool = True,
 ):
     inputs = layers.Input(input_shape)
 
@@ -229,7 +235,11 @@ def create_cct_model(
     augmented = data_augmentation(inputs)
 
     # Encode patches.
-    cct_tokenizer = CCTTokenizer()
+    cct_tokenizer = CCTTokenizer(
+        num_conv_layers=conv_layers,
+        num_output_channels=num_output_channels,
+        positional_emb=positional_emb,
+    )
     encoded_patches = cct_tokenizer(augmented)
 
     # Apply positional embedding.
@@ -272,6 +282,7 @@ def create_cct_model(
     # Create the Keras model.
     model = keras.Model(inputs=inputs, outputs=logits)
     return model
+
 
 #
 #
