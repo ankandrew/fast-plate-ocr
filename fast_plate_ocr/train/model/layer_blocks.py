@@ -2,7 +2,9 @@
 Layer blocks used in the OCR model.
 """
 
-from keras import regularizers
+import keras
+import numpy as np
+from keras import ops, regularizers
 from keras.src.layers import (
     Activation,
     AveragePooling2D,
@@ -128,3 +130,131 @@ def block_max_conv_down(x, n_c, padding="same", activation: str = "relu"):
     x = BatchNormalization()(x)
     x = Activation(activation)(x)
     return x
+
+
+class AddCoords(keras.layers.Layer):
+    """Add coords to a tensor, modified from paper: https://arxiv.org/abs/1807.03247"""
+
+    def __init__(self, with_r=False):
+        super().__init__()
+        self.with_r = with_r
+
+    def build(self, input_shape):
+        # Assuming input_shape is (batch, height, width, channels)
+        self.x_dim = input_shape[1]
+        self.y_dim = input_shape[2]
+
+    def call(self, input_tensor):
+        """
+        input_tensor: (batch, x_dim, y_dim, c)
+        """
+        batch_size_tensor = ops.shape(input_tensor)[0]
+        xx_ones = ops.ones([batch_size_tensor, self.x_dim])
+        xx_ones = ops.expand_dims(xx_ones, -1)
+        xx_range = ops.tile(ops.expand_dims(ops.arange(self.y_dim), 0), [batch_size_tensor, 1])
+        xx_range = ops.expand_dims(xx_range, 1)
+        xx_channel = ops.matmul(xx_ones, xx_range)
+        xx_channel = ops.expand_dims(xx_channel, -1)
+        yy_ones = ops.ones([batch_size_tensor, self.y_dim])
+        yy_ones = ops.expand_dims(yy_ones, 1)
+        yy_range = ops.tile(ops.expand_dims(ops.arange(self.x_dim), 0), [batch_size_tensor, 1])
+
+        yy_range = ops.expand_dims(yy_range, -1)
+        yy_channel = ops.matmul(yy_range, yy_ones)
+        yy_channel = ops.expand_dims(yy_channel, -1)
+        xx_channel = ops.cast(xx_channel, "float32") / (self.x_dim - 1)
+        yy_channel = ops.cast(yy_channel, "float32") / (self.y_dim - 1)
+        xx_channel = xx_channel * 2 - 1
+        yy_channel = yy_channel * 2 - 1
+        ret = ops.concatenate([input_tensor, xx_channel, yy_channel], axis=-1)
+        if self.with_r:
+            rr = ops.sqrt(ops.square(xx_channel) + ops.square(yy_channel))
+            ret = ops.concatenate([ret, rr], axis=-1)
+        return ret
+
+
+class CoordConv(keras.layers.Layer):
+    """CoordConv layer as in the paper, modified from paper: https://arxiv.org/abs/1807.03247"""
+
+    def __init__(self, with_r=False, **kwargs):
+        super().__init__()
+        self.addcoords = AddCoords(with_r=with_r)
+        self.conv = keras.layers.Conv2D(**kwargs)
+
+    def call(self, input_tensor):
+        ret = self.addcoords(input_tensor)
+        ret = self.conv(ret)
+        return ret
+
+
+def _build_binomial_filter(filter_size: int) -> np.ndarray:
+    """Builds and returns the normalized binomial filter according to `filter_size`."""
+    if filter_size == 1:
+        binomial_filter = np.array([1.0])
+    elif filter_size == 2:
+        binomial_filter = np.array([1.0, 1.0])
+    elif filter_size == 3:
+        binomial_filter = np.array([1.0, 2.0, 1.0])
+    elif filter_size == 4:
+        binomial_filter = np.array([1.0, 3.0, 3.0, 1.0])
+    elif filter_size == 5:
+        binomial_filter = np.array([1.0, 4.0, 6.0, 4.0, 1.0])
+    elif filter_size == 6:
+        binomial_filter = np.array([1.0, 5.0, 10.0, 10.0, 5.0, 1.0])
+    elif filter_size == 7:
+        binomial_filter = np.array([1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0])
+    else:
+        raise ValueError(f"Filter size not supported, got {filter_size}")
+
+    binomial_filter = binomial_filter[:, np.newaxis] * binomial_filter[np.newaxis, :]
+    binomial_filter = binomial_filter / np.sum(binomial_filter)
+
+    return binomial_filter
+
+
+class MaxBlurPooling2D(keras.layers.Layer):
+    def __init__(self, pool_size: int = 2, filter_size: int = 3, **kwargs):
+        self.pool_size = pool_size
+        self.blur_kernel = None
+        self.filter_size = filter_size
+
+        super().__init__(**kwargs)
+
+    def build(self, input_shape):
+        binomial_filter = _build_binomial_filter(filter_size=self.filter_size)
+        binomial_filter = np.repeat(binomial_filter, input_shape[3])
+        # Maybe this should be channel first/last agnostic
+        binomial_filter = np.reshape(
+            binomial_filter, (self.filter_size, self.filter_size, input_shape[3], 1)
+        )
+        blur_init = keras.initializers.constant(binomial_filter)
+
+        self.blur_kernel = self.add_weight(
+            name="blur_kernel",
+            shape=(self.filter_size, self.filter_size, input_shape[3], 1),
+            initializer=blur_init,
+            trainable=False,
+        )
+
+        super().build(input_shape)
+
+    def call(self, x):
+        x = ops.max_pool(
+            x,
+            (self.pool_size, self.pool_size),
+            strides=(1, 1),
+            padding="same",
+        )
+        x = ops.depthwise_conv(
+            x, self.blur_kernel, padding="same", strides=(self.pool_size, self.pool_size)
+        )
+
+        return x
+
+    def compute_output_shape(self, input_shape):
+        return (
+            input_shape[0],
+            int(np.ceil(input_shape[1] / 2)),
+            int(np.ceil(input_shape[2] / 2)),
+            input_shape[3],
+        )
