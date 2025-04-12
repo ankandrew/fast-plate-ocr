@@ -2,40 +2,42 @@
 Script for training the License Plate OCR models.
 """
 
+import inspect
+import json
 import pathlib
 import shutil
 from datetime import datetime
-from typing import Literal
 
 import albumentations as A
 import click
-from keras.src.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
-from keras.src.optimizers import Adam
+import keras
+from keras.src.callbacks import (
+    EarlyStopping,
+    ModelCheckpoint,
+    SwapEMAWeights,
+    TensorBoard,
+)
+from keras.src.optimizers import AdamW
 from torch.utils.data import DataLoader
 
 from fast_plate_ocr.cli.utils import print_params, print_train_details
 from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.train.data.dataset import LicensePlateDataset
+from fast_plate_ocr.train.model.cct_model import create_cct_model
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.model.custom import (
+    RapidFuzzDistanceCallback,
     cat_acc_metric,
     cce_loss,
     plate_acc_metric,
     top_3_k_metric,
 )
-from fast_plate_ocr.train.model.models import cnn_ocr_model
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
 
 
 @click.command(context_settings={"max_content_width": 120})
-@click.option(
-    "--dense/--no-dense",
-    default=True,
-    show_default=True,
-    help="Whether to use Fully Connected layers in model head or not.",
-)
 @click.option(
     "--config-file",
     required=True,
@@ -61,10 +63,32 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 )
 @click.option(
     "--lr",
-    default=1e-3,
+    default=0.001,
     show_default=True,
     type=float,
-    help="Initial learning rate to use.",
+    help="Initial learning rate.",
+)
+@click.option(
+    "--final-lr-factor",
+    default=1e-2,
+    show_default=True,
+    type=float,
+    help="Final learning rate factor for the cosine decay scheduler. It's the fraction of"
+    " the initial learning rate that remains after decay.",
+)
+@click.option(
+    "--weight-decay",
+    default=0.001,
+    show_default=True,
+    type=float,
+    help="Weight decay for the AdamW optimizer.",
+)
+@click.option(
+    "--clipnorm",
+    default=1.0,
+    show_default=True,
+    type=float,
+    help="Gradient clipping norm value for the AdamW optimizer.",
 )
 @click.option(
     "--label-smoothing",
@@ -74,8 +98,17 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     help="Amount of label smoothing to apply.",
 )
 @click.option(
+    "--mixed-precision-policy",
+    default=None,
+    type=click.Choice(["mixed_float16", "mixed_bfloat16", "float32"]),
+    help=(
+        "Optional mixed precision policy for training. Choose one of: mixed_float16, "
+        "mixed_bfloat16, or float32. If not provided, Keras uses its default global policy."
+    ),
+)
+@click.option(
     "--batch-size",
-    default=128,
+    default=64,
     show_default=True,
     type=int,
     help="Batch size for training.",
@@ -95,7 +128,7 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
 )
 @click.option(
     "--epochs",
-    default=500,
+    default=300,
     show_default=True,
     type=int,
     help="Number of training epochs.",
@@ -122,47 +155,31 @@ from fast_plate_ocr.train.model.models import cnn_ocr_model
     help="Stop training when 'val_plate_acc' doesn't improve for X epochs.",
 )
 @click.option(
-    "--reduce-lr-patience",
-    default=60,
-    show_default=True,
-    type=int,
-    help="Patience to reduce the learning rate if 'val_plate_acc' doesn't improve within X epochs.",
-)
-@click.option(
-    "--reduce-lr-factor",
-    default=0.85,
-    show_default=True,
-    type=float,
-    help="Reduce the learning rate by this factor when 'val_plate_acc' doesn't improve.",
-)
-@click.option(
-    "--activation",
-    default="relu",
-    show_default=True,
-    type=str,
-    help="Activation function to use.",
-)
-@click.option(
-    "--pool-layer",
-    default="max",
-    show_default=True,
-    type=click.Choice(["max", "avg"]),
-    help="Choose the pooling layer to use.",
-)
-@click.option(
     "--weights-path",
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path to the pretrained model weights file.",
 )
+@click.option(
+    "--use-ema/--no-use-ema",
+    default=True,
+    show_default=True,
+    help=(
+        "Whether to use exponential moving averages in the AdamW optimizer. "
+        "Defaults to True; use --no-use-ema to disable."
+    ),
+)
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
-    dense: bool,
     config_file: pathlib.Path,
     annotations: pathlib.Path,
     val_annotations: pathlib.Path,
     augmentation_path: pathlib.Path | None,
     lr: float,
+    weight_decay: float,
+    clipnorm: float,
+    final_lr_factor: float,
     label_smoothing: float,
+    mixed_precision_policy: str | None,
     batch_size: int,
     num_workers: int,
     output_dir: pathlib.Path,
@@ -170,15 +187,15 @@ def train(
     tensorboard: bool,
     tensorboard_dir: pathlib.Path,
     early_stopping_patience: int,
-    reduce_lr_patience: int,
-    reduce_lr_factor: float,
-    activation: str,
-    pool_layer: Literal["max", "avg"],
     weights_path: pathlib.Path | None,
+    use_ema: bool,
 ) -> None:
     """
     Train the License Plate OCR model.
     """
+    if mixed_precision_policy is not None:
+        keras.mixed_precision.set_global_policy(mixed_precision_policy)
+
     train_augmentation = (
         A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
     )
@@ -205,22 +222,37 @@ def train(
         val_dataloader = None
 
     # Train
-    model = cnn_ocr_model(
-        h=config.img_height,
-        w=config.img_width,
-        dense=dense,
+    model = create_cct_model(
+        input_shape=(config.img_height, config.img_width, 1),
         max_plate_slots=config.max_plate_slots,
         vocabulary_size=config.vocabulary_size,
-        activation=activation,
-        pool_layer=pool_layer,
+        transformer_layers=3,
+        conv_layers=3,
+        num_output_channels=[32, 64, 96],
+        num_heads=3,
+        projection_dim=96,
+        transformer_units=[96, 96],
+        positional_emb=True,
     )
 
     if weights_path:
         model.load_weights(weights_path)
 
+    cosine_decay = keras.optimizers.schedules.CosineDecay(
+        initial_learning_rate=lr,
+        decay_steps=epochs * (len(train_torch_dataset) // batch_size),
+        alpha=final_lr_factor,
+    )
+
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing),
-        optimizer=Adam(lr),
+        jit_compile=False,  # TODO: Remove after testing
+        optimizer=AdamW(
+            cosine_decay,
+            weight_decay=weight_decay,
+            clipnorm=clipnorm,
+            use_ema=use_ema,
+        ),
         metrics=[
             cat_acc_metric(
                 max_plate_slots=config.max_plate_slots, vocabulary_size=config.vocabulary_size
@@ -234,21 +266,20 @@ def train(
 
     output_dir /= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     output_dir.mkdir(parents=True, exist_ok=True)
-    model_file_path = output_dir / "cnn_ocr-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
+    model_file_path = output_dir / "ckpt-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
     # Save params and config used for training
     shutil.copy(config_file, output_dir / "config.yaml")
     A.save(train_augmentation, output_dir / "train_augmentation.yaml", "yaml")
+    with open(output_dir / "hyper_params.json", "w", encoding="utf-8") as f_out:
+        json.dump(
+            {k: v for k, v in locals().items() if k in inspect.signature(train).parameters},
+            f_out,
+            indent=4,
+            default=str,
+        )
 
     callbacks = [
-        # Reduce the learning rate by 0.5x if 'val_plate_acc' doesn't improve within X epochs
-        ReduceLROnPlateau(
-            "val_plate_acc",
-            patience=reduce_lr_patience,
-            factor=reduce_lr_factor,
-            min_lr=1e-6,
-            verbose=1,
-        ),
         # Stop training when 'val_plate_acc' doesn't improve for X epochs
         EarlyStopping(
             monitor="val_plate_acc",
@@ -257,6 +288,14 @@ def train(
             restore_best_weights=False,
             verbose=1,
         ),
+        RapidFuzzDistanceCallback(
+            val_data=val_dataloader,
+            max_plate_slots=config.max_plate_slots,
+            model_alphabet=config.alphabet,
+            max_batches=None,
+        ),
+        # To save model checkpoint with EMA weights, we need to place this before `ModelCheckpoint`
+        *([SwapEMAWeights(swap_on_epoch=True)] if use_ema else []),
         # We don't use EarlyStopping restore_best_weights=True because it won't restore the best
         # weights when it didn't manage to EarlyStop but finished all epochs
         ModelCheckpoint(
