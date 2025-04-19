@@ -73,6 +73,7 @@ class CCTTokenizer(layers.Layer):
         return reshaped
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class PositionEmbedding(keras.layers.Layer):
     def __init__(
         self,
@@ -85,16 +86,6 @@ class PositionEmbedding(keras.layers.Layer):
             raise ValueError("`sequence_length` must be an Integer, received `None`.")
         self.sequence_length = int(sequence_length)
         self.initializer = keras.initializers.get(initializer)
-
-    def get_config(self):
-        config = super().get_config()
-        config.update(
-            {
-                "sequence_length": self.sequence_length,
-                "initializer": keras.initializers.serialize(self.initializer),
-            }
-        )
-        return config
 
     def build(self, input_shape):
         feature_size = input_shape[-1]
@@ -111,8 +102,8 @@ class PositionEmbedding(keras.layers.Layer):
         shape = keras.ops.shape(inputs)
         feature_length = shape[-1]
         sequence_length = shape[-2]
-        # trim to match the length of the input sequence, which might be less
-        # than the sequence_length of the layer.
+        # trim to match the length of the input sequence, which might be less than the
+        # sequence_length of the layer.
         position_embeddings = keras.ops.convert_to_tensor(self.position_embeddings)
         position_embeddings = keras.ops.slice(
             position_embeddings,
@@ -124,7 +115,18 @@ class PositionEmbedding(keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "sequence_length": self.sequence_length,
+                "initializer": keras.initializers.serialize(self.initializer),
+            }
+        )
+        return config
 
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class TokenReducer(keras.layers.Layer):
     def __init__(self, num_tokens, projection_dim, num_heads=2, **kwargs):
         """
@@ -146,6 +148,14 @@ class TokenReducer(keras.layers.Layer):
             trainable=True,
             name="query_tokens",
         )
+        # input_shape is assumed to be (batch_size, seq_length, projection_dim)
+        seq_length = input_shape[1]
+        if seq_length is None:
+            raise ValueError("Input sequence length must be defined (not None).")
+        self.attn.build(
+            query_shape=(1, self.num_tokens, self.projection_dim),
+            value_shape=(1, seq_length, self.projection_dim),
+        )
         super().build(input_shape)
 
     def compute_output_shape(self, input_shape):
@@ -164,21 +174,21 @@ class TokenReducer(keras.layers.Layer):
         reduced_tokens = self.attn(query=query_tokens, key=inputs, value=inputs)
         return reduced_tokens
 
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update(
+            {
+                "num_tokens": self.num_tokens,
+                "projection_dim": self.projection_dim,
+                "num_heads": self.num_heads,
+            }
+        )
+        return cfg
 
-class SequencePooling(layers.Layer):
-    def __init__(self):
-        super().__init__()
-        self.attention = layers.Dense(1)
 
-    def call(self, x):
-        attention_weights = keras.ops.softmax(self.attention(x), axis=1)
-        attention_weights = keras.ops.transpose(attention_weights, axes=(0, 2, 1))
-        weighted_representation = keras.ops.matmul(attention_weights, x)
-        return keras.ops.squeeze(weighted_representation, -2)
-
-
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class StochasticDepth(layers.Layer):
-    def __init__(self, drop_prop, **kwargs):
+    def __init__(self, drop_prop: float, **kwargs):
         super().__init__(**kwargs)
         self.drop_prob = drop_prop
         self.seed_generator = keras.random.SeedGenerator(1337)
@@ -187,10 +197,17 @@ class StochasticDepth(layers.Layer):
         if training:
             keep_prob = 1 - self.drop_prob
             shape = (keras.ops.shape(x)[0],) + (1,) * (len(x.shape) - 1)
-            random_tensor = keep_prob + keras.random.uniform(shape, 0, 1, seed=self.seed_generator)
+            random_tensor = keep_prob + keras.random.uniform(
+                shape, 0, 1, seed=self.seed_generator, dtype=x.dtype
+            )
             random_tensor = keras.ops.floor(random_tensor)
             return (x / keep_prob) * random_tensor
         return x
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update({"drop_prob": self.drop_prob})
+        return cfg
 
 
 def mlp(x, hidden_units, dropout_rate):
