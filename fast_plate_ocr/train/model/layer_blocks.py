@@ -173,18 +173,25 @@ class AddCoords(keras.layers.Layer):
         return ret
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class CoordConv(keras.layers.Layer):
     """CoordConv layer as in the paper, modified from paper: https://arxiv.org/abs/1807.03247"""
 
-    def __init__(self, with_r=False, **kwargs):
+    def __init__(self, with_r: bool = False, **conv_kwargs):
         super().__init__()
+        self.with_r = with_r
+        self.conv_kwargs = conv_kwargs.copy()
         self.addcoords = AddCoords(with_r=with_r)
-        self.conv = keras.layers.Conv2D(**kwargs)
+        self.conv = keras.layers.Conv2D(**conv_kwargs)
 
-    def call(self, input_tensor):
-        ret = self.addcoords(input_tensor)
-        ret = self.conv(ret)
-        return ret
+    def call(self, inputs):
+        x = self.addcoords(inputs)
+        return self.conv(x)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"with_r": self.with_r, **self.conv_kwargs})
+        return config
 
 
 def _build_binomial_filter(filter_size: int) -> np.ndarray:
@@ -212,6 +219,7 @@ def _build_binomial_filter(filter_size: int) -> np.ndarray:
     return binomial_filter
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class MaxBlurPooling2D(keras.layers.Layer):
     def __init__(self, pool_size: int = 2, filter_size: int = 3, **kwargs):
         self.pool_size = pool_size
@@ -258,3 +266,8 @@ class MaxBlurPooling2D(keras.layers.Layer):
             int(np.ceil(input_shape[2] / 2)),
             input_shape[3],
         )
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"pool_size": self.pool_size, "filter_size": self.filter_size})
+        return config
