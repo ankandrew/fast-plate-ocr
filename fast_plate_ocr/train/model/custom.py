@@ -2,9 +2,13 @@
 Custom metrics and loss functions.
 """
 
+import keras
+import numpy as np
 from keras import losses, metrics, ops
 
 
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def cat_acc_metric(max_plate_slots: int, vocabulary_size: int):
     """
     Categorical accuracy metric.
@@ -23,6 +27,7 @@ def cat_acc_metric(max_plate_slots: int, vocabulary_size: int):
     return cat_acc
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def plate_acc_metric(max_plate_slots: int, vocabulary_size: int):
     """
     Plate accuracy metric.
@@ -36,12 +41,14 @@ def plate_acc_metric(max_plate_slots: int, vocabulary_size: int):
         """
         y_true = ops.reshape(y_true, newshape=(-1, max_plate_slots, vocabulary_size))
         y_pred = ops.reshape(y_pred, newshape=(-1, max_plate_slots, vocabulary_size))
+        y_pred = ops.cast(y_pred, dtype="float32")
         et = ops.equal(ops.argmax(y_true, axis=-1), ops.argmax(y_pred, axis=-1))
         return ops.mean(ops.cast(ops.all(et, axis=-1, keepdims=False), dtype="float32"))
 
     return plate_acc
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def top_3_k_metric(vocabulary_size: int):
     """
     Top 3 K categorical accuracy metric.
@@ -61,6 +68,7 @@ def top_3_k_metric(vocabulary_size: int):
 
 
 # Custom loss
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def cce_loss(vocabulary_size: int, label_smoothing: float = 0.2):
     """
     Categorical cross-entropy loss.
