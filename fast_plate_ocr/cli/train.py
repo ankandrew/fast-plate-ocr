@@ -178,6 +178,13 @@ from fast_plate_ocr.train.model.metric import cat_acc_metric, plate_acc_metric, 
         "Defaults to True; use --no-use-ema to disable."
     ),
 )
+@click.option(
+    "--wd-ignore",
+    default="bias,layer_norm",
+    show_default=True,
+    type=str,
+    help="Comma‑separated list of variable‑name substrings to exclude from weight decay.",
+)
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
     config_file: pathlib.Path,
@@ -201,6 +208,7 @@ def train(
     early_stopping_patience: int,
     weights_path: pathlib.Path | None,
     use_ema: bool,
+    wd_ignore: str,
 ) -> None:
     """
     Train the License Plate OCR model.
@@ -258,15 +266,15 @@ def train(
         alpha=final_lr_factor,
     )
 
+    optimizer = AdamW(cosine_decay, weight_decay=weight_decay, clipnorm=clipnorm, use_ema=use_ema)
+    optimizer.exclude_from_weight_decay(
+        var_names=[name.strip() for name in wd_ignore.split(",") if name.strip()]
+    )
+
     model.compile(
         loss=cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing),
-        jit_compile=False,  # TODO: Remove after testing
-        optimizer=AdamW(
-            cosine_decay,
-            weight_decay=weight_decay,
-            clipnorm=clipnorm,
-            use_ema=use_ema,
-        ),
+        jit_compile=False,
+        optimizer=optimizer,
         metrics=[
             cat_acc_metric(
                 max_plate_slots=config.max_plate_slots, vocabulary_size=config.vocabulary_size
