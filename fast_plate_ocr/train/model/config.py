@@ -17,7 +17,6 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
     """
     Max number of plate slots supported. This represents the number of model classification heads.
     """
-
     alphabet: str
     """
     All the possible character set for the model output.
