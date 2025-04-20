@@ -8,13 +8,11 @@ import shutil
 from tempfile import NamedTemporaryFile
 
 import click
+import keras
 import numpy as np
 import onnx
 import onnxruntime as rt
 import onnxsim
-import tensorflow as tf
-import tf2onnx
-from tf2onnx import constants as tf2onnx_constants
 
 from fast_plate_ocr.common.utils import log_time_taken
 from fast_plate_ocr.train.model.config import load_config_from_yaml
@@ -38,12 +36,6 @@ logging.basicConfig(
     help="Path to the saved .keras model.",
 )
 @click.option(
-    "--output-path",
-    required=True,
-    type=str,
-    help="Output name for ONNX model.",
-)
-@click.option(
     "--simplify/--no-simplify",
     default=False,
     show_default=True,
@@ -52,59 +44,63 @@ logging.basicConfig(
 @click.option(
     "--config-file",
     required=True,
-    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
 )
 @click.option(
-    "--opset",
-    default=16,
-    type=click.IntRange(max=max(tf2onnx_constants.OPSET_TO_IR_VERSION)),
-    show_default=True,
-    help="Opset version for ONNX.",
+    "--save-dir",
+    required=False,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=pathlib.Path),
+    help="Custom dir to save the ONNX model. By default same directory from the model is used.",
 )
 def export_onnx(
     model_path: pathlib.Path,
-    output_path: str,
     simplify: bool,
     config_file: pathlib.Path,
-    opset: int,
+    save_dir: pathlib.Path,
 ) -> None:
     """
     Export Keras models to ONNX format.
     """
+    onnx_output_file = model_path.with_suffix(".onnx")
+    onnx_output_file = onnx_output_file if save_dir is None else save_dir / onnx_output_file.name
+
+    if onnx_output_file.exists():
+        logging.info("Overwriting existing ONNX file at %s", onnx_output_file)
+        onnx_output_file.unlink()
+
     config = load_config_from_yaml(config_file)
     model = load_keras_model(
         model_path,
         vocab_size=config.vocabulary_size,
         max_plate_slots=config.max_plate_slots,
     )
-    spec = (tf.TensorSpec((None, config.img_height, config.img_width, 1), tf.uint8, name="input"),)
-    # Convert from Keras to ONNX using tf2onnx library
+    spec = [
+        keras.InputSpec(
+            name="input", shape=(None, config.img_height, config.img_width, 1), dtype="uint8"
+        )
+    ]
+    # Convert from Keras to ONNX
     with NamedTemporaryFile(suffix=".onnx") as tmp:
         tmp_onnx = tmp.name
-        model_proto, _ = tf2onnx.convert.from_keras(
-            model,
-            input_signature=spec,
-            opset=opset,
-            output_path=tmp_onnx,
-        )
+        model.export(tmp_onnx, format="onnx", verbose=False, input_signature=spec)
         if simplify:
             logging.info("Simplifying ONNX model ...")
             model_simp, check = onnxsim.simplify(onnx.load(tmp_onnx))
             assert check, "Simplified ONNX model could not be validated!"
-            onnx.save(model_simp, output_path)
+            onnx.save(model_simp, onnx_output_file)
         else:
-            shutil.copy(tmp_onnx, output_path)
-    output_names = [n.name for n in model_proto.graph.output]
+            shutil.copy(tmp_onnx, onnx_output_file)
+    output_names = [o.name for o in onnx.load(onnx_output_file).graph.output]
     x = np.random.randint(0, 256, size=(1, config.img_height, config.img_width, 1), dtype=np.uint8)
     # Run dummy inference and log time taken
-    m = rt.InferenceSession(output_path)
+    m = rt.InferenceSession(onnx_output_file)
     with log_time_taken("ONNX inference took:"):
         onnx_pred = m.run(output_names, {"input": x})
     # Check if ONNX and keras have the same results
     if not np.allclose(model.predict(x, verbose=0), onnx_pred[0], rtol=1e-5, atol=1e-5):
         logging.warning("ONNX model output was not close to Keras model for the given tolerance!")
-    logging.info("Model converted to ONNX! Saved at %s", output_path)
+    logging.info("Model converted to ONNX! Saved at %s", onnx_output_file)
 
 
 if __name__ == "__main__":
