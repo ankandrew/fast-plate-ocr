@@ -5,9 +5,8 @@ Script for validating trained OCR models.
 import pathlib
 
 import click
-from torch.utils.data import DataLoader
 
-from fast_plate_ocr.train.data.dataset import LicensePlateDataset
+from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
 
 # Custom metris / losses
 from fast_plate_ocr.train.model.config import load_config_from_yaml
@@ -44,11 +43,34 @@ from fast_plate_ocr.train.utilities import utils
     type=int,
     help="Batch size.",
 )
+@click.option(
+    "--workers",
+    default=1,
+    show_default=True,
+    type=int,
+    help="Number of worker threads/processes for parallel data loading via PyDataset.",
+)
+@click.option(
+    "--use-multiprocessing/--no-use-multiprocessing",
+    default=False,
+    show_default=True,
+    help="Whether to use multiprocessing for data loading.",
+)
+@click.option(
+    "--max-queue-size",
+    default=10,
+    show_default=True,
+    type=int,
+    help="Maximum number of batches to prefetch for the dataset.",
+)
 def valid(
     model_path: pathlib.Path,
     config_file: pathlib.Path,
     annotations: pathlib.Path,
     batch_size: int,
+    workers: int,
+    use_multiprocessing: bool,
+    max_queue_size: int,
 ) -> None:
     """
     Validate the trained OCR model on a labeled set.
@@ -57,9 +79,16 @@ def valid(
     model = utils.load_keras_model(
         model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
     )
-    val_torch_dataset = LicensePlateDataset(annotations_file=annotations, config=config)
-    val_dataloader = DataLoader(val_torch_dataset, batch_size=batch_size, shuffle=False)
-    model.evaluate(val_dataloader)
+    val_dataset = PlateRecognitionPyDataset(
+        annotations_file=annotations,
+        config=config,
+        batch_size=batch_size,
+        shuffle=False,
+        workers=workers,
+        use_multiprocessing=use_multiprocessing,
+        max_queue_size=max_queue_size,
+    )
+    model.evaluate(val_dataset)
 
 
 if __name__ == "__main__":

@@ -18,11 +18,10 @@ from keras.src.callbacks import (
     TensorBoard,
 )
 from keras.src.optimizers import AdamW
-from torch.utils.data import DataLoader
 
 from fast_plate_ocr.cli.utils import print_params, print_train_details
 from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
-from fast_plate_ocr.train.data.dataset import LicensePlateDataset
+from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
 from fast_plate_ocr.train.model.cct_model import create_cct_model
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.model.custom import (
@@ -41,24 +40,24 @@ from fast_plate_ocr.train.model.custom import (
 @click.option(
     "--config-file",
     required=True,
-    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
 )
 @click.option(
     "--annotations",
     required=True,
-    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path pointing to the train annotations CSV file.",
 )
 @click.option(
     "--val-annotations",
     required=True,
-    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path pointing to the train validation CSV file.",
 )
 @click.option(
     "--augmentation-path",
-    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="YAML file pointing to the augmentation pipeline saved with Albumentations.save(...)",
 )
 @click.option(
@@ -114,16 +113,29 @@ from fast_plate_ocr.train.model.custom import (
     help="Batch size for training.",
 )
 @click.option(
-    "--num-workers",
-    default=0,
+    "--workers",
+    default=1,
     show_default=True,
     type=int,
-    help="How many subprocesses to load data, used in the torch DataLoader.",
+    help="Number of worker threads/processes for parallel data loading.",
+)
+@click.option(
+    "--use-multiprocessing/--no-use-multiprocessing",
+    default=False,
+    show_default=True,
+    help="Use multiprocessing for data loading.",
+)
+@click.option(
+    "--max-queue-size",
+    default=10,
+    show_default=True,
+    type=int,
+    help="Maximum queue size for dataset workers.",
 )
 @click.option(
     "--output-dir",
     default="./trained_models",
-    type=click.Path(dir_okay=True, path_type=pathlib.Path),
+    type=click.Path(dir_okay=True, file_okay=False, path_type=pathlib.Path),
     help="Output directory where model will be saved.",
 )
 @click.option(
@@ -181,7 +193,9 @@ def train(
     label_smoothing: float,
     mixed_precision_policy: str | None,
     batch_size: int,
-    num_workers: int,
+    workers: int,
+    use_multiprocessing: bool,
+    max_queue_size: int,
     output_dir: pathlib.Path,
     epochs: int,
     tensorboard: bool,
@@ -201,25 +215,27 @@ def train(
     )
     config = load_config_from_yaml(config_file)
     print_train_details(train_augmentation, config.model_dump())
-    train_torch_dataset = LicensePlateDataset(
+
+    train_dataset = PlateRecognitionPyDataset(
         annotations_file=annotations,
         transform=train_augmentation,
         config=config,
-    )
-    train_dataloader = DataLoader(
-        train_torch_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True
+        batch_size=batch_size,
+        shuffle=True,
+        workers=workers,
+        use_multiprocessing=use_multiprocessing,
+        max_queue_size=max_queue_size,
     )
 
-    if val_annotations:
-        val_torch_dataset = LicensePlateDataset(
-            annotations_file=val_annotations,
-            config=config,
-        )
-        val_dataloader = DataLoader(
-            val_torch_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False
-        )
-    else:
-        val_dataloader = None
+    val_dataset = PlateRecognitionPyDataset(
+        annotations_file=val_annotations,
+        config=config,
+        batch_size=batch_size,
+        shuffle=False,
+        workers=workers,
+        use_multiprocessing=use_multiprocessing,
+        max_queue_size=max_queue_size,
+    )
 
     # Train
     model = create_cct_model(
@@ -240,7 +256,7 @@ def train(
 
     cosine_decay = keras.optimizers.schedules.CosineDecay(
         initial_learning_rate=lr,
-        decay_steps=epochs * (len(train_torch_dataset) // batch_size),
+        decay_steps=epochs * len(train_dataset),
         alpha=final_lr_factor,
     )
 
@@ -289,7 +305,7 @@ def train(
             verbose=1,
         ),
         RapidFuzzDistanceCallback(
-            val_data=val_dataloader,
+            val_data=val_dataset,
             max_plate_slots=config.max_plate_slots,
             model_alphabet=config.alphabet,
             max_batches=None,
@@ -312,7 +328,7 @@ def train(
         run_dir.mkdir(parents=True, exist_ok=True)
         callbacks.append(TensorBoard(log_dir=run_dir))
 
-    model.fit(train_dataloader, epochs=epochs, validation_data=val_dataloader, callbacks=callbacks)
+    model.fit(train_dataset, epochs=epochs, validation_data=val_dataset, callbacks=callbacks)
 
 
 if __name__ == "__main__":
