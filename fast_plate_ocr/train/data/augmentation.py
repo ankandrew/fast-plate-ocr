@@ -14,14 +14,19 @@ TRAIN_AUGMENTATION = A.Compose(
             scale_limit=0.1,
             rotate_limit=9,
             border_mode=cv2.BORDER_CONSTANT,
-            value=BORDER_COLOR_BLACK,
+            fill=BORDER_COLOR_BLACK,
             p=1,
         ),
         A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
         A.MotionBlur(blur_limit=(3, 5), p=0.1),
         A.OneOf(
             [
-                A.CoarseDropout(max_holes=10, max_height=4, max_width=4, p=0.3),
+                A.CoarseDropout(
+                    num_holes_range=(1, 10),
+                    hole_height_range=(1, 4),
+                    hole_width_range=(1, 4),
+                    p=0.3,
+                ),
                 A.PixelDropout(dropout_prob=0.01, p=0.2),
             ],
             p=0.7,
