@@ -5,7 +5,7 @@ Test the custom metric/losses module.
 import numpy as np
 import pytest
 
-from fast_plate_ocr.train.model.custom import cat_acc_metric, plate_acc_metric
+from fast_plate_ocr.train.model.metric import cat_acc_metric, plate_acc_metric
 
 
 @pytest.mark.parametrize(

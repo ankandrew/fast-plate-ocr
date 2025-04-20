@@ -26,11 +26,9 @@ from fast_plate_ocr.train.model.cct_model import create_cct_model
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.model.custom import (
     RapidFuzzDistanceCallback,
-    cat_acc_metric,
-    cce_loss,
-    plate_acc_metric,
-    top_3_k_metric,
 )
+from fast_plate_ocr.train.model.loss import cce_loss
+from fast_plate_ocr.train.model.metric import cat_acc_metric, plate_acc_metric, top_3_k_metric
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
