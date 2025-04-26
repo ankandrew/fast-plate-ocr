@@ -73,6 +73,13 @@ from fast_plate_ocr.train.model.metric import cat_acc_metric, plate_acc_metric, 
     " the initial learning rate that remains after decay.",
 )
 @click.option(
+    "--warmup-fraction",
+    default=0.05,
+    show_default=True,
+    type=float,
+    help="Fraction of total training steps to linearly warm up.",
+)
+@click.option(
     "--weight-decay",
     default=0.001,
     show_default=True,
@@ -191,9 +198,10 @@ def train(
     val_annotations: pathlib.Path,
     augmentation_path: pathlib.Path | None,
     lr: float,
+    final_lr_factor: float,
+    warmup_fraction: float,
     weight_decay: float,
     clipnorm: float,
-    final_lr_factor: float,
     label_smoothing: float,
     mixed_precision_policy: str | None,
     batch_size: int,
@@ -259,10 +267,15 @@ def train(
     if weights_path:
         model.load_weights(weights_path)
 
+    total_steps = epochs * len(train_dataset)
+    warmup_steps = int(warmup_fraction * total_steps)
+
     cosine_decay = keras.optimizers.schedules.CosineDecay(
-        initial_learning_rate=lr,
-        decay_steps=epochs * len(train_dataset),
+        initial_learning_rate=0.0 if warmup_steps > 0 else lr,
+        decay_steps=total_steps,
         alpha=final_lr_factor,
+        warmup_steps=warmup_steps,
+        warmup_target=lr if warmup_steps > 0 else None,
     )
 
     optimizer = AdamW(cosine_decay, weight_decay=weight_decay, clipnorm=clipnorm, use_ema=use_ema)
