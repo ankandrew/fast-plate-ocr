@@ -2,7 +2,6 @@
 Script for training the License Plate OCR models.
 """
 
-import inspect
 import json
 import pathlib
 import shutil
@@ -295,7 +294,7 @@ def train(
     A.save(train_augmentation, output_dir / "train_augmentation.yaml", "yaml")
     with open(output_dir / "hyper_params.json", "w", encoding="utf-8") as f_out:
         json.dump(
-            {k: v for k, v in locals().items() if k in inspect.signature(train).parameters},
+            {k: v for k, v in locals().items() if k in click.get_current_context().params},
             f_out,
             indent=4,
             default=str,
