@@ -219,8 +219,8 @@ def mlp(x, hidden_units, dropout_rate):
 
 def vocab_projection(x, vocabulary_size, dropout_rate=None):
     if dropout_rate is not None:
-        x = layers.TimeDistributed(layers.Dropout(dropout_rate))(x)
-    x = layers.TimeDistributed(layers.Dense(vocabulary_size, activation="softmax"))(x)
+        x = layers.Dropout(dropout_rate)(x)
+    x = layers.Dense(vocabulary_size, activation="softmax")(x)
     return x
 
 
