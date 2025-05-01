@@ -188,9 +188,9 @@ class TokenReducer(keras.layers.Layer):
 
 @keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class StochasticDepth(layers.Layer):
-    def __init__(self, drop_prop: float, **kwargs):
+    def __init__(self, drop_prob: float, **kwargs):
         super().__init__(**kwargs)
-        self.drop_prob = drop_prop
+        self.drop_prob = drop_prob
         self.seed_generator = keras.random.SeedGenerator(1337)
 
     def call(self, x, training=None):
