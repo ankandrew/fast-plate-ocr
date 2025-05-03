@@ -5,7 +5,7 @@ Main CLI used when training a FastPlateOCR model.
 try:
     import click
 
-    from fast_plate_ocr.cli.onnx_converter import export_onnx
+    from fast_plate_ocr.cli.export import export
     from fast_plate_ocr.cli.train import train
     from fast_plate_ocr.cli.valid import valid
     from fast_plate_ocr.cli.visualize_augmentation import visualize_augmentation
@@ -23,4 +23,4 @@ main_cli.add_command(visualize_predictions)
 main_cli.add_command(visualize_augmentation)
 main_cli.add_command(valid)
 main_cli.add_command(train)
-main_cli.add_command(export_onnx)
+main_cli.add_command(export)
