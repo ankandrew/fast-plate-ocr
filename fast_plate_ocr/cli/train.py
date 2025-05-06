@@ -6,6 +6,7 @@ import json
 import pathlib
 import shutil
 from datetime import datetime
+from typing import Literal
 
 import albumentations as A
 import click
@@ -23,14 +24,20 @@ from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
 from fast_plate_ocr.train.model.cct_model import create_cct_model
 from fast_plate_ocr.train.model.config import load_config_from_yaml
-from fast_plate_ocr.train.model.custom import (
-    RapidFuzzDistanceCallback,
-)
 from fast_plate_ocr.train.model.loss import cce_loss
 from fast_plate_ocr.train.model.metric import cat_acc_metric, plate_acc_metric, top_3_k_metric
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
+
+
+EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
+    "val_plate_acc": "max",
+    "val_cat_acc": "max",
+    "val_top_3_k_acc": "max",
+    "val_loss": "min",
+}
+"""Eval metric to monitor."""
 
 
 @click.command(context_settings={"max_content_width": 120})
@@ -168,7 +175,14 @@ from fast_plate_ocr.train.model.metric import cat_acc_metric, plate_acc_metric, 
     default=100,
     show_default=True,
     type=int,
-    help="Stop training when 'val_plate_acc' doesn't improve for X epochs.",
+    help="Stop training when the early stopping metric doesn't improve for X epochs.",
+)
+@click.option(
+    "--early-stopping-metric",
+    default="val_plate_acc",
+    show_default=True,
+    type=click.Choice(list(EVAL_METRICS), case_sensitive=False),
+    help="Metric to monitor for early stopping.",
 )
 @click.option(
     "--weights-path",
@@ -213,6 +227,7 @@ def train(
     tensorboard: bool,
     tensorboard_dir: pathlib.Path,
     early_stopping_patience: int,
+    early_stopping_metric: str,
     weights_path: pathlib.Path | None,
     use_ema: bool,
     wd_ignore: str,
@@ -300,7 +315,6 @@ def train(
 
     output_dir /= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     output_dir.mkdir(parents=True, exist_ok=True)
-    model_file_path = output_dir / "ckpt-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
     # Save params and config used for training
     shutil.copy(config_file, output_dir / "config.yaml")
@@ -314,28 +328,22 @@ def train(
         )
 
     callbacks = [
-        # Stop training when 'val_plate_acc' doesn't improve for X epochs
+        # Stop training when early_stopping_metric doesn't improve for X epochs
         EarlyStopping(
-            monitor="val_plate_acc",
+            monitor=early_stopping_metric,
             patience=early_stopping_patience,
-            mode="max",
+            mode=EVAL_METRICS[early_stopping_metric],
             restore_best_weights=False,
             verbose=1,
-        ),
-        RapidFuzzDistanceCallback(
-            val_data=val_dataset,
-            max_plate_slots=config.max_plate_slots,
-            model_alphabet=config.alphabet,
-            max_batches=None,
         ),
         # To save model checkpoint with EMA weights, we need to place this before `ModelCheckpoint`
         *([SwapEMAWeights(swap_on_epoch=True)] if use_ema else []),
         # We don't use EarlyStopping restore_best_weights=True because it won't restore the best
         # weights when it didn't manage to EarlyStop but finished all epochs
         ModelCheckpoint(
-            model_file_path,
-            monitor="val_plate_acc",
-            mode="max",
+            output_dir / "best.keras",
+            monitor=early_stopping_metric,
+            mode=EVAL_METRICS[early_stopping_metric],
             save_best_only=True,
             verbose=1,
         ),
