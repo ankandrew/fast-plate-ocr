@@ -3,9 +3,16 @@ Config values used throughout the code.
 """
 
 from os import PathLike
+from typing import Annotated
 
 import yaml
-from pydantic import BaseModel, computed_field, model_validator
+from pydantic import (
+    BaseModel,
+    PositiveInt,
+    StringConstraints,
+    computed_field,
+    model_validator,
+)
 
 
 class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
@@ -13,7 +20,7 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
     Model License Plate OCR config.
     """
 
-    max_plate_slots: int
+    max_plate_slots: PositiveInt
     """
     Max number of plate slots supported. This represents the number of model classification heads.
     """
@@ -21,15 +28,15 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
     """
     All the possible character set for the model output.
     """
-    pad_char: str
+    pad_char: Annotated[str, StringConstraints(min_length=1, max_length=1)]
     """
     Padding character for plates which length is smaller than MAX_PLATE_SLOTS.
     """
-    img_height: int
+    img_height: PositiveInt
     """
     Image height which is fed to the model.
     """
-    img_width: int
+    img_width: PositiveInt
     """
     Image width which is fed to the model.
     """
@@ -38,6 +45,11 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
     @property
     def vocabulary_size(self) -> int:
         return len(self.alphabet)
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def pad_idx(self) -> int:
+        return self.alphabet.index(self.pad_char)
 
     @model_validator(mode="after")
     def check_pad_in_alphabet(self) -> "PlateOCRConfig":
