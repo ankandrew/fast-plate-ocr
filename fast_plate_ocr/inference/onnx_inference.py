@@ -16,11 +16,11 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from fast_plate_ocr.common.utils import measure_time
+from fast_plate_ocr.core.process import postprocess_output, preprocess_image, read_plate_image
+from fast_plate_ocr.core.utils import measure_time
 from fast_plate_ocr.inference import hub
 from fast_plate_ocr.inference.config import load_config_from_yaml
 from fast_plate_ocr.inference.hub import OcrModel
-from fast_plate_ocr.inference.process import postprocess_output, preprocess_image, read_plate_image
 
 
 def _load_image_from_source(

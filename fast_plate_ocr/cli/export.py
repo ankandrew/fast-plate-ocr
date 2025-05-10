@@ -12,7 +12,7 @@ import keras
 import numpy as np
 
 from fast_plate_ocr.cli.utils import requires
-from fast_plate_ocr.common.utils import log_time_taken
+from fast_plate_ocr.core.utils import log_time_taken
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from fast_plate_ocr.train.utilities.utils import load_keras_model
 

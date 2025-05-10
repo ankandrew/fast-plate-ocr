@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from fast_plate_ocr.inference.process import postprocess_output
+from fast_plate_ocr.core.process import postprocess_output
 
 
 @pytest.mark.parametrize(

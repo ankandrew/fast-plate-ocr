@@ -11,7 +11,7 @@ from typing import Literal
 
 from tqdm.asyncio import tqdm
 
-from fast_plate_ocr.common.utils import safe_write
+from fast_plate_ocr.core.utils import safe_write
 
 BASE_URL: str = "https://github.com/ankandrew/cnn-ocr-lp/releases/download"
 OcrModel = Literal[
