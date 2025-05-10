@@ -280,7 +280,7 @@ def train(
     )
 
     if weights_path:
-        model.load_weights(weights_path)
+        model.load_weights(weights_path, skip_mismatch=True)
 
     total_steps = epochs * len(train_dataset)
     warmup_steps = int(warmup_fraction * total_steps)
