@@ -111,10 +111,11 @@ def _export_onnx(
             shutil.copy(tmp.name, out_file)
 
     sess = rt.InferenceSession(out_file)
+    input_name = sess.get_inputs()[0].name
     output_names = [o.name for o in sess.get_outputs()]
 
     def _predict(x: np.ndarray):
-        return sess.run(output_names, {"input": x})[0]
+        return sess.run(output_names, {input_name: x})[0]
 
     _validate_prediction(
         model, _predict, _dummy_input(1, config.img_height, config.img_width), "ONNX"
