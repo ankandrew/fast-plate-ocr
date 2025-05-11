@@ -3,10 +3,26 @@ Utility functions for processing model input/output.
 """
 
 import os
+from typing import TypeAlias, Literal
 
 import cv2
 import numpy as np
 import numpy.typing as npt
+
+
+ImageInterpolation: TypeAlias = Literal["nearest", "linear", "cubic", "area", "lanczos4"]
+"""Interpolation method used for resizing the input image."""
+ImageColorMode: TypeAlias = Literal["grayscale", "rgb"]
+"""Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input."""
+
+
+INTERPOLATION_MAP: dict[ImageInterpolation, int] = {
+    "nearest": cv2.INTER_NEAREST,
+    "linear": cv2.INTER_LINEAR,
+    "cubic": cv2.INTER_CUBIC,
+    "area": cv2.INTER_AREA,
+    "lanczos4": cv2.INTER_LANCZOS4,
+}
 
 
 def read_plate_image(image_path: str) -> npt.NDArray:
