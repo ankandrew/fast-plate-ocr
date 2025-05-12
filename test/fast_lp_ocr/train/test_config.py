@@ -11,19 +11,18 @@ from fast_plate_ocr.train.model.config import PlateOCRConfig as PlateOCRConfigTr
 from fast_plate_ocr.train.model.config import load_config_from_yaml
 from test import PROJECT_ROOT_DIR
 
+PROJECT_DEFAULT_CONFIGS = [
+    f for f in PROJECT_ROOT_DIR.joinpath("config").iterdir() if f.suffix in (".yaml", ".yml")
+]
+"""Default OCR model configs present in the project."""
 
-@pytest.mark.parametrize(
-    "file_path",
-    [f for f in PROJECT_ROOT_DIR.joinpath("config").iterdir() if f.suffix in (".yaml", ".yml")],
-)
+
+@pytest.mark.parametrize("file_path", PROJECT_DEFAULT_CONFIGS)
 def test_yaml_configs_are_valid(file_path: Path) -> None:
     load_config_from_yaml(file_path)
 
 
-@pytest.mark.parametrize(
-    "file_path",
-    [f for f in PROJECT_ROOT_DIR.joinpath("config").iterdir() if f.suffix in (".yaml", ".yml")],
-)
+@pytest.mark.parametrize("file_path", PROJECT_DEFAULT_CONFIGS)
 def test_yaml_configs_for_inference_are_valid(file_path: Path) -> None:
     PlateOCRConfigInference.from_yaml(file_path)
 
