@@ -3,8 +3,9 @@ Config values used throughout the code.
 """
 
 from os import PathLike
-from typing import Annotated
+from typing import Annotated, TypeAlias
 
+import annotated_types
 import yaml
 from pydantic import (
     BaseModel,
@@ -13,6 +14,13 @@ from pydantic import (
     computed_field,
     model_validator,
 )
+
+from fast_plate_ocr.core.process import ImageColorMode, ImageInterpolation
+
+UInt8: TypeAlias = Annotated[int, annotated_types.Ge(0), annotated_types.Le(255)]
+"""
+An integer in the range [0, 255], used for color channel values.
+"""
 
 
 class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
@@ -40,6 +48,23 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
     """
     Image width which is fed to the model.
     """
+    keep_aspect_ratio: bool = False
+    """
+    Keep aspect ratio of the input image.
+    """
+    interpolation: ImageInterpolation = "linear"
+    """
+    Interpolation method used for resizing the input image.
+    """
+    image_color_mode: ImageColorMode = "grayscale"
+    """
+    Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input.
+    """
+    padding_color: tuple[UInt8, UInt8, UInt8] | UInt8 = (114, 114, 114)
+    """
+    Padding color used when keep_aspect_ratio is True. For grayscale images, this should be a single
+    integer and for RGB images, this must be a tuple of three integers.
+    """
 
     @computed_field  # type: ignore[misc]
     @property
@@ -50,6 +75,11 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
     @property
     def pad_idx(self) -> int:
         return self.alphabet.index(self.pad_char)
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def num_channels(self) -> int:
+        return 3 if self.image_color_mode == "rgb" else 1
 
     @model_validator(mode="after")
     def check_pad_in_alphabet(self) -> "PlateOCRConfig":
