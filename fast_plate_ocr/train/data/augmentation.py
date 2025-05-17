@@ -10,24 +10,25 @@ BORDER_COLOR_BLACK: tuple[int, int, int] = (0, 0, 0)
 TRAIN_AUGMENTATION = A.Compose(
     [
         A.ShiftScaleRotate(
-            shift_limit=0.06,
-            scale_limit=0.1,
-            rotate_limit=9,
+            shift_limit=0.02,
+            scale_limit=(-0.25, 0.075),
+            rotate_limit=10,
             border_mode=cv2.BORDER_CONSTANT,
             fill=BORDER_COLOR_BLACK,
             p=1,
         ),
-        A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
-        A.MotionBlur(blur_limit=(3, 5), p=0.1),
+        A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1.0),
+        A.GaussianBlur(sigma_limit=(0.2, 0.5), p=0.25),
         A.OneOf(
             [
                 A.CoarseDropout(
-                    num_holes_range=(1, 10),
-                    hole_height_range=(1, 4),
-                    hole_width_range=(1, 4),
+                    num_holes_range=(1, 11),
+                    hole_height_range=(1, 5),
+                    hole_width_range=(1, 5),
                     p=0.3,
                 ),
-                A.PixelDropout(dropout_prob=0.01, p=0.2),
+                A.PixelDropout(dropout_prob=0.02, p=0.2),
+                A.GridDropout(ratio=0.3, fill="random", p=0.2),
             ],
             p=0.7,
         ),
