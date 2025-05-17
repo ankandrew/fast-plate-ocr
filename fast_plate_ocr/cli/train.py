@@ -350,6 +350,7 @@ def train(
         *([SwapEMAWeights(swap_on_epoch=True)] if use_ema else []),
         # We don't use EarlyStopping restore_best_weights=True because it won't restore the best
         # weights when it didn't manage to EarlyStop but finished all epochs
+        ModelCheckpoint(output_dir / "last.keras", save_weights_only=False, save_best_only=False),
         ModelCheckpoint(
             output_dir / "best.keras",
             monitor=early_stopping_metric,
