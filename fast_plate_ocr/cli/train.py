@@ -16,6 +16,7 @@ from keras.src.callbacks import (
     ModelCheckpoint,
     SwapEMAWeights,
     TensorBoard,
+    TerminateOnNaN,
 )
 from keras.src.optimizers import AdamW
 
@@ -358,6 +359,7 @@ def train(
             save_best_only=True,
             verbose=1,
         ),
+        TerminateOnNaN(),
     ]
 
     if tensorboard:
