@@ -11,6 +11,7 @@ import numpy.typing as npt
 import pandas as pd
 from keras.src.trainers.data_adapters.py_dataset_adapter import PyDataset
 
+from fast_plate_ocr.core.process import read_and_resize_plate_image
 from fast_plate_ocr.train.model.config import PlateOCRConfig
 from fast_plate_ocr.train.utilities import utils
 
@@ -63,10 +64,14 @@ class PlateRecognitionPyDataset(PyDataset):
         batch_y = []
         for image_path, plate_text in batch:
             # Read and process image
-            x = utils.read_plate_image(
+            x = read_and_resize_plate_image(
                 image_path=image_path,
                 img_height=self.config.img_height,
                 img_width=self.config.img_width,
+                image_color_mode=self.config.image_color_mode,
+                keep_aspect_ratio=self.config.keep_aspect_ratio,
+                interpolation_method=self.config.interpolation,
+                padding_color=self.config.padding_color,
             )
             # Transform target
             y = utils.target_transform(
