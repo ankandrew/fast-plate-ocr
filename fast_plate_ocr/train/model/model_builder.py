@@ -218,6 +218,13 @@ class _BatchNormalization(BaseModel):
         )
 
 
+class _Dropout(BaseModel):
+    rate: PositiveFloat
+
+    def to_keras_layer(self):
+        return keras.layers.Dropout(rate=self.rate)
+
+
 class _SpatialDropout2D(BaseModel):
     rate: PositiveFloat
 
