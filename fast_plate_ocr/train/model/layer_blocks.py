@@ -174,8 +174,8 @@ class AddCoords(keras.layers.Layer):
 
 
 @keras.saving.register_keras_serializable(package="fast_plate_ocr")
-class CoordConv(keras.layers.Layer):
-    """CoordConv layer as in the paper, modified from paper: https://arxiv.org/abs/1807.03247"""
+class CoordConv2D(keras.layers.Layer):
+    """CoordConv2D layer as in the paper, modified from paper: https://arxiv.org/abs/1807.03247"""
 
     def __init__(self, with_r: bool = False, **conv_kwargs):
         super().__init__()
@@ -271,3 +271,40 @@ class MaxBlurPooling2D(keras.layers.Layer):
         config = super().get_config()
         config.update({"pool_size": self.pool_size, "filter_size": self.filter_size})
         return config
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class SqueezeExcite(keras.layers.Layer):
+    """
+    Applies squeeze and excitation to input feature maps as seen in https://arxiv.org/abs/1709.01507
+
+    Note: this was taken from https://keras.io/examples/vision/patch_convnet.
+    """
+
+    def __init__(self, ratio, **kwargs):
+        super().__init__(**kwargs)
+        self.ratio = ratio
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"ratio": self.ratio})
+        return config
+
+    def build(self, input_shape):
+        filters = input_shape[-1]
+        self.squeeze = keras.layers.GlobalAveragePooling2D(keepdims=True)
+        self.reduction = keras.layers.Dense(
+            units=filters // self.ratio,
+            activation="relu",
+            use_bias=False,
+        )
+        self.excite = keras.layers.Dense(units=filters, activation="sigmoid", use_bias=False)
+        self.multiply = keras.layers.Multiply()
+
+    def call(self, x):
+        shortcut = x
+        x = self.squeeze(x)
+        x = self.reduction(x)
+        x = self.excite(x)
+        x = self.multiply([shortcut, x])
+        return x
