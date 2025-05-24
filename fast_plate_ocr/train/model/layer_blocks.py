@@ -310,7 +310,7 @@ class SqueezeExcite(keras.layers.Layer):
         return x
 
 
-@keras.utils.register_keras_serializable(package="custom_layers")
+@keras.utils.register_keras_serializable(package="fast_plate_ocr")
 class DyT(keras.layers.Layer):
     """
     Dynamic Tanh (DyT), is an element-wise operation as a drop-in replacement for normalization
