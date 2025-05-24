@@ -60,6 +60,7 @@ def _load_image_from_source(
 
 
 class ONNXPlateRecognizer:
+class LicensePlateRecognizer:
     """
     ONNX inference class for performing license plates OCR.
     """
@@ -75,7 +76,7 @@ class ONNXPlateRecognizer:
         force_download: bool = False,
     ) -> None:
         """
-        Initializes the ONNXPlateRecognizer with the specified OCR model and inference device.
+        Initializes the `LicensePlateRecognizer` with the specified OCR model and inference device.
 
         The current OCR models available from the HUB are:
 

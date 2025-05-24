@@ -8,13 +8,13 @@ import cv2
 import numpy.typing as npt
 import pytest
 
-from fast_plate_ocr import ONNXPlateRecognizer
+from fast_plate_ocr import LicensePlateRecognizer
 from test.assets import ASSETS_DIR
 
 
 @pytest.fixture(scope="module", name="onnx_model")
-def onnx_model_fixture() -> Iterator[ONNXPlateRecognizer]:
-    yield ONNXPlateRecognizer("argentinian-plates-cnn-model", device="cpu")
+def onnx_model_fixture() -> Iterator[LicensePlateRecognizer]:
+    yield LicensePlateRecognizer("argentinian-plates-cnn-model", device="cpu")
 
 
 @pytest.mark.parametrize(
@@ -42,7 +42,7 @@ def onnx_model_fixture() -> Iterator[ONNXPlateRecognizer]:
 def test_result_from_different_image_sources(
     input_image: str | list[str] | npt.NDArray,
     expected_result: int,
-    onnx_model: ONNXPlateRecognizer,
+    onnx_model: LicensePlateRecognizer,
 ) -> None:
     actual_result = len(onnx_model.run(input_image))
     assert actual_result == expected_result

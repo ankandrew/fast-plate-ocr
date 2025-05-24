@@ -47,10 +47,10 @@ Calculate Inference Time:
   ```
 
   ```python
-  from fast_plate_ocr import ONNXPlateRecognizer
+  from fast_plate_ocr import LicensePlateRecognizer
 
-  m = ONNXPlateRecognizer("argentinian-plates-cnn-model")
-  m.benchmark()
+m = LicensePlateRecognizer("argentinian-plates-cnn-model")
+m.benchmark()
   ```
 
 Calculate Model accuracy:

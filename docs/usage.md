@@ -3,9 +3,9 @@
 To predict from disk image:
 
 ```python
-from fast_plate_ocr import ONNXPlateRecognizer
+from fast_plate_ocr import LicensePlateRecognizer
 
-m = ONNXPlateRecognizer('argentinian-plates-cnn-model')
+m = LicensePlateRecognizer('argentinian-plates-cnn-model')
 print(m.run('test_plate.png'))
 ```
 
@@ -21,9 +21,9 @@ print(m.run('test_plate.png'))
 To run model benchmark:
 
 ```python
-from fast_plate_ocr import ONNXPlateRecognizer
+from fast_plate_ocr import LicensePlateRecognizer
 
-m = ONNXPlateRecognizer('argentinian-plates-cnn-model')
+m = LicensePlateRecognizer('argentinian-plates-cnn-model')
 m.benchmark()
 ```
 
