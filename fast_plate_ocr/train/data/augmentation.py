@@ -11,7 +11,7 @@ TRAIN_AUGMENTATION = A.Compose(
     [
         A.ShiftScaleRotate(
             shift_limit=0.02,
-            scale_limit=(-0.25, 0.075),
+            scale_limit=(-0.3, 0.075),
             rotate_limit=10,
             border_mode=cv2.BORDER_CONSTANT,
             fill=BORDER_COLOR_BLACK,
