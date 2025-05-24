@@ -281,7 +281,7 @@ class SqueezeExcite(keras.layers.Layer):
     Note: this was taken from https://keras.io/examples/vision/patch_convnet.
     """
 
-    def __init__(self, ratio, **kwargs):
+    def __init__(self, ratio: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.ratio = ratio
 
@@ -308,3 +308,52 @@ class SqueezeExcite(keras.layers.Layer):
         x = self.excite(x)
         x = self.multiply([shortcut, x])
         return x
+
+
+@keras.utils.register_keras_serializable(package="custom_layers")
+class DyT(keras.layers.Layer):
+    """
+    Dynamic Tanh (DyT), is an element-wise operation as a drop-in replacement for normalization
+    layers in Transformers.
+
+    Paper: https://arxiv.org/abs/2503.10622.
+    """
+
+    def __init__(self, alpha_init_value: float = 0.5, **kwargs):
+        super().__init__(**kwargs)
+        self.alpha_init_value = alpha_init_value
+
+    def build(self, input_shape):
+        channels = int(input_shape[-1])
+
+        # scalar alpha
+        self.alpha = self.add_weight(
+            name="alpha",
+            shape=(),
+            initializer=keras.initializers.Constant(self.alpha_init_value),
+            trainable=True,
+        )
+
+        self.weight = self.add_weight(
+            name="weight",
+            shape=(channels,),
+            initializer="ones",
+            trainable=True,
+        )
+        self.bias = self.add_weight(
+            name="bias",
+            shape=(channels,),
+            initializer="zeros",
+            trainable=True,
+        )
+
+        super().build(input_shape)
+
+    def call(self, x):
+        x = keras.ops.tanh(self.alpha * x)
+        return x * self.weight + self.bias
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update({"alpha_init_value": self.alpha_init_value})
+        return cfg
