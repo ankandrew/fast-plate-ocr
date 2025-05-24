@@ -12,6 +12,15 @@ from fast_plate_ocr.train.model.layer_blocks import (
     SqueezeExcite,
 )
 
+
+class _Rescaling(BaseModel):
+    scale: float = 1.0 / 255
+    offset: float = 0.0
+
+    def to_keras_layer(self):
+        return keras.layers.Rescaling(self.scale, self.offset)
+
+
 ActivationStr: TypeAlias = Literal[
     "celu",
     "elu",
