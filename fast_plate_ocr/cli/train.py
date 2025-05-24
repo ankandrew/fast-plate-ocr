@@ -211,6 +211,11 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
     type=str,
     help="Comma‑separated list of variable‑name substrings to exclude from weight decay.",
 )
+@click.option(
+    "--seed",
+    type=int,
+    help="Sets all random seeds (Python, NumPy, and backend framework, e.g. TF).",
+)
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
     config_file: pathlib.Path,
@@ -237,10 +242,14 @@ def train(
     weights_path: pathlib.Path | None,
     use_ema: bool,
     wd_ignore: str,
+    seed: int | None,
 ) -> None:
     """
     Train the License Plate OCR model.
     """
+    if seed is not None:
+        keras.utils.set_random_seed(seed)
+
     if mixed_precision_policy is not None:
         keras.mixed_precision.set_global_policy(mixed_precision_policy)
 
