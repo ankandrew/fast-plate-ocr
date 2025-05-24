@@ -45,6 +45,13 @@ ActivationStr: TypeAlias = Literal[
 ]
 
 
+class _Activation(BaseModel):
+    activation: ActivationStr
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return keras.layers.Activation(self.activation)
+
+
 WeightInitializationStr: TypeAlias = Literal[
     "glorot_normal",
     "glorot_uniform",
@@ -118,6 +125,33 @@ class _DepthwiseConv2D(BaseModel):
         )
 
 
+class _SeparableConv2D(BaseModel):
+    filters: PositiveInt
+    kernel_size: PositiveIntTuple
+    strides: PositiveIntTuple = 1
+    padding: PaddingTypeStr = "same"
+    depth_multiplier: PositiveInt = 1
+    activation: ActivationStr = "relu"
+    use_bias: bool = True
+    depthwise_initializer: WeightInitializationStr = "he_normal"
+    pointwise_initializer: WeightInitializationStr = "glorot_uniform"
+    bias_initializer: WeightInitializationStr = "zeros"
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return keras.layers.SeparableConv2D(
+            filters=self.filters,
+            kernel_size=self.kernel_size,
+            strides=self.strides,
+            padding=self.padding,
+            depth_multiplier=self.depth_multiplier,
+            activation=self.activation,
+            use_bias=self.use_bias,
+            depthwise_initializer=self.depthwise_initializer,
+            pointwise_initializer=self.pointwise_initializer,
+            bias_initializer=self.bias_initializer,
+        )
+
+
 class _MaxBlurPooling2D(BaseModel):
     pool_size: PositiveInt = 2
     filter_size: PositiveInt = 3
@@ -152,6 +186,13 @@ class _AveragePooling2D(BaseModel):
         )
 
 
+class _ZeroPadding2D(BaseModel):
+    padding: PositiveIntTuple = 1
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return keras.layers.ZeroPadding2D(padding=self.padding)
+
+
 class _SqueezeExcite(BaseModel):
     ratio: PositiveFloat = 1.0
 
@@ -175,6 +216,21 @@ class _BatchNormalization(BaseModel):
             center=self.center,
             scale=self.scale,
         )
+
+
+class _SpatialDropout2D(BaseModel):
+    rate: PositiveFloat
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return keras.layers.SpatialDropout2D(rate=self.rate)
+
+
+class _GaussianNoise(BaseModel):
+    stddev: PositiveFloat
+    seed: int | None = None
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return keras.layers.GaussianNoise(stddev=self.stddev, seed=self.seed)
 
 
 class _LayerNorm(BaseModel):
