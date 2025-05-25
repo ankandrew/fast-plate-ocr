@@ -1,7 +1,6 @@
 from typing import Literal, TypeAlias
 
 import keras
-import yaml
 from keras.src.layers import RMSNormalization
 from pydantic import BaseModel, PositiveFloat, PositiveInt
 
@@ -55,6 +54,7 @@ ActivationStr: TypeAlias = Literal[
 
 
 class _Activation(BaseModel):
+    layer: Literal["Activation"]
     activation: ActivationStr
 
     def to_keras_layer(self) -> keras.layers.Layer:
@@ -81,6 +81,7 @@ PositiveIntTuple: TypeAlias = PositiveInt | tuple[PositiveInt, PositiveInt]
 
 
 class _Conv2D(BaseModel):
+    layer: Literal["Conv2D"]
     filters: PositiveInt
     kernel_size: PositiveIntTuple
     strides: PositiveIntTuple = 1
@@ -104,6 +105,7 @@ class _Conv2D(BaseModel):
 
 
 class _CoordConv2D(_Conv2D):
+    layer: Literal["CoordConv2D"]
     with_r: bool = False
 
     def to_keras_layer(self) -> keras.layers.Layer:
@@ -112,6 +114,7 @@ class _CoordConv2D(_Conv2D):
 
 
 class _DepthwiseConv2D(BaseModel):
+    layer: Literal["DepthwiseConv2D"]
     kernel_size: PositiveIntTuple
     strides: PositiveIntTuple = 1
     padding: PaddingTypeStr = "same"
@@ -135,6 +138,7 @@ class _DepthwiseConv2D(BaseModel):
 
 
 class _SeparableConv2D(BaseModel):
+    layer: Literal["SeparableConv2D"]
     filters: PositiveInt
     kernel_size: PositiveIntTuple
     strides: PositiveIntTuple = 1
@@ -162,6 +166,7 @@ class _SeparableConv2D(BaseModel):
 
 
 class _MaxBlurPooling2D(BaseModel):
+    layer: Literal["MaxBlurPooling2D"]
     pool_size: PositiveInt = 2
     filter_size: PositiveInt = 3
 
@@ -170,6 +175,7 @@ class _MaxBlurPooling2D(BaseModel):
 
 
 class _MaxPooling2D(BaseModel):
+    layer: Literal["MaxPooling2D"]
     pool_size: PositiveIntTuple = 2
     strides: PositiveInt | None = None
     padding: PaddingTypeStr = "valid"
@@ -183,6 +189,7 @@ class _MaxPooling2D(BaseModel):
 
 
 class _AveragePooling2D(BaseModel):
+    layer: Literal["AveragePooling2D"]
     pool_size: PositiveIntTuple = 2
     strides: PositiveInt | None = None
     padding: PaddingTypeStr = "valid"
@@ -196,6 +203,7 @@ class _AveragePooling2D(BaseModel):
 
 
 class _ZeroPadding2D(BaseModel):
+    layer: Literal["ZeroPadding2D"]
     padding: PositiveIntTuple = 1
 
     def to_keras_layer(self) -> keras.layers.Layer:
@@ -203,16 +211,15 @@ class _ZeroPadding2D(BaseModel):
 
 
 class _SqueezeExcite(BaseModel):
+    layer: Literal["SqueezeExcite"]
     ratio: PositiveFloat = 1.0
 
     def to_keras_layer(self) -> keras.layers.Layer:
         return SqueezeExcite(ratio=self.ratio)
 
 
-# TODO: Add residual & repeat blocks?
-
-
 class _BatchNormalization(BaseModel):
+    layer: Literal["BatchNormalization"]
     momentum: PositiveFloat = 0.99
     epsilon: PositiveFloat = 1e-3
     center: bool = True
@@ -228,6 +235,7 @@ class _BatchNormalization(BaseModel):
 
 
 class _Dropout(BaseModel):
+    layer: Literal["Dropout"]
     rate: PositiveFloat
 
     def to_keras_layer(self):
@@ -235,6 +243,7 @@ class _Dropout(BaseModel):
 
 
 class _SpatialDropout2D(BaseModel):
+    layer: Literal["SpatialDropout2D"]
     rate: PositiveFloat
 
     def to_keras_layer(self) -> keras.layers.Layer:
@@ -242,6 +251,7 @@ class _SpatialDropout2D(BaseModel):
 
 
 class _GaussianNoise(BaseModel):
+    layer: Literal["GaussianNoise"]
     stddev: PositiveFloat
     seed: int | None = None
 
@@ -250,6 +260,7 @@ class _GaussianNoise(BaseModel):
 
 
 class _LayerNorm(BaseModel):
+    layer: Literal["LayerNorm"]
     epsilon: PositiveFloat = 1e-3
 
     def to_keras_layer(self) -> keras.layers.Layer:
@@ -257,6 +268,7 @@ class _LayerNorm(BaseModel):
 
 
 class _RMSNorm(BaseModel):
+    layer: Literal["RMSNorm"]
     epsilon: PositiveFloat = 1e-6
 
     def to_keras_layer(self) -> keras.layers.Layer:
@@ -264,28 +276,8 @@ class _RMSNorm(BaseModel):
 
 
 class _DyT(BaseModel):
+    layer: Literal["DyT"]
     alpha_init_value: PositiveFloat = 0.5
 
     def to_keras_layer(self) -> keras.layers.Layer:
         return DyT(alpha_init_value=self.alpha_init_value)
-
-
-# Example YAML configuration
-yaml_content = """
-layers:
-  - filters: 32
-    kernel_size: 3
-    strides: 1
-  - filters: 64
-    kernel_size: 3
-    strides: 2
-"""
-
-# Parse YAML and create Conv2D instances
-config = yaml.safe_load(yaml_content)
-conv_blocks = [_CoordConv2D(**layer) for layer in config["layers"]]
-
-# Map each configuration to a Keras layer
-keras_layers = [conv_block.to_keras_layer() for conv_block in conv_blocks]
-
-print(keras_layers)
