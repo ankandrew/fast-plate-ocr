@@ -1,8 +1,8 @@
-from typing import Literal, TypeAlias
+from typing import Annotated, Literal, TypeAlias
 
 import keras
 from keras.src.layers import RMSNormalization
-from pydantic import BaseModel, PositiveFloat, PositiveInt
+from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 
 from fast_plate_ocr.train.model.layer_blocks import (
     CoordConv2D,
@@ -11,14 +11,12 @@ from fast_plate_ocr.train.model.layer_blocks import (
     SqueezeExcite,
 )
 
-
-class _Rescaling(BaseModel):
-    scale: float = 1.0 / 255
-    offset: float = 0.0
-
-    def to_keras_layer(self):
-        return keras.layers.Rescaling(self.scale, self.offset)
-
+UnitFloat: TypeAlias = Annotated[float, Field(ge=0.0, le=1.0)]
+"""A float that must be in range of [0, 1]."""
+PaddingTypeStr: TypeAlias = Literal["valid", "same"]
+"""Padding modes supported by Keras convolution and pooling layers."""
+PositiveIntTuple: TypeAlias = PositiveInt | tuple[PositiveInt, PositiveInt]
+"""A single positive integer or a tuple of two positive integers, usually used for sizes/strides."""
 
 ActivationStr: TypeAlias = Literal[
     "celu",
@@ -51,15 +49,7 @@ ActivationStr: TypeAlias = Literal[
     "tanh_shrink",
     "threshold",
 ]
-
-
-class _Activation(BaseModel):
-    layer: Literal["Activation"]
-    activation: ActivationStr
-
-    def to_keras_layer(self) -> keras.layers.Layer:
-        return keras.layers.Activation(self.activation)
-
+"""Supported Keras activation functions."""
 
 WeightInitializationStr: TypeAlias = Literal[
     "glorot_normal",
@@ -75,9 +65,23 @@ WeightInitializationStr: TypeAlias = Literal[
     "variance_scaling",
     "zeros",
 ]
+"""Keras weight initialization strategies."""
 
-PaddingTypeStr: TypeAlias = Literal["valid", "same"]
-PositiveIntTuple: TypeAlias = PositiveInt | tuple[PositiveInt, PositiveInt]
+
+class _Rescaling(BaseModel):
+    scale: float = 1.0 / 255
+    offset: float = 0.0
+
+    def to_keras_layer(self):
+        return keras.layers.Rescaling(self.scale, self.offset)
+
+
+class _Activation(BaseModel):
+    layer: Literal["Activation"]
+    activation: ActivationStr
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return keras.layers.Activation(self.activation)
 
 
 class _Conv2D(BaseModel):
@@ -281,3 +285,49 @@ class _DyT(BaseModel):
 
     def to_keras_layer(self) -> keras.layers.Layer:
         return DyT(alpha_init_value=self.alpha_init_value)
+
+
+LayerSpec = Annotated[
+    _Activation
+    | _Conv2D
+    | _CoordConv2D
+    | _DepthwiseConv2D
+    | _SeparableConv2D
+    | _MaxBlurPooling2D
+    | _MaxPooling2D
+    | _AveragePooling2D
+    | _ZeroPadding2D
+    | _SqueezeExcite
+    | _BatchNormalization
+    | _Dropout
+    | _SpatialDropout2D
+    | _GaussianNoise
+    | _LayerNorm
+    | _RMSNorm
+    | _DyT,
+    Field(discriminator="layer"),
+]
+
+
+class _CCTTokenizerConfig(BaseModel):
+    blocks: list[LayerSpec]
+
+
+class _CCTTransformerConfig(BaseModel):
+    layers: PositiveInt
+    heads: PositiveInt
+    projection_dim: PositiveInt
+    units: list[PositiveInt]
+    activation: ActivationStr = "gelu"
+    stochastic_depth: UnitFloat = 0.1
+    attention_dropout: UnitFloat = 0.1
+    mlp_dropout: UnitFloat = 0.1
+    head_mlp_dropout: UnitFloat = 0.2
+    token_reducer_heads: PositiveInt = 2
+    positional_emb: bool = True
+
+
+class CCTModelConfig(BaseModel):
+    rescaling: _Rescaling
+    tokenizer: _CCTTokenizerConfig
+    transformer: _CCTTransformerConfig
