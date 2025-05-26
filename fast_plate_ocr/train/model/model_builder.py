@@ -4,7 +4,7 @@ import keras
 from keras.src.layers import RMSNormalization
 from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 
-from fast_plate_ocr.train.model.layer_blocks import (
+from fast_plate_ocr.train.model.layers import (
     CoordConv2D,
     DyT,
     MaxBlurPooling2D,
