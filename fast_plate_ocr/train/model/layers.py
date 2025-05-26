@@ -2,6 +2,8 @@
 Layer blocks used in the OCR model.
 """
 
+from collections.abc import Sequence
+
 import keras
 import numpy as np
 from keras import ops
@@ -188,7 +190,7 @@ class SqueezeExcite(keras.layers.Layer):
 @keras.utils.register_keras_serializable(package="fast_plate_ocr")
 class DyT(keras.layers.Layer):
     """
-    Dynamic Tanh (DyT), is an element-wise operation as a drop-in replacement for normalization
+    Dynamic Tanh (DyT) is an element-wise operation as a drop-in replacement for normalization
     layers in Transformers.
 
     Paper: https://arxiv.org/abs/2503.10622.
@@ -231,4 +233,309 @@ class DyT(keras.layers.Layer):
     def get_config(self):
         cfg = super().get_config()
         cfg.update({"alpha_init_value": self.alpha_init_value})
+        return cfg
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class CCTTokenizer(keras.layers.Layer):
+    def __init__(
+        self,
+        kernel_size=3,
+        stride=1,
+        num_conv_layers=2,
+        num_output_channels=(64, 128),
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.num_conv_layers = num_conv_layers
+        self.num_output_channels = list(num_output_channels)
+
+        self.conv_model = keras.Sequential(name="conv_stem")
+        for i in range(num_conv_layers):
+            self.conv_model.add(
+                keras.layers.Conv2D(
+                    num_output_channels[i],
+                    kernel_size,
+                    stride,
+                    padding="valid",
+                    use_bias=False,
+                    activation="relu",
+                    kernel_initializer="he_normal",
+                )
+            )
+            self.conv_model.add(
+                keras.layers.Conv2D(
+                    num_output_channels[i],
+                    kernel_size,
+                    stride,
+                    padding="valid",
+                    use_bias=False,
+                    activation="relu",
+                    kernel_initializer="he_normal",
+                )
+            )
+            self.conv_model.add(MaxBlurPooling2D(pool_size=2, filter_size=3))
+        self.conv_model.add(keras.layers.LayerNormalization(epsilon=1e-5))
+
+    def call(self, images):
+        outputs = self.conv_model(images)
+        b, h, w, c = keras.ops.shape(outputs)
+        return keras.ops.reshape(outputs, (b, h * w, c))
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "kernel_size": self.kernel_size,
+                "stride": self.stride,
+                "num_conv_layers": self.num_conv_layers,
+                "num_output_channels": self.num_output_channels,
+            }
+        )
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class PositionEmbedding(keras.layers.Layer):
+    def __init__(
+        self,
+        sequence_length,
+        initializer="glorot_uniform",
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if sequence_length is None:
+            raise ValueError("`sequence_length` must be an Integer, received `None`.")
+        self.sequence_length = int(sequence_length)
+        self.initializer = keras.initializers.get(initializer)
+
+    def build(self, input_shape):
+        feature_size = input_shape[-1]
+        self.position_embeddings = self.add_weight(
+            name="embeddings",
+            shape=[self.sequence_length, feature_size],
+            initializer=self.initializer,
+            trainable=True,
+        )
+
+        super().build(input_shape)
+
+    def call(self, inputs, start_index=0):
+        shape = keras.ops.shape(inputs)
+        feature_length = shape[-1]
+        sequence_length = shape[-2]
+        # trim to match the length of the input sequence, which might be less than the
+        # sequence_length of the layer.
+        position_embeddings = keras.ops.convert_to_tensor(self.position_embeddings)
+        position_embeddings = keras.ops.slice(
+            position_embeddings,
+            (start_index, 0),
+            (sequence_length, feature_length),
+        )
+        return keras.ops.broadcast_to(position_embeddings, shape)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "sequence_length": self.sequence_length,
+                "initializer": keras.initializers.serialize(self.initializer),
+            }
+        )
+        return config
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class TokenReducer(keras.layers.Layer):
+    def __init__(self, num_tokens, projection_dim, num_heads=2, **kwargs):
+        super().__init__(**kwargs)
+        self.num_tokens = num_tokens
+        self.projection_dim = projection_dim
+        self.num_heads = num_heads
+        self.attn = keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim)
+
+    def build(self, input_shape):
+        self.query_tokens = self.add_weight(
+            shape=(1, self.num_tokens, self.projection_dim),
+            initializer="random_normal",
+            trainable=True,
+            name="query_tokens",
+        )
+        # input_shape is assumed to be (batch_size, seq_length, projection_dim)
+        seq_length = input_shape[1]
+        if seq_length is None:
+            raise ValueError("Input sequence length must be defined (not None).")
+        self.attn.build(
+            query_shape=(1, self.num_tokens, self.projection_dim),
+            value_shape=(1, seq_length, self.projection_dim),
+        )
+        super().build(input_shape)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0], self.num_tokens, self.projection_dim
+
+    def call(self, inputs):
+        """
+        inputs: Tensor of shape (batch_size, seq_length, projection_dim)
+        returns: Tensor of shape (batch_size, num_tokens, projection_dim)
+        """
+        batch_size = keras.ops.shape(inputs)[0]
+        # Tile the learned query tokens for each example in the batch.
+        query_tokens = keras.ops.tile(self.query_tokens, [batch_size, 1, 1])
+        # Perform cross-attention where the queries are the learned tokens and keys/values are the
+        # input tokens.
+        reduced_tokens = self.attn(query=query_tokens, key=inputs, value=inputs)
+        return reduced_tokens
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update(
+            {
+                "num_tokens": self.num_tokens,
+                "projection_dim": self.projection_dim,
+                "num_heads": self.num_heads,
+            }
+        )
+        return cfg
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class StochasticDepth(keras.layers.Layer):
+    def __init__(self, drop_prob: float, **kwargs):
+        super().__init__(**kwargs)
+        self.drop_prob = drop_prob
+        self.seed_generator = keras.random.SeedGenerator(1337)
+
+    def call(self, x, training=None):
+        if training:
+            keep_prob = 1 - self.drop_prob
+            shape = (keras.ops.shape(x)[0],) + (1,) * (len(x.shape) - 1)
+            random_tensor = keep_prob + keras.random.uniform(
+                shape, 0, 1, seed=self.seed_generator, dtype=x.dtype
+            )
+            random_tensor = keras.ops.floor(random_tensor)
+            return (x / keep_prob) * random_tensor
+        return x
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update({"drop_prob": self.drop_prob})
+        return cfg
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class MLP(keras.layers.Layer):
+    def __init__(
+        self,
+        hidden_units,
+        dropout_rate: float = 0.1,
+        activation: str = "gelu",
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.hidden_units = list(hidden_units)
+        self.dropout_rate = dropout_rate
+        self.activation = activation
+
+        self.dense_layers = []
+        self.dropout_layers = []
+        for units in self.hidden_units:
+            self.dense_layers.append(keras.layers.Dense(units, activation=self.activation))
+            self.dropout_layers.append(keras.layers.Dropout(self.dropout_rate))
+
+    def call(self, inputs, training=None):
+        x = inputs
+        for dense, drop in zip(self.dense_layers, self.dropout_layers):
+            x = dense(x)
+            x = drop(x, training=training)
+        return x
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update(
+            {
+                "hidden_units": self.hidden_units,
+                "dropout_rate": self.dropout_rate,
+                "activation": self.activation,
+            }
+        )
+        return cfg
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class VocabularyProjection(keras.layers.Layer):
+    def __init__(self, vocabulary_size: int, dropout_rate: float | None = None, **kwargs):
+        super().__init__(**kwargs)
+        self.vocabulary_size = vocabulary_size
+        self.dropout_rate = dropout_rate
+        self.dropout = (
+            keras.layers.Dropout(self.dropout_rate) if self.dropout_rate is not None else None
+        )
+        self.classifier = keras.layers.Dense(self.vocabulary_size, activation="softmax")
+
+    def call(self, x, training=None):
+        if self.dropout is not None:
+            x = self.dropout(x, training=training)
+        return self.classifier(x)
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update({"vocabulary_size": self.vocabulary_size, "dropout_rate": self.dropout_rate})
+        return cfg
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class TransformerBlock(keras.layers.Layer):
+    def __init__(
+        self,
+        projection_dim: int,
+        num_heads: int,
+        mlp_units: Sequence[int],
+        attention_dropout: float,
+        mlp_dropout: float,
+        drop_path_rate: float,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.norm1 = keras.layers.LayerNormalization(epsilon=1e-5)
+        self.attn = keras.layers.MultiHeadAttention(
+            num_heads=num_heads, key_dim=projection_dim, dropout=attention_dropout
+        )
+        self.drop1 = StochasticDepth(drop_path_rate)
+        self.norm2 = keras.layers.LayerNormalization(epsilon=1e-5)
+        self.mlp = MLP(hidden_units=mlp_units, dropout_rate=mlp_dropout)
+        self.drop2 = StochasticDepth(drop_path_rate)
+
+    def call(self, x, training=None):
+        # 1. MHA + residual
+        y = self.norm1(x)
+        y = self.attn(y, y)
+        y = self.drop1(y, training=training)
+        x = keras.layers.Add()([x, y])
+
+        # 2. MLP + residual
+        y = self.norm2(x)
+        y = self.mlp(y, training=training)
+        y = self.drop2(y, training=training)
+        return keras.layers.Add()([x, y])
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg.update(
+            {
+                "projection_dim": self.attn.key_dim,
+                "num_heads": self.attn.num_heads,
+                "attention_dropout": self.attn.dropout,
+                "drop_path_rate": self.drop1.drop_prob,
+            }
+        )
         return cfg
