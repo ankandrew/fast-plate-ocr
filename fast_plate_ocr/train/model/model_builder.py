@@ -17,6 +17,8 @@ PaddingTypeStr: TypeAlias = Literal["valid", "same"]
 """Padding modes supported by Keras convolution and pooling layers."""
 PositiveIntTuple: TypeAlias = PositiveInt | tuple[PositiveInt, PositiveInt]
 """A single positive integer or a tuple of two positive integers, usually used for sizes/strides."""
+NormalizationStr: TypeAlias = Literal["layer_norm", "rms_norm", "dyt"]
+"""Available normalization layers."""
 
 ActivationStr: TypeAlias = Literal[
     "celu",
@@ -287,7 +289,7 @@ class _DyT(BaseModel):
         return DyT(alpha_init_value=self.alpha_init_value)
 
 
-LayerSpec = Annotated[
+LayerConfig = Annotated[
     _Activation
     | _Conv2D
     | _CoordConv2D
@@ -310,7 +312,8 @@ LayerSpec = Annotated[
 
 
 class _CCTTokenizerConfig(BaseModel):
-    blocks: list[LayerSpec]
+    blocks: list[LayerConfig]
+    positional_emb: bool = True
 
 
 class _CCTTransformerConfig(BaseModel):
@@ -324,7 +327,7 @@ class _CCTTransformerConfig(BaseModel):
     mlp_dropout: UnitFloat = 0.1
     head_mlp_dropout: UnitFloat = 0.2
     token_reducer_heads: PositiveInt = 2
-    positional_emb: bool = True
+    normalization: NormalizationStr = "layer_norm"
 
 
 class CCTModelConfig(BaseModel):
