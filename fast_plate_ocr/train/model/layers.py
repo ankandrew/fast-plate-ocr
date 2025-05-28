@@ -236,6 +236,16 @@ class DyT(keras.layers.Layer):
         return cfg
 
 
+def build_norm_layer(norm_type) -> keras.layers.Layer:
+    if norm_type == "layer_norm":
+        return keras.layers.LayerNormalization(epsilon=1e-5)
+    if norm_type == "rms_norm":
+        return keras.layers.RMSNormalization(epsilon=1e-5)
+    if norm_type == "dyt":
+        return DyT(alpha_init_value=0.5)
+    raise ValueError(f"Unknown norm_type {norm_type}")
+
+
 @keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class CCTTokenizer(keras.layers.Layer):
     def __init__(
@@ -244,6 +254,7 @@ class CCTTokenizer(keras.layers.Layer):
         stride=1,
         num_conv_layers=2,
         num_output_channels=(64, 128),
+        norm_type: str | None = "layer_norm",
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -277,7 +288,7 @@ class CCTTokenizer(keras.layers.Layer):
                 )
             )
             self.conv_model.add(MaxBlurPooling2D(pool_size=2, filter_size=3))
-        self.conv_model.add(keras.layers.LayerNormalization(epsilon=1e-5))
+        self.conv_model.add(build_norm_layer(norm_type))
 
     def call(self, images):
         outputs = self.conv_model(images)
@@ -292,6 +303,7 @@ class CCTTokenizer(keras.layers.Layer):
                 "stride": self.stride,
                 "num_conv_layers": self.num_conv_layers,
                 "num_output_channels": self.num_output_channels,
+                "norm_type": self.norm_type,
             }
         )
         return config
@@ -503,15 +515,16 @@ class TransformerBlock(keras.layers.Layer):
         attention_dropout: float,
         mlp_dropout: float,
         drop_path_rate: float,
+        norm_type: str | None = "layer_norm",
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.norm1 = keras.layers.LayerNormalization(epsilon=1e-5)
+        self.norm1 = build_norm_layer(norm_type)
         self.attn = keras.layers.MultiHeadAttention(
             num_heads=num_heads, key_dim=projection_dim, dropout=attention_dropout
         )
         self.drop1 = StochasticDepth(drop_path_rate)
-        self.norm2 = keras.layers.LayerNormalization(epsilon=1e-5)
+        self.norm2 = build_norm_layer(norm_type)
         self.mlp = MLP(hidden_units=mlp_units, dropout_rate=mlp_dropout)
         self.drop2 = StochasticDepth(drop_path_rate)
 
