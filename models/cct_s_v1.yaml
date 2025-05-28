@@ -1,0 +1,35 @@
+rescaling:
+  scale: 0.00392156862745098
+  offset: 0.0
+
+tokenizer:
+  positional_emb: true
+  blocks:
+    # Conv-stem blocks
+    - { layer: Conv2D, filters: 32, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: Conv2D, filters: 32, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
+
+    - { layer: Conv2D, filters: 64, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: Conv2D, filters: 64, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
+
+    - { layer: Conv2D, filters: 96, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: Conv2D, filters: 96, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
+
+    # Layer-norm
+    - { layer: LayerNorm, epsilon: 1.0e-5 }
+
+transformer_encoder:
+  layers: 2
+  heads: 2
+  projection_dim: 96
+  units: [ 96, 96 ]
+  activation: gelu
+  stochastic_depth: 0.1
+  attention_dropout: 0.1
+  mlp_dropout: 0.1
+  head_mlp_dropout: 0.2
+  token_reducer_heads: 2
+  normalization: layer_norm
