@@ -316,7 +316,7 @@ class _CCTTokenizerConfig(BaseModel):
     positional_emb: bool = True
 
 
-class _CCTTransformerConfig(BaseModel):
+class _CCTTransformerEncoderConfig(BaseModel):
     layers: PositiveInt
     heads: PositiveInt
     projection_dim: PositiveInt
@@ -333,4 +333,4 @@ class _CCTTransformerConfig(BaseModel):
 class CCTModelConfig(BaseModel):
     rescaling: _Rescaling
     tokenizer: _CCTTokenizerConfig
-    transformer: _CCTTransformerConfig
+    transformer_encoder: _CCTTransformerEncoderConfig
