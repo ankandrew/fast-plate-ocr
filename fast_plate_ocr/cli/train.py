@@ -282,7 +282,7 @@ def train(
 
     # Train
     model = create_cct_model(
-        input_shape=(config.img_height, config.img_width, 1),
+        input_shape=(config.img_height, config.img_width, config.num_channels),
         max_plate_slots=config.max_plate_slots,
         vocabulary_size=config.vocabulary_size,
         transformer_layers=3,
