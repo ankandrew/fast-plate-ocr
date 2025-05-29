@@ -19,7 +19,7 @@ tokenizer:
     - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
 
     # Layer-norm
-    - { layer: LayerNorm, epsilon: 1.0e-5 }
+#    - { layer: LayerNorm, epsilon: 1.0e-5 }
 
 transformer_encoder:
   layers: 2
@@ -32,4 +32,4 @@ transformer_encoder:
   mlp_dropout: 0.1
   head_mlp_dropout: 0.2
   token_reducer_heads: 2
-  normalization: layer_norm
+  normalization: dyt
