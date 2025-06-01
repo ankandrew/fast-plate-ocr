@@ -177,9 +177,12 @@ class _MaxBlurPooling2D(BaseModel):
     layer: Literal["MaxBlurPooling2D"]
     pool_size: PositiveInt = 2
     filter_size: PositiveInt = 3
+    padding: PaddingTypeStr = "same"
 
     def to_keras_layer(self) -> keras.layers.Layer:
-        return MaxBlurPooling2D(pool_size=self.pool_size, filter_size=self.filter_size)
+        return MaxBlurPooling2D(
+            pool_size=self.pool_size, filter_size=self.filter_size, padding=self.padding
+        )
 
 
 class _MaxPooling2D(BaseModel):
