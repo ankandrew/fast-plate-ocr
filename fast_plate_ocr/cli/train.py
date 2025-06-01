@@ -25,7 +25,7 @@ from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
 from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
 from fast_plate_ocr.train.model.cct_model import create_cct_model
 from fast_plate_ocr.train.model.config import load_config_from_yaml
-from fast_plate_ocr.train.model.loss import cce_loss
+from fast_plate_ocr.train.model.loss import cce_loss, focal_cce_loss
 from fast_plate_ocr.train.model.metric import (
     cat_acc_metric,
     plate_acc_metric,
@@ -107,8 +107,29 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
     help="Gradient clipping norm value for the AdamW optimizer.",
 )
 @click.option(
+    "--loss",
+    default="cce",
+    type=click.Choice(["cce", "focal_cce"], case_sensitive=False),
+    show_default=True,
+    help="Loss function to use during training.",
+)
+@click.option(
+    "--focal-alpha",
+    default=0.25,
+    show_default=True,
+    type=float,
+    help="Alpha parameter for focal loss. Applicable only when '--loss' is 'focal_cce'.",
+)
+@click.option(
+    "--focal-gamma",
+    default=2.0,
+    show_default=True,
+    type=float,
+    help="Gamma parameter for focal loss. Applicable only when '--loss' is 'focal_cce'.",
+)
+@click.option(
     "--label-smoothing",
-    default=0.05,
+    default=0.01,
     show_default=True,
     type=float,
     help="Amount of label smoothing to apply.",
@@ -227,6 +248,9 @@ def train(
     warmup_fraction: float,
     weight_decay: float,
     clipnorm: float,
+    loss: str,
+    focal_alpha: float,
+    focal_gamma: float,
     label_smoothing: float,
     mixed_precision_policy: str | None,
     batch_size: int,
@@ -313,8 +337,20 @@ def train(
         var_names=[name.strip() for name in wd_ignore.split(",") if name.strip()]
     )
 
+    if loss == "cce":
+        loss_fn = cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing)
+    elif loss == "focal":
+        loss_fn = focal_cce_loss(
+            vocabulary_size=config.vocabulary_size,
+            alpha=focal_alpha,
+            gamma=focal_gamma,
+            label_smoothing=label_smoothing,
+        )
+    else:
+        raise ValueError(f"Unsupported loss type: {loss}")
+
     model.compile(
-        loss=cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing),
+        loss=loss_fn,
         jit_compile=False,
         optimizer=optimizer,
         metrics=[

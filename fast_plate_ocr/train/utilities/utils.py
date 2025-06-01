@@ -11,7 +11,9 @@ import keras
 import numpy as np
 import numpy.typing as npt
 
-from fast_plate_ocr.train.model.custom import (
+from fast_plate_ocr.core.process import read_and_resize_plate_image
+from fast_plate_ocr.train.model.loss import cce_loss, focal_cce_loss
+from fast_plate_ocr.train.model.metric import (
     cat_acc_metric,
     cce_loss,
     plate_acc_metric,
@@ -61,6 +63,7 @@ def load_keras_model(
     """
     custom_objects = {
         "cce": cce_loss(vocabulary_size=vocab_size),
+        "focal_cce": focal_cce_loss(vocabulary_size=vocab_size),
         "cat_acc": cat_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
         "plate_acc": plate_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
         "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
