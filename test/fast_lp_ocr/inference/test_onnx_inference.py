@@ -20,13 +20,17 @@ def onnx_model_fixture() -> Iterator[LicensePlateRecognizer]:
 @pytest.mark.parametrize(
     "input_image, expected_result",
     [
-        # Single image path
+        # Single image path (str)
         (str(ASSETS_DIR / "test_plate_1.png"), 1),
+        # Single image path (Path)
+        (ASSETS_DIR / "test_plate_1.png", 1),
         # Multiple Image paths
         (
             [str(ASSETS_DIR / "test_plate_1.png"), str(ASSETS_DIR / "test_plate_2.png")],
             2,
         ),
+        # Multiple Image paths (Path)
+        ([ASSETS_DIR / "test_plate_1.png", ASSETS_DIR / "test_plate_2.png"], 2),
         # NumPy array with single image
         (cv2.imread(str(ASSETS_DIR / "test_plate_1.png"), cv2.IMREAD_GRAYSCALE), 1),
         # NumPy array with batch images

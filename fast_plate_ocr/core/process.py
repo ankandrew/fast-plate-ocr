@@ -7,7 +7,12 @@ import os
 import cv2
 import numpy as np
 
-from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PaddingColor
+from fast_plate_ocr.core.types import (
+    ImageColorMode,
+    ImageInterpolation,
+    PaddingColor,
+    PathLike,
+)
 
 INTERPOLATION_MAP: dict[ImageInterpolation, int] = {
     "nearest": cv2.INTER_NEAREST,
@@ -19,7 +24,7 @@ INTERPOLATION_MAP: dict[ImageInterpolation, int] = {
 
 
 def read_plate_image(
-    image_path: str,
+    image_path: PathLike,
     image_color_mode: ImageColorMode = "grayscale",
 ) -> np.ndarray:
     """
@@ -32,6 +37,8 @@ def read_plate_image(
     :raises FileNotFoundError: If the file does not exist.
     :raises ValueError: If the image cannot be decoded.
     """
+    image_path = str(image_path)
+
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 
@@ -123,7 +130,7 @@ def resize_image(
 
 
 def read_and_resize_plate_image(
-    image_path: str,
+    image_path: PathLike,
     img_height: int,
     img_width: int,
     image_color_mode: ImageColorMode = "grayscale",
