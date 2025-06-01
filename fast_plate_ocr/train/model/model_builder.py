@@ -1,9 +1,11 @@
 from typing import Annotated, Literal, TypeAlias
 
 import keras
+import yaml
 from keras.src.layers import RMSNormalization
 from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 
+from fast_plate_ocr.core.types import PathLike
 from fast_plate_ocr.train.model.layers import (
     CoordConv2D,
     DyT,
@@ -334,3 +336,12 @@ class CCTModelConfig(BaseModel):
     rescaling: _Rescaling
     tokenizer: _CCTTokenizerConfig
     transformer_encoder: _CCTTransformerEncoderConfig
+
+    @classmethod
+    def from_yaml(cls, yaml_file_path: PathLike) -> "CCTModelConfig":
+        """
+        Load, parse and validate a YAML file that describes the CCT model architecture.
+        """
+        with open(yaml_file_path, encoding="utf-8") as f_in:
+            yaml_content = yaml.safe_load(f_in)
+        return cls(**yaml_content)

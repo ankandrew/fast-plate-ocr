@@ -2,29 +2,22 @@
 Test OCR models module.
 """
 
+from pathlib import Path
+
 import pytest
-from keras import Input
 
-from fast_plate_ocr.train.model import models
+from fast_plate_ocr.train.model.model_builder import CCTModelConfig
+from test import PROJECT_ROOT_DIR
 
+PROJECT_MODELS_CONFIG = [
+    f for f in PROJECT_ROOT_DIR.joinpath("models").iterdir() if f.suffix in (".yaml", ".yml")
+]
+"""Default models configs present in the project."""
 
-@pytest.mark.parametrize(
-    "max_plates_slots, vocabulary_size, expected_hidden_units", [(7, 37, 7 * 37)]
-)
-def test_head(max_plates_slots: int, vocabulary_size: int, expected_hidden_units: int) -> None:
-    x = Input((70, 140, 1))
-    out_tensor = models.head(x, max_plates_slots, vocabulary_size)
-    actual_hidden_units = out_tensor.shape[-1]
-    assert actual_hidden_units == expected_hidden_units
+CCT_MODEL_CONFIG = [f for f in PROJECT_MODELS_CONFIG if f.name.startswith("cct")]
+"""Default CCT models configs present in the project."""
 
 
-@pytest.mark.parametrize(
-    "max_plates_slots, vocabulary_size, expected_hidden_units", [(7, 37, 7 * 37)]
-)
-def test_head_no_fc(
-    max_plates_slots: int, vocabulary_size: int, expected_hidden_units: int
-) -> None:
-    x = Input((70, 140, 1))
-    out_tensor = models.head_no_fc(x, max_plates_slots, vocabulary_size)
-    actual_hidden_units = out_tensor.shape[1] * out_tensor.shape[2]
-    assert actual_hidden_units == expected_hidden_units
+@pytest.mark.parametrize("file_path", CCT_MODEL_CONFIG)
+def test_cct_models_yaml_configs_are_valid(file_path: Path) -> None:
+    CCTModelConfig.from_yaml(file_path)
