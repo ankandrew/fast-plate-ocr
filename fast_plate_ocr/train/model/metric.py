@@ -2,11 +2,9 @@
 Evaluation metrics for license plate recognition models.
 """
 
-import keras
 from keras.api import metrics, ops
 
 
-@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def cat_acc_metric(max_plate_slots: int, vocabulary_size: int):
     """
     Categorical accuracy metric.
@@ -25,7 +23,6 @@ def cat_acc_metric(max_plate_slots: int, vocabulary_size: int):
     return cat_acc
 
 
-@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def plate_acc_metric(max_plate_slots: int, vocabulary_size: int):
     """
     Plate accuracy metric.
@@ -46,7 +43,6 @@ def plate_acc_metric(max_plate_slots: int, vocabulary_size: int):
     return plate_acc
 
 
-@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def top_3_k_metric(vocabulary_size: int):
     """
     Top 3 K categorical accuracy metric.
@@ -66,7 +62,6 @@ def top_3_k_metric(vocabulary_size: int):
     return top_3_k
 
 
-@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 def plate_len_acc_metric(
     max_plate_slots: int,
     vocabulary_size: int,
