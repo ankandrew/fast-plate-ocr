@@ -98,10 +98,11 @@ def _build_binomial_filter(filter_size: int) -> np.ndarray:
 
 @keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class MaxBlurPooling2D(keras.layers.Layer):
-    def __init__(self, pool_size: int = 2, filter_size: int = 3, **kwargs):
+    def __init__(self, pool_size: int = 2, filter_size: int = 3, padding: str = "same", **kwargs):
         self.pool_size = pool_size
         self.blur_kernel = None
         self.filter_size = filter_size
+        self.padding = padding
 
         super().__init__(**kwargs)
 
@@ -128,10 +129,10 @@ class MaxBlurPooling2D(keras.layers.Layer):
             x,
             (self.pool_size, self.pool_size),
             strides=(1, 1),
-            padding="same",
+            padding=self.padding,
         )
         x = ops.depthwise_conv(
-            x, self.blur_kernel, padding="same", strides=(self.pool_size, self.pool_size)
+            x, self.blur_kernel, padding=self.padding, strides=(self.pool_size, self.pool_size)
         )
 
         return x
@@ -146,7 +147,13 @@ class MaxBlurPooling2D(keras.layers.Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({"pool_size": self.pool_size, "filter_size": self.filter_size})
+        config.update(
+            {
+                "pool_size": self.pool_size,
+                "filter_size": self.filter_size,
+                "padding": self.padding,
+            }
+        )
         return config
 
 
@@ -244,73 +251,6 @@ def build_norm_layer(norm_type) -> keras.layers.Layer:
     if norm_type == "dyt":
         return DyT(alpha_init_value=0.5)
     raise ValueError(f"Unknown norm_type {norm_type}")
-
-
-@keras.saving.register_keras_serializable(package="fast_plate_ocr")
-class CCTTokenizer(keras.layers.Layer):
-    def __init__(
-        self,
-        kernel_size=3,
-        stride=1,
-        num_conv_layers=2,
-        num_output_channels=(64, 128),
-        norm_type: str | None = "layer_norm",
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.num_conv_layers = num_conv_layers
-        self.num_output_channels = list(num_output_channels)
-
-        self.conv_model = keras.Sequential(name="conv_stem")
-        for i in range(num_conv_layers):
-            self.conv_model.add(
-                keras.layers.Conv2D(
-                    num_output_channels[i],
-                    kernel_size,
-                    stride,
-                    padding="valid",
-                    use_bias=False,
-                    activation="relu",
-                    kernel_initializer="he_normal",
-                )
-            )
-            self.conv_model.add(
-                keras.layers.Conv2D(
-                    num_output_channels[i],
-                    kernel_size,
-                    stride,
-                    padding="valid",
-                    use_bias=False,
-                    activation="relu",
-                    kernel_initializer="he_normal",
-                )
-            )
-            self.conv_model.add(MaxBlurPooling2D(pool_size=2, filter_size=3))
-        self.conv_model.add(build_norm_layer(norm_type))
-
-    def call(self, images):
-        outputs = self.conv_model(images)
-        b, h, w, c = keras.ops.shape(outputs)
-        return keras.ops.reshape(outputs, (b, h * w, c))
-
-    def get_config(self):
-        config = super().get_config()
-        config.update(
-            {
-                "kernel_size": self.kernel_size,
-                "stride": self.stride,
-                "num_conv_layers": self.num_conv_layers,
-                "num_output_channels": self.num_output_channels,
-                "norm_type": self.norm_type,
-            }
-        )
-        return config
-
-    @classmethod
-    def from_config(cls, config):
-        return cls(**config)
 
 
 @keras.saving.register_keras_serializable(package="fast_plate_ocr")
