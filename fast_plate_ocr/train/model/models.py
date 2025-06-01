@@ -17,7 +17,7 @@ from fast_plate_ocr.train.model.layers import (
 from fast_plate_ocr.train.model.model_builder import CCTModelConfig, LayerConfig
 
 
-def build_stem_from_config(specs: Sequence[LayerConfig]) -> keras.Sequential:
+def _build_stem_from_config(specs: Sequence[LayerConfig]) -> keras.Sequential:
     return keras.Sequential([spec.to_keras_layer() for spec in specs], name="conv_stem")
 
 
@@ -32,7 +32,7 @@ def build_cct_model(
 
     # 2. Rescale & conv stem
     data_rescale = cfg.rescaling.to_keras_layer()
-    x = build_stem_from_config(cfg.tokenizer.blocks)(data_rescale(inputs))
+    x = _build_stem_from_config(cfg.tokenizer.blocks)(data_rescale(inputs))
 
     # 3. Flatten and add positional embedding (if applicable)
     h, w = x.shape[1:3]  # static dims after conv stem
