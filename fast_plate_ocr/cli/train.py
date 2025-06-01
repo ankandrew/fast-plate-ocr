@@ -371,6 +371,7 @@ def train(
 
     output_dir /= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     output_dir.mkdir(parents=True, exist_ok=True)
+    model_file_path = output_dir / "ckpt-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
     # Save params and config used for training
     shutil.copy(config_file, output_dir / "config.yaml")
@@ -398,9 +399,10 @@ def train(
         # weights when it didn't manage to EarlyStop but finished all epochs
         ModelCheckpoint(output_dir / "last.keras", save_weights_only=False, save_best_only=False),
         ModelCheckpoint(
-            output_dir / "best.keras",
+            model_file_path,
             monitor=early_stopping_metric,
             mode=EVAL_METRICS[early_stopping_metric],
+            save_weights_only=False,
             save_best_only=True,
             verbose=1,
         ),
