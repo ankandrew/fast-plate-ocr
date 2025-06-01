@@ -15,7 +15,7 @@ from pydantic import (
     model_validator,
 )
 
-from fast_plate_ocr.core.process import ImageColorMode, ImageInterpolation
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation
 
 UInt8: TypeAlias = Annotated[int, annotated_types.Ge(0), annotated_types.Le(255)]
 """

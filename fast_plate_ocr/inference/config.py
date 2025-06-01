@@ -7,7 +7,7 @@ from os import PathLike
 
 import yaml
 
-from fast_plate_ocr.core.process import ImageColorMode, ImageInterpolation
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation
 
 # pylint: disable=duplicate-code
 

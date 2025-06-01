@@ -3,18 +3,11 @@ Utility functions for processing model input/output.
 """
 
 import os
-from typing import Literal, TypeAlias
 
 import cv2
 import numpy as np
 
-ImageInterpolation: TypeAlias = Literal["nearest", "linear", "cubic", "area", "lanczos4"]
-"""Interpolation method used for resizing the input image."""
-ImageColorMode: TypeAlias = Literal["grayscale", "rgb"]
-"""Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input."""
-PaddingColor: TypeAlias = tuple[int, int, int] | int
-"""Padding colour for letterboxing (only used when keeping image aspect ratio)."""
-
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PaddingColor
 
 INTERPOLATION_MAP: dict[ImageInterpolation, int] = {
     "nearest": cv2.INTER_NEAREST,
