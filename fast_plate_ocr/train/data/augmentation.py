@@ -5,6 +5,8 @@ Augmentations used for training the OCR model.
 import albumentations as A
 import cv2
 
+from fast_plate_ocr.core.types import ImageColorMode
+
 BORDER_COLOR_BLACK: tuple[int, int, int] = (0, 0, 0)
 
 TRAIN_AUGMENTATION = A.Compose(
@@ -34,4 +36,65 @@ TRAIN_AUGMENTATION = A.Compose(
         ),
     ]
 )
-"""Training augmentations recipe."""
+"""Default training augmentations recipe for grayscale images."""
+
+
+TRAIN_AUGMENTATION_RGB = A.Compose(
+    [
+        A.ShiftScaleRotate(
+            shift_limit=0.02,
+            scale_limit=(-0.3, 0.075),
+            rotate_limit=10,
+            border_mode=cv2.BORDER_CONSTANT,
+            fill=BORDER_COLOR_BLACK,
+            p=0.75,
+        ),
+        A.Perspective(scale=(0.03, 0.06), p=0.20),
+        A.RandomBrightnessContrast(brightness_limit=0.10, contrast_limit=0.10, p=0.5),
+        A.OneOf(
+            [
+                A.HueSaturationValue(
+                    hue_shift_limit=5, sat_shift_limit=10, val_shift_limit=10, p=0.7
+                ),
+                A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3),
+            ],
+            p=0.35,
+        ),
+        A.RandomGamma(gamma_limit=(90, 110), p=0.20),
+        A.ToGray(p=0.05),
+        A.OneOf(
+            [
+                A.GaussianBlur(sigma_limit=(0.2, 0.5), p=0.5),
+                A.MotionBlur(blur_limit=(3, 3), p=0.5),
+            ],
+            p=0.25,
+        ),
+        A.OneOf(
+            [
+                A.GaussNoise(std_range=(0.01, 0.03), p=0.2),
+                A.MultiplicativeNoise(multiplier=(0.98, 1.02), p=0.1),
+                A.ISONoise(intensity=(0.005, 0.02), p=0.1),
+                A.ImageCompression(quality_range=(50, 90), p=0.1),
+            ],
+            p=0.30,
+        ),
+        A.OneOf(
+            [
+                A.CoarseDropout(
+                    num_holes_range=(1, 11),
+                    hole_height_range=(1, 5),
+                    hole_width_range=(1, 5),
+                    p=0.3,
+                ),
+                A.PixelDropout(dropout_prob=0.02, p=0.3),
+                A.GridDropout(ratio=0.3, fill="random", p=0.3),
+            ],
+            p=0.5,
+        ),
+    ]
+)
+"""Default training augmentations recipe for RGB images."""
+
+
+def default_augmentation(img_color_mode: ImageColorMode) -> A.Compose:
+    return TRAIN_AUGMENTATION if img_color_mode == "grayscale" else TRAIN_AUGMENTATION_RGB

@@ -21,7 +21,9 @@ from keras.src.callbacks import (
 from keras.src.optimizers import AdamW
 
 from fast_plate_ocr.cli.utils import print_params, print_train_details
-from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
+from fast_plate_ocr.train.data.augmentation import (
+    default_augmentation,
+)
 from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
 from fast_plate_ocr.train.model.cct_model import create_cct_model
 from fast_plate_ocr.train.model.config import load_config_from_yaml
@@ -277,10 +279,12 @@ def train(
     if mixed_precision_policy is not None:
         keras.mixed_precision.set_global_policy(mixed_precision_policy)
 
-    train_augmentation = (
-        A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
-    )
     config = load_config_from_yaml(config_file)
+    train_augmentation = (
+        A.load(augmentation_path, data_format="yaml")
+        if augmentation_path
+        else default_augmentation(img_color_mode=config)
+    )
     print_train_details(train_augmentation, config.model_dump())
 
     train_dataset = PlateRecognitionPyDataset(
