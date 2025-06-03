@@ -336,9 +336,7 @@ To start contributing or to begin development, you can follow these steps:
 
 If you want to train a model and share it, we'll add it to the HUB 🚀
 
-If you look to contribute to the repo, some cool things are in the backlog:
+If you look to contribute to the repo, some features that are not yet implemented:
 
-- [ ] Implement [STN](https://arxiv.org/abs/1506.02025) using Keras 3 (With `keras.ops`)
-- [ ] Implement [SVTRv2](https://arxiv.org/abs/2411.15858).
-- [ ] Implement CTC loss function, so we can choose that or CE loss.
+- [ ] Add char confusion matrix callback
 - [ ] Extra head for country recognition, making it configurable.
