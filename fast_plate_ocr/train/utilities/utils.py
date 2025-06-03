@@ -4,7 +4,10 @@ Utility functions module
 
 import logging
 import pathlib
+import pkgutil
 import random
+from collections.abc import Iterator
+from importlib import import_module
 
 import cv2
 import keras
@@ -15,7 +18,6 @@ from fast_plate_ocr.core.process import read_and_resize_plate_image
 from fast_plate_ocr.train.model.loss import cce_loss, focal_cce_loss
 from fast_plate_ocr.train.model.metric import (
     cat_acc_metric,
-    cce_loss,
     plate_acc_metric,
     top_3_k_metric,
 )
@@ -38,19 +40,13 @@ def target_transform(
     return encoded_plate
 
 
-def read_plate_image(image_path: str, img_height: int, img_width: int) -> npt.NDArray:
-    """
-    Read and resize a license plate image.
-
-    :param image_path: The path to the license plate image.
-    :param img_height: The desired height of the resized image.
-    :param img_width: The desired width of the resized image.
-    :return: The resized license plate image as a NumPy array.
-    """
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    img = cv2.resize(img, (img_width, img_height), interpolation=cv2.INTER_LINEAR)
-    img = np.expand_dims(img, -1)
-    return img
+def _register_custom_keras():
+    base_pkg = "fast_plate_ocr.train.model"
+    for _, name, _ in pkgutil.walk_packages(
+        import_module(base_pkg).__path__, prefix=f"{base_pkg}."
+    ):
+        if any(m in name for m in ("layers",)):
+            import_module(name)
 
 
 def load_keras_model(
@@ -61,12 +57,16 @@ def load_keras_model(
     """
     Utility helper function to load the keras OCR model.
     """
+    _register_custom_keras()
     custom_objects = {
         "cce": cce_loss(vocabulary_size=vocab_size),
         "focal_cce": focal_cce_loss(vocabulary_size=vocab_size),
         "cat_acc": cat_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
         "plate_acc": plate_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
         "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
+        "plate_len_acc": plate_acc_metric(
+            max_plate_slots=max_plate_slots, vocabulary_size=vocab_size
+        ),
     }
     model = keras.models.load_model(model_path, custom_objects=custom_objects)
     return model
@@ -82,7 +82,7 @@ def load_images_from_folder(
     height: int,
     shuffle: bool = False,
     limit: int | None = None,
-) -> list[npt.NDArray]:
+) -> Iterator[npt.NDArray]:
     """
     Return all images read from a directory. This uses the same read function used during training.
     """
@@ -93,8 +93,9 @@ def load_images_from_folder(
         image_paths = image_paths[:limit]
     if shuffle:
         random.shuffle(image_paths)
-    images = [read_plate_image(i, img_height=height, img_width=width) for i in image_paths]
-    return images
+    yield from (
+        read_and_resize_plate_image(i, img_height=height, img_width=width) for i in image_paths
+    )
 
 
 def postprocess_model_output(
