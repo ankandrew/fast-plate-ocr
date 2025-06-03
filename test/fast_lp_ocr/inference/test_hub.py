@@ -19,6 +19,6 @@ def test_model_and_config_urls(model_name):
 
     for url in [model_url, config_url]:
         response = requests.head(url, timeout=5, allow_redirects=True)
-        assert (
-            response.status_code == HTTPStatus.OK
-        ), f"URL {url} is not accessible, got {response.status_code}"
+        assert response.status_code == HTTPStatus.OK, (
+            f"URL {url} is not accessible, got {response.status_code}"
+        )

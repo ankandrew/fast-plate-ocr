@@ -37,9 +37,9 @@ class PlateRecognitionPyDataset(PyDataset):
             os.path.dirname(os.path.realpath(annotations_file)) + os.sep + annotations["image_path"]
         )
         # Check that plate lengths do not exceed max_plate_slots.
-        assert (
-            annotations["plate_text"].str.len() <= config.max_plate_slots
-        ).all(), "Plates are longer than max_plate_slots specified param. Change the parameter."
+        assert (annotations["plate_text"].str.len() <= config.max_plate_slots).all(), (
+            "Plates are longer than max_plate_slots specified param. Change the parameter."
+        )
         # Convert the dataframe to a NumPy array
         self.annotations = annotations.to_numpy()
 
