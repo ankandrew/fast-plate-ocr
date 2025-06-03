@@ -73,7 +73,7 @@ def _make_output_path(
     return out_file
 
 
-@requires("onnx", "onnxruntime", "onnxsim")
+@requires("onnx", "onnxruntime", "onnxslim")
 def _export_onnx(
     model: keras.Model,
     config,
@@ -101,11 +101,11 @@ def _export_onnx(
 
         if simplify:
             import onnx
-            import onnxsim
+            import onnxslim
 
             logging.info("Simplifying ONNX ...")
-            model_simp, check = onnxsim.simplify(onnx.load(tmp.name))
-            assert check, "onnxsim simplification failed"
+            model_simp, check = onnxslim.slim(onnx.load(tmp.name))
+            assert check, "onnxslim simplification failed"
             onnx.save(model_simp, out_file)
         else:
             shutil.copy(tmp.name, out_file)
@@ -238,7 +238,7 @@ def _export_coreml(
     "--simplify/--no-simplify",
     default=False,
     show_default=True,
-    help="Simplify ONNX model using onnxsim (only applies when format is ONNX).",
+    help="Simplify ONNX model using onnxslim (only applies when format is ONNX).",
 )
 @click.option(
     "--config-file",
