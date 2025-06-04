@@ -283,7 +283,7 @@ def train(
     train_augmentation = (
         A.load(augmentation_path, data_format="yaml")
         if augmentation_path
-        else default_augmentation(img_color_mode=config)
+        else default_augmentation(img_color_mode=config.image_color_mode)
     )
     print_train_details(train_augmentation, config.model_dump())
 
