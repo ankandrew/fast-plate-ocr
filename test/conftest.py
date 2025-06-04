@@ -6,6 +6,7 @@ defined in a `conftest.py` can be used by any test in that package without needi
 
 import pathlib
 import tempfile
+import textwrap
 from collections.abc import Iterator
 
 import cv2
@@ -38,3 +39,49 @@ def dummy_dataset() -> Iterator[pathlib.Path]:
         annotations.to_csv(csv_path, index=False)
 
         yield csv_path
+
+
+@pytest.fixture()
+def dummy_plate_config() -> str:
+    return textwrap.dedent(
+        """
+        max_plate_slots: 9
+        alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+        pad_char: '_'
+        img_height: 64
+        img_width: 128
+        """
+    )
+
+
+@pytest.fixture()
+def dummy_cct_model_config() -> str:
+    return textwrap.dedent(
+        """
+        model: cct
+        rescaling:
+          scale: 0.00392156862745098
+          offset: 0.0
+        tokenizer:
+          positional_emb: true
+          blocks:
+            - { layer: Conv2D, filters: 2, kernel_size: 3, stride: 4 }
+            - { layer: MaxBlurPooling2D }
+            - { layer: Conv2D, filters: 4, kernel_size: 3, stride: 4 }
+            - { layer: MaxBlurPooling2D }
+            - { layer: Conv2D, filters: 6, kernel_size: 3, stride: 4 }
+            - { layer: MaxBlurPooling2D }
+        transformer_encoder:
+          layers: 1
+          heads: 1
+          projection_dim: 6
+          units: [6, 6]
+          activation: relu
+          stochastic_depth: 0.0
+          attention_dropout: 0.0
+          mlp_dropout: 0.0
+          head_mlp_dropout: 0.0
+          token_reducer_heads: 1
+          normalization: layer_norm
+        """
+    )

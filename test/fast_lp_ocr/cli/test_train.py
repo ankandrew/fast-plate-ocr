@@ -14,26 +14,27 @@ with warnings.catch_warnings():
 
 
 @pytest.mark.filterwarnings("ignore")
-def test_train_cli_runs_successfully(dummy_dataset: pathlib.Path, tmp_path: pathlib.Path) -> None:
-    config_yaml = tmp_path / "config.yaml"
-    config_yaml.write_text(
-        """
-        max_plate_slots: 9
-        alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_'
-        pad_char: '_'
-        img_height: 64
-        img_width: 128
-        """
-    )
+def test_train_cli_runs_successfully(
+    dummy_dataset: pathlib.Path,
+    dummy_plate_config: str,
+    dummy_cct_model_config: str,
+    tmp_path: pathlib.Path,
+) -> None:
+    plate_config_yaml = tmp_path / "config.yaml"
+    plate_config_yaml.write_text(dummy_plate_config)
+    model_config_yaml = tmp_path / "model.yaml"
+    model_config_yaml.write_text(dummy_cct_model_config)
 
     output_dir = tmp_path / "out"
 
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
     result = runner.invoke(
         train_cli,
         [
-            "--config-file",
-            str(config_yaml),
+            "--model-config-file",
+            str(model_config_yaml),
+            "--plate-config-file",
+            str(plate_config_yaml),
             "--annotations",
             str(dummy_dataset),
             "--val-annotations",
