@@ -4,43 +4,28 @@ import keras
 import numpy as np
 from keras import layers
 
-# positional_emb = True
-# conv_layers = 2
-# projection_dim = 128
-#
-# num_heads = 2
-# transformer_units = [
-#     projection_dim,
-#     projection_dim,
-# ]
-# transformer_layers = 2
-# stochastic_depth_rate = 0.1
-#
-# learning_rate = 0.001
-# weight_decay = 0.0001
-# batch_size = 128
-# num_epochs = 30
-# image_size = 32
-# input_shape = (70, 140, 3)
+from fast_plate_ocr.train.model.layers import MaxBlurPooling2D
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class CCTTokenizer(layers.Layer):
     def __init__(
         self,
         kernel_size=3,
         stride=1,
-        padding=1,
-        pooling_kernel_size=3,
-        pooling_stride=2,
-        num_conv_layers: int = 2,
-        num_output_channels: Sequence[int] = (64, 128),
-        positional_emb: bool = True,
+        num_conv_layers=2,
+        num_output_channels=(64, 128),
+        positional_emb=True,
         **kwargs,
     ):
         super().__init__(**kwargs)
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.num_conv_layers = num_conv_layers
+        self.num_output_channels = list(num_output_channels)
+        self.positional_emb = positional_emb
 
-        # This is our tokenizer.
-        self.conv_model = keras.Sequential()
+        self.conv_model = keras.Sequential(name="conv_stem")
         for i in range(num_conv_layers):
             self.conv_model.add(
                 layers.Conv2D(
@@ -53,24 +38,42 @@ class CCTTokenizer(layers.Layer):
                     kernel_initializer="he_normal",
                 )
             )
-            self.conv_model.add(layers.ZeroPadding2D(padding))
-            self.conv_model.add(layers.MaxPooling2D(pooling_kernel_size, pooling_stride, "same"))
-
-        self.positional_emb = positional_emb
+            self.conv_model.add(
+                layers.Conv2D(
+                    num_output_channels[i],
+                    kernel_size,
+                    stride,
+                    padding="valid",
+                    use_bias=False,
+                    activation="relu",
+                    kernel_initializer="he_normal",
+                )
+            )
+            self.conv_model.add(MaxBlurPooling2D(pool_size=2, filter_size=3))
+            # self.conv_model.add(MaxPooling2D(pool_size=2, strides=2))
+        self.conv_model.add(layers.LayerNormalization(epsilon=1e-5))
 
     def call(self, images):
         outputs = self.conv_model(images)
-        # After passing the images through our mini-network the spatial dimensions
-        # are flattened to form sequences.
-        reshaped = keras.ops.reshape(
-            outputs,
-            (
-                -1,
-                keras.ops.shape(outputs)[1] * keras.ops.shape(outputs)[2],
-                keras.ops.shape(outputs)[-1],
-            ),
+        b, h, w, c = keras.ops.shape(outputs)
+        return keras.ops.reshape(outputs, (b, h * w, c))
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "kernel_size": self.kernel_size,
+                "stride": self.stride,
+                "num_conv_layers": self.num_conv_layers,
+                "num_output_channels": self.num_output_channels,
+                "positional_emb": self.positional_emb,
+            }
         )
-        return reshaped
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
 
 
 @keras.saving.register_keras_serializable(package="fast_plate_ocr")
@@ -295,19 +298,7 @@ def create_cct_model(
     reduced_tokens = TokenReducer(num_tokens=max_plate_slots, projection_dim=projection_dim)(
         encoded_patches
     )
-    logits = vocab_projection(reduced_tokens, vocabulary_size)
+    logits = vocab_projection(reduced_tokens, vocabulary_size, dropout_rate=0.2)
     # Create the Keras model.
     model = keras.Model(inputs=inputs, outputs=logits)
     return model
-
-
-#
-#
-# model = create_cct_model(
-#     max_plate_slots=9,
-#     vocabulary_size=37,
-# )
-#
-# dummy_input = np.random.rand(1, 70, 140, 3)
-# y = model.predict(dummy_input)
-# pass
