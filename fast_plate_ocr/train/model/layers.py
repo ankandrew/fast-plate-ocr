@@ -406,7 +406,7 @@ class MLP(keras.layers.Layer):
 
     def call(self, inputs, training=None):
         x = inputs
-        for dense, drop in zip(self.dense_layers, self.dropout_layers):
+        for dense, drop in zip(self.dense_layers, self.dropout_layers, strict=True):
             x = dense(x)
             x = drop(x, training=training)
         return x
@@ -434,6 +434,9 @@ class VocabularyProjection(keras.layers.Layer):
         )
         self.classifier = keras.layers.Dense(self.vocabulary_size, activation="softmax")
 
+    def build(self, input_shape):
+        super().build(input_shape)
+
     def call(self, x, training=None):
         if self.dropout is not None:
             x = self.dropout(x, training=training)
@@ -459,6 +462,7 @@ class TransformerBlock(keras.layers.Layer):
         **kwargs,
     ):
         super().__init__(**kwargs)
+        self.norm_type = norm_type
         self.norm1 = build_norm_layer(norm_type)
         self.attn = keras.layers.MultiHeadAttention(
             num_heads=num_heads, key_dim=projection_dim, dropout=attention_dropout
@@ -467,6 +471,9 @@ class TransformerBlock(keras.layers.Layer):
         self.norm2 = build_norm_layer(norm_type)
         self.mlp = MLP(hidden_units=mlp_units, dropout_rate=mlp_dropout)
         self.drop2 = StochasticDepth(drop_path_rate)
+
+    def build(self, input_shape) -> None:
+        super().build(input_shape)
 
     def call(self, x, training=None):
         # 1. MHA + residual
@@ -487,8 +494,11 @@ class TransformerBlock(keras.layers.Layer):
             {
                 "projection_dim": self.attn.key_dim,
                 "num_heads": self.attn.num_heads,
+                "mlp_units": self.mlp.hidden_units,
+                "mlp_dropout": self.mlp.dropout_rate,
                 "attention_dropout": self.attn.dropout,
                 "drop_path_rate": self.drop1.drop_prob,
+                "norm_type": self.norm_type,
             }
         )
         return cfg

@@ -83,20 +83,20 @@ def resize_image(
 
     else:
         orig_h, orig_w = img.shape[:2]
-        # Scale ratio (new / old) – choose the limiting dimension
+        # Scale ratio (new / old) - choose the limiting dimension
         r = min(img_height / orig_h, img_width / orig_w)
         # Compute the size of the resized (unpadded) image
-        new_unpad_w, new_unpad_h = int(round(orig_w * r)), int(round(orig_h * r))
+        new_unpad_w, new_unpad_h = round(orig_w * r), round(orig_h * r)
         # Resize if necessary
         if (orig_w, orig_h) != (new_unpad_w, new_unpad_h):
             img = cv2.resize(img, (new_unpad_w, new_unpad_h), interpolation=interpolation)
         # Padding on each side
         dw, dh = (img_width - new_unpad_w) / 2, (img_height - new_unpad_h) / 2
         top, bottom, left, right = (
-            int(round(dh - 0.1)),
-            int(round(dh + 0.1)),
-            int(round(dw - 0.1)),
-            int(round(dw + 0.1)),
+            round(dh - 0.1),
+            round(dh + 0.1),
+            round(dw - 0.1),
+            round(dw + 0.1),
         )
         # Ensure padding colour matches channel count
         if image_color_mode == "grayscale":
@@ -104,8 +104,7 @@ def resize_image(
                 border_color = int(padding_color[0])
             else:
                 border_color = int(padding_color)
-        # RGB
-        else:
+        elif image_color_mode == "rgb":
             if isinstance(padding_color, tuple):
                 if len(padding_color) != 3:
                     raise ValueError("padding_color must be length-3 for RGB images")

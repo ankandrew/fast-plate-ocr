@@ -1,5 +1,6 @@
 import os
-from typing import Literal, Sequence, TypeAlias
+from collections.abc import Sequence
+from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy import typing as npt

@@ -13,7 +13,10 @@ import numpy as np
 
 from fast_plate_ocr.cli.utils import requires
 from fast_plate_ocr.core.utils import log_time_taken
-from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.model.config import (
+    PlateOCRConfig,
+    load_plate_config_from_yaml,
+)
 from fast_plate_ocr.train.utilities.utils import load_keras_model
 
 logging.basicConfig(
@@ -24,9 +27,9 @@ logging.basicConfig(
 # pylint: disable=too-many-arguments,too-many-locals,import-outside-toplevel
 
 
-def _dummy_input(b: int, h: int, w: int, dtype: np.dtype = np.uint8) -> np.ndarray:
+def _dummy_input(b: int, h: int, w: int, n_c: int, dtype: np.dtype = np.uint8) -> np.ndarray:
     """Random tensor in [0, 255] shaped (b, h, w, 1)."""
-    return np.random.randint(0, 256, size=(b, h, w, 1)).astype(dtype)
+    return np.random.randint(0, 256, size=(b, h, w, n_c)).astype(dtype)
 
 
 def _validate_prediction(
@@ -76,7 +79,7 @@ def _make_output_path(
 @requires("onnx", "onnxruntime", "onnxslim")
 def _export_onnx(
     model: keras.Model,
-    config,
+    config: PlateOCRConfig,
     out_file: pathlib.Path,
     simplify: bool,
     dynamic_batch: bool,
@@ -90,7 +93,7 @@ def _export_onnx(
                 None if dynamic_batch else 1,
                 config.img_height,
                 config.img_width,
-                1,
+                config.num_channels,
             ),
             dtype="uint8",
         )
@@ -104,8 +107,7 @@ def _export_onnx(
             import onnxslim
 
             logging.info("Simplifying ONNX ...")
-            model_simp, check = onnxslim.slim(onnx.load(tmp.name))
-            assert check, "onnxslim simplification failed"
+            model_simp = onnxslim.slim(onnx.load(tmp.name))
             onnx.save(model_simp, out_file)
         else:
             shutil.copy(tmp.name, out_file)
@@ -118,10 +120,13 @@ def _export_onnx(
         return sess.run(output_names, {input_name: x})[0]
 
     _validate_prediction(
-        model, _predict, _dummy_input(1, config.img_height, config.img_width), "ONNX"
+        model,
+        _predict,
+        _dummy_input(1, config.img_height, config.img_width, config.num_channels),
+        "ONNX",
     )
     with log_time_taken("ONNX inference time"):
-        _predict(_dummy_input(1, config.img_height, config.img_width))
+        _predict(_dummy_input(1, config.img_height, config.img_width, config.num_channels))
 
     logging.info("Saved ONNX model to %s", out_file)
 
@@ -129,7 +134,7 @@ def _export_onnx(
 @requires("tensorflow")
 def _export_tflite(
     model: keras.Model,
-    config,
+    config: PlateOCRConfig,
     out_file: pathlib.Path,
 ) -> None:
     import tensorflow as tf
@@ -159,7 +164,7 @@ def _export_tflite(
     _validate_prediction(
         model,
         tfl_runner,
-        _dummy_input(1, config.img_height, config.img_width, np.float32),
+        _dummy_input(1, config.img_height, config.img_width, config.num_channels, np.float32),
         "TFLite",
         atol=5e-3,
         rtol=5e-3,
@@ -170,9 +175,8 @@ def _export_tflite(
 @requires("coremltools", "tensorflow")
 def _export_coreml(
     model: keras.Model,
-    config,
+    config: PlateOCRConfig,
     out_file: pathlib.Path,
-    dynamic_batch: bool,
 ) -> None:
     import coremltools as ct
     import tensorflow as tf
@@ -185,10 +189,10 @@ def _export_coreml(
         ct_inputs = [
             ct.TensorType(
                 shape=(
-                    None if dynamic_batch else 1,
+                    1,
                     config.img_height,
                     config.img_width,
-                    1,
+                    config.num_channels,
                 ),
                 dtype=np.float32,
             )
@@ -211,7 +215,10 @@ def _export_coreml(
         return mlmodel.predict({input_name: x})[output_name]
 
     _validate_prediction(
-        model, _predict, _dummy_input(1, config.img_height, config.img_width, np.float32), "CoreML"
+        model,
+        _predict,
+        _dummy_input(1, config.img_height, config.img_width, config.num_channels, np.float32),
+        "CoreML",
     )
     logging.info("Saved CoreML model to %s", out_file)
 
@@ -236,12 +243,12 @@ def _export_coreml(
 )
 @click.option(
     "--simplify/--no-simplify",
-    default=False,
+    default=True,
     show_default=True,
     help="Simplify ONNX model using onnxslim (only applies when format is ONNX).",
 )
 @click.option(
-    "--config-file",
+    "--plate-config-file",
     required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="Path to the model OCR config YAML.",
@@ -256,13 +263,13 @@ def _export_coreml(
     "--dynamic-batch/--no-dynamic-batch",
     default=False,
     show_default=True,
-    help="Enable dynamic batch size (only applies to ONNX and CoreML formats).",
+    help="Enable dynamic batch size (only applies to ONNX format).",
 )
 def export(
     model_path: pathlib.Path,
     export_format: str,
     simplify: bool,
-    config_file: pathlib.Path,
+    plate_config_file: pathlib.Path,
     save_dir: pathlib.Path,
     dynamic_batch: bool,
 ) -> None:
@@ -270,7 +277,7 @@ def export(
     Export Keras models to other formats.
     """
 
-    config = load_config_from_yaml(config_file)
+    config = load_plate_config_from_yaml(plate_config_file)
     model = load_keras_model(
         model_path,
         vocab_size=config.vocabulary_size,
@@ -301,7 +308,6 @@ def export(
             model=model,
             config=config,
             out_file=out_file,
-            dynamic_batch=dynamic_batch,
         )
 
 
