@@ -20,13 +20,13 @@ from keras.src.callbacks import (
 )
 from keras.src.optimizers import AdamW
 
+import fast_plate_ocr.train.model.model_builders
 from fast_plate_ocr.cli.utils import print_params, print_train_details
 from fast_plate_ocr.train.data.augmentation import (
     default_augmentation,
 )
 from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
-from fast_plate_ocr.train.model.cct_model import create_cct_model
-from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
 from fast_plate_ocr.train.model.loss import cce_loss, focal_cce_loss
 from fast_plate_ocr.train.model.metric import (
     cat_acc_metric,
@@ -34,6 +34,7 @@ from fast_plate_ocr.train.model.metric import (
     plate_len_acc_metric,
     top_3_k_metric,
 )
+from fast_plate_ocr.train.model.model_schema import load_model_config_from_yaml
 
 # ruff: noqa: PLR0913
 # pylint: disable=too-many-arguments,too-many-locals
@@ -50,10 +51,16 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
 
 @click.command(context_settings={"max_content_width": 120})
 @click.option(
-    "--config-file",
+    "--model-config-file",
     required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
-    help="Path pointing to the model license plate OCR config.",
+    help="Path to the YAML config that describes the model architecture.",
+)
+@click.option(
+    "--plate-config-file",
+    required=True,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
+    help="Path to the plate YAML config.",
 )
 @click.option(
     "--annotations",
@@ -241,7 +248,8 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
 )
 @print_params(table_title="CLI Training Parameters", c1_title="Parameter", c2_title="Details")
 def train(
-    config_file: pathlib.Path,
+    model_config_file: pathlib.Path,
+    plate_config_file: pathlib.Path,
     annotations: pathlib.Path,
     val_annotations: pathlib.Path,
     augmentation_path: pathlib.Path | None,
@@ -279,18 +287,19 @@ def train(
     if mixed_precision_policy is not None:
         keras.mixed_precision.set_global_policy(mixed_precision_policy)
 
-    config = load_config_from_yaml(config_file)
+    plate_config = load_plate_config_from_yaml(plate_config_file)
+    model_config = load_model_config_from_yaml(model_config_file)
     train_augmentation = (
         A.load(augmentation_path, data_format="yaml")
         if augmentation_path
-        else default_augmentation(img_color_mode=config.image_color_mode)
+        else default_augmentation(img_color_mode=plate_config.image_color_mode)
     )
-    print_train_details(train_augmentation, config.model_dump())
+    print_train_details(train_augmentation, plate_config.model_dump())
 
     train_dataset = PlateRecognitionPyDataset(
         annotations_file=annotations,
         transform=train_augmentation,
-        config=config,
+        config=plate_config,
         batch_size=batch_size,
         shuffle=True,
         workers=workers,
@@ -300,7 +309,7 @@ def train(
 
     val_dataset = PlateRecognitionPyDataset(
         annotations_file=val_annotations,
-        config=config,
+        config=plate_config,
         batch_size=batch_size,
         shuffle=False,
         workers=workers,
@@ -309,18 +318,7 @@ def train(
     )
 
     # Train
-    model = create_cct_model(
-        input_shape=(config.img_height, config.img_width, config.num_channels),
-        max_plate_slots=config.max_plate_slots,
-        vocabulary_size=config.vocabulary_size,
-        transformer_layers=3,
-        conv_layers=3,
-        num_output_channels=[32, 64, 96],
-        num_heads=3,
-        projection_dim=96,
-        transformer_units=[96, 96],
-        positional_emb=True,
-    )
+    model = fast_plate_ocr.train.model.model_builders.build_model(model_config, plate_config)
 
     if weights_path:
         model.load_weights(weights_path, skip_mismatch=True)
@@ -342,10 +340,12 @@ def train(
     )
 
     if loss == "cce":
-        loss_fn = cce_loss(vocabulary_size=config.vocabulary_size, label_smoothing=label_smoothing)
+        loss_fn = cce_loss(
+            vocabulary_size=plate_config.vocabulary_size, label_smoothing=label_smoothing
+        )
     elif loss == "focal":
         loss_fn = focal_cce_loss(
-            vocabulary_size=config.vocabulary_size,
+            vocabulary_size=plate_config.vocabulary_size,
             alpha=focal_alpha,
             gamma=focal_gamma,
             label_smoothing=label_smoothing,
@@ -359,16 +359,18 @@ def train(
         optimizer=optimizer,
         metrics=[
             cat_acc_metric(
-                max_plate_slots=config.max_plate_slots, vocabulary_size=config.vocabulary_size
+                max_plate_slots=plate_config.max_plate_slots,
+                vocabulary_size=plate_config.vocabulary_size,
             ),
             plate_acc_metric(
-                max_plate_slots=config.max_plate_slots, vocabulary_size=config.vocabulary_size
+                max_plate_slots=plate_config.max_plate_slots,
+                vocabulary_size=plate_config.vocabulary_size,
             ),
-            top_3_k_metric(vocabulary_size=config.vocabulary_size),
+            top_3_k_metric(vocabulary_size=plate_config.vocabulary_size),
             plate_len_acc_metric(
-                max_plate_slots=config.max_plate_slots,
-                vocabulary_size=config.vocabulary_size,
-                pad_token_index=config.pad_idx,
+                max_plate_slots=plate_config.max_plate_slots,
+                vocabulary_size=plate_config.vocabulary_size,
+                pad_token_index=plate_config.pad_idx,
             ),
         ],
     )
@@ -378,7 +380,7 @@ def train(
     model_file_path = output_dir / "ckpt-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
     # Save params and config used for training
-    shutil.copy(config_file, output_dir / "config.yaml")
+    shutil.copy(plate_config_file, output_dir / "config.yaml")
     A.save(train_augmentation, output_dir / "train_augmentation.yaml", "yaml")
     with open(output_dir / "hyper_params.json", "w", encoding="utf-8") as f_out:
         json.dump(

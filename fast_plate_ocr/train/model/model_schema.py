@@ -1,3 +1,7 @@
+"""
+Schema definitions for validating supported model architectures and layer blocks.
+"""
+
 from typing import Annotated, Literal, TypeAlias
 
 import keras
@@ -336,15 +340,20 @@ class _CCTTransformerEncoderConfig(BaseModel):
 
 
 class CCTModelConfig(BaseModel):
+    model: Literal["cct"] = "cct"
     rescaling: _Rescaling
     tokenizer: _CCTTokenizerConfig
     transformer_encoder: _CCTTransformerEncoderConfig
 
-    @classmethod
-    def from_yaml(cls, yaml_file_path: PathLike) -> "CCTModelConfig":
-        """
-        Load, parse and validate a YAML file that describes the CCT model architecture.
-        """
-        with open(yaml_file_path, encoding="utf-8") as f_in:
-            yaml_content = yaml.safe_load(f_in)
-        return cls(**yaml_content)
+
+AnyModelConfig = Annotated[CCTModelConfig, Field(discriminator="model")]
+"""Supported model-architecture. New model configs should be added here."""
+
+
+def load_model_config_from_yaml(yaml_path: PathLike) -> AnyModelConfig:
+    """
+    Load, parse and validate a YAML file that describes any of the supported model architectures.
+    """
+    with open(yaml_path, encoding="utf-8") as fh:
+        data = yaml.safe_load(fh)
+    return AnyModelConfig(**data)

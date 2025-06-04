@@ -88,8 +88,8 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
         return self
 
 
-def load_config_from_yaml(yaml_file_path: str | PathLike[str]) -> PlateOCRConfig:
-    """Read and parse a yaml containing the Plate OCR config."""
+def load_plate_config_from_yaml(yaml_file_path: str | PathLike[str]) -> PlateOCRConfig:
+    """Read and parse a YAML containing the plate config."""
     with open(yaml_file_path, encoding="utf-8") as f_in:
         yaml_content = yaml.safe_load(f_in)
     config = PlateOCRConfig(**yaml_content)

@@ -1,5 +1,5 @@
 """
-Model definitions for the FastLP OCR.
+Model builder functions for supported architectures.
 """
 
 from collections.abc import Sequence
@@ -8,20 +8,21 @@ import keras
 import numpy as np
 from keras import layers
 
+from fast_plate_ocr.train.model.config import PlateOCRConfig
 from fast_plate_ocr.train.model.layers import (
     PositionEmbedding,
     TokenReducer,
     TransformerBlock,
     VocabularyProjection,
 )
-from fast_plate_ocr.train.model.model_builder import CCTModelConfig, LayerConfig
+from fast_plate_ocr.train.model.model_schema import AnyModelConfig, CCTModelConfig, LayerConfig
 
 
 def _build_stem_from_config(specs: Sequence[LayerConfig]) -> keras.Sequential:
     return keras.Sequential([spec.to_keras_layer() for spec in specs], name="conv_stem")
 
 
-def build_cct_model(
+def _build_cct_model(
     cfg: CCTModelConfig,
     input_shape: tuple[int, int, int],
     max_plate_slots: int,
@@ -75,3 +76,17 @@ def build_cct_model(
     )(x)
 
     return keras.Model(inputs, logits, name="CCT_OCR")
+
+
+def build_model(model_cfg: AnyModelConfig, plate_cfg: PlateOCRConfig) -> keras.Model:
+    """
+    Build a Keras OCR model based on the specified model and plate configuration.
+    """
+    if model_cfg.model == "cct":
+        return _build_cct_model(
+            cfg=model_cfg,
+            input_shape=(plate_cfg.img_height, plate_cfg.img_width, plate_cfg.num_channels),
+            max_plate_slots=plate_cfg.max_plate_slots,
+            vocabulary_size=plate_cfg.vocabulary_size,
+        )
+    raise ValueError(f"Unsupported model type: {model_cfg.model!r}")
