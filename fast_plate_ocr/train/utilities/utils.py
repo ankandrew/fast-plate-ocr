@@ -15,6 +15,7 @@ import numpy as np
 import numpy.typing as npt
 
 from fast_plate_ocr.core.process import read_and_resize_plate_image
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PaddingColor
 from fast_plate_ocr.train.model.loss import cce_loss, focal_cce_loss
 from fast_plate_ocr.train.model.metric import (
     cat_acc_metric,
@@ -80,6 +81,10 @@ def load_images_from_folder(
     img_dir: pathlib.Path,
     width: int,
     height: int,
+    image_color_mode: ImageColorMode = "grayscale",
+    keep_aspect_ratio: bool = False,
+    interpolation_method: ImageInterpolation = "linear",
+    padding_color: PaddingColor = (114, 114, 114),
     shuffle: bool = False,
     limit: int | None = None,
 ) -> Iterator[npt.NDArray]:
@@ -94,7 +99,16 @@ def load_images_from_folder(
     if shuffle:
         random.shuffle(image_paths)
     yield from (
-        read_and_resize_plate_image(i, img_height=height, img_width=width) for i in image_paths
+        read_and_resize_plate_image(
+            i,
+            img_height=height,
+            img_width=width,
+            image_color_mode=image_color_mode,
+            keep_aspect_ratio=keep_aspect_ratio,
+            interpolation_method=interpolation_method,
+            padding_color=padding_color,
+        )
+        for i in image_paths
     )
 
 
