@@ -10,7 +10,7 @@ import cv2
 import keras
 import numpy as np
 
-from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
 from fast_plate_ocr.train.utilities.utils import postprocess_model_output
 
@@ -29,7 +29,7 @@ logging.basicConfig(
     help="Path to the saved .keras model.",
 )
 @click.option(
-    "--config-file",
+    "--plate-config-file",
     required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
@@ -57,7 +57,7 @@ logging.basicConfig(
 )
 def visualize_predictions(
     model_path: pathlib.Path,
-    config_file: pathlib.Path,
+    plate_config_file: pathlib.Path,
     img_dir: pathlib.Path,
     low_conf_thresh: float,
     filter_conf: float | None,
@@ -65,7 +65,7 @@ def visualize_predictions(
     """
     Visualize OCR model predictions on unlabeled data.
     """
-    config = load_config_from_yaml(config_file)
+    config = load_plate_config_from_yaml(plate_config_file)
     model = utils.load_keras_model(
         model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
     )
