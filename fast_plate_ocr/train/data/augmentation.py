@@ -24,7 +24,7 @@ TRAIN_AUGMENTATION = A.Compose(
         A.OneOf(
             [
                 A.CoarseDropout(
-                    num_holes_range=(1, 11),
+                    num_holes_range=(1, 14),
                     hole_height_range=(1, 5),
                     hole_width_range=(1, 5),
                     p=0.3,
@@ -57,30 +57,30 @@ TRAIN_AUGMENTATION_RGB = A.Compose(
                 ),
                 A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3),
             ],
-            p=0.35,
+            p=0.3,
         ),
-        A.RandomGamma(gamma_limit=(90, 110), p=0.20),
+        A.RandomGamma(gamma_limit=(95, 105), p=0.20),
         A.ToGray(p=0.05),
         A.OneOf(
             [
                 A.GaussianBlur(sigma_limit=(0.2, 0.5), p=0.5),
                 A.MotionBlur(blur_limit=(3, 3), p=0.5),
             ],
-            p=0.25,
+            p=0.2,
         ),
         A.OneOf(
             [
                 A.GaussNoise(std_range=(0.01, 0.03), p=0.2),
                 A.MultiplicativeNoise(multiplier=(0.98, 1.02), p=0.1),
                 A.ISONoise(intensity=(0.005, 0.02), p=0.1),
-                A.ImageCompression(quality_range=(50, 90), p=0.1),
+                A.ImageCompression(quality_range=(55, 90), p=0.1),
             ],
-            p=0.30,
+            p=0.3,
         ),
         A.OneOf(
             [
                 A.CoarseDropout(
-                    num_holes_range=(1, 11),
+                    num_holes_range=(1, 14),
                     hole_height_range=(1, 5),
                     hole_width_range=(1, 5),
                     p=0.3,
