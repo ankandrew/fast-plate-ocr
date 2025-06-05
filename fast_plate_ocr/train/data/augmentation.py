@@ -13,7 +13,7 @@ TRAIN_AUGMENTATION = A.Compose(
     [
         A.ShiftScaleRotate(
             shift_limit=0.02,
-            scale_limit=(-0.3, 0.075),
+            scale_limit=(-0.35, 0.05),
             rotate_limit=10,
             border_mode=cv2.BORDER_CONSTANT,
             fill=BORDER_COLOR_BLACK,
@@ -43,13 +43,12 @@ TRAIN_AUGMENTATION_RGB = A.Compose(
     [
         A.ShiftScaleRotate(
             shift_limit=0.02,
-            scale_limit=(-0.3, 0.075),
+            scale_limit=(-0.35, 0.05),
             rotate_limit=10,
             border_mode=cv2.BORDER_CONSTANT,
             fill=BORDER_COLOR_BLACK,
             p=0.75,
         ),
-        A.Perspective(scale=(0.03, 0.06), p=0.20),
         A.RandomBrightnessContrast(brightness_limit=0.10, contrast_limit=0.10, p=0.5),
         A.OneOf(
             [
