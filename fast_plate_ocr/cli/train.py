@@ -44,6 +44,7 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
     "val_plate_acc": "max",
     "val_cat_acc": "max",
     "val_top_3_k_acc": "max",
+    "val_plate_len_acc": "max",
     "val_loss": "min",
 }
 """Eval metric to monitor."""
