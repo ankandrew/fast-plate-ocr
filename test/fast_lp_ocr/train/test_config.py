@@ -31,6 +31,7 @@ def test_yaml_configs_for_inference_are_valid(file_path: Path) -> None:
 @pytest.mark.parametrize(
     "raw_config",
     [
+        # pad_char not in alphabet
         {
             "max_plate_slots": 7,
             # Pad char not in alphabet, should raise exception
@@ -38,7 +39,15 @@ def test_yaml_configs_for_inference_are_valid(file_path: Path) -> None:
             "pad_char": "_",
             "img_height": 70,
             "img_width": 140,
-        }
+        },
+        # alphabet contains duplicates
+        {
+            "max_plate_slots": 5,
+            "alphabet": "AABC",
+            "pad_char": "A",
+            "img_height": 32,
+            "img_width": 64,
+        },
     ],
 )
 def test_invalid_config_raises(raw_config: dict) -> None:

@@ -82,9 +82,13 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
         return 3 if self.image_color_mode == "rgb" else 1
 
     @model_validator(mode="after")
-    def check_pad_in_alphabet(self) -> "PlateOCRConfig":
+    def check_alphabet_and_pad(self) -> "PlateOCRConfig":
+        # `pad_char` must be in alphabet
         if self.pad_char not in self.alphabet:
             raise ValueError("Pad character must be present in model alphabet.")
+        # all chars in alphabet must be unique
+        if len(set(self.alphabet)) != len(self.alphabet):
+            raise ValueError("Alphabet must not contain duplicate characters.")
         return self
 
 
