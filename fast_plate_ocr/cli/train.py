@@ -380,8 +380,9 @@ def train(
     output_dir.mkdir(parents=True, exist_ok=True)
     model_file_path = output_dir / "ckpt-epoch_{epoch:02d}-acc_{val_plate_acc:.3f}.keras"
 
-    # Save params and config used for training
-    shutil.copy(plate_config_file, output_dir / "config.yaml")
+    # Save params and configs used for training
+    shutil.copy(model_config_file, output_dir / "model_config.yaml")
+    shutil.copy(plate_config_file, output_dir / "plate_config.yaml")
     A.save(train_augmentation, output_dir / "train_augmentation.yaml", "yaml")
     with open(output_dir / "hyper_params.json", "w", encoding="utf-8") as f_out:
         json.dump(
