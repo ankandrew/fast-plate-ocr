@@ -344,7 +344,7 @@ def train(
         loss_fn = cce_loss(
             vocabulary_size=plate_config.vocabulary_size, label_smoothing=label_smoothing
         )
-    elif loss == "focal":
+    elif loss == "focal_cce":
         loss_fn = focal_cce_loss(
             vocabulary_size=plate_config.vocabulary_size,
             alpha=focal_alpha,
