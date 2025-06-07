@@ -39,7 +39,7 @@ def validate_dataset(
     cfg,
     min_h: int,
     min_w: int,
-) -> tuple[list[str], list[str], pd.DataFrame]:
+) -> tuple[list[tuple[str, str]], list[tuple[str, str]], pd.DataFrame]:
     """
     Iterate over the dataframe, collect errors and warnings, and return a cleaned df.
     """
@@ -60,10 +60,10 @@ def validate_dataset(
 
     with progress:
         for row_idx, row in enumerate(df.itertuples(index=False)):
-            img_path = Path(row.image_path)
+            img_path = Path(str(row.image_path))
             plate = str(row.plate_text)
             char_counter.update(plate)
-            line_no = row_idx + 2
+            line_no = str(row_idx + 2)
 
             # Check file exists
             if not img_path.exists():

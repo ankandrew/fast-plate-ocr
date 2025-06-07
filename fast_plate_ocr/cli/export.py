@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import click
 import keras
 import numpy as np
+from numpy.typing import DTypeLike
 
 from fast_plate_ocr.cli.utils import requires
 from fast_plate_ocr.core.utils import log_time_taken
@@ -27,7 +28,7 @@ logging.basicConfig(
 # pylint: disable=too-many-arguments,too-many-locals,import-outside-toplevel
 
 
-def _dummy_input(b: int, h: int, w: int, n_c: int, dtype: np.dtype = np.uint8) -> np.ndarray:
+def _dummy_input(b: int, h: int, w: int, n_c: int, dtype: DTypeLike = np.uint8) -> np.ndarray:
     """Random tensor in [0, 255] shaped (b, h, w, 1)."""
     return np.random.randint(0, 256, size=(b, h, w, n_c)).astype(dtype)
 
