@@ -133,22 +133,6 @@ def display_images(
     help="Number of rows in the grid layout for displaying images.",
 )
 @click.option(
-    "--height",
-    "-h",
-    type=int,
-    default=70,
-    show_default=True,
-    help="Height to which the images will be resize.",
-)
-@click.option(
-    "--width",
-    "-w",
-    type=int,
-    default=140,
-    show_default=True,
-    help="Width to which the images will be resize.",
-)
-@click.option(
     "--show-original",
     "-o",
     is_flag=True,
@@ -167,8 +151,6 @@ def visualize_augmentation(
     shuffle: bool,
     columns: int,
     rows: int,
-    height: int,
-    width: int,
     seed: int | None,
     show_original: bool,
 ) -> None:
