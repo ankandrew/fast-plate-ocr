@@ -199,7 +199,9 @@ def main(
     min_height: int,
     min_width: int,
 ):
-    """Validate dataset and print a Rich report."""
+    """
+    Script to validate the dataset before training.
+    """
     cfg = load_plate_config_from_yaml(plate_config_file)
 
     df = pd.read_csv(annotations_file)
@@ -211,8 +213,16 @@ def main(
     rich_report(errors, warnings)
 
     if export_fixed:
-        cleaned.to_csv(export_fixed, index=False)
-        console.print(f"[green]✅[/] Wrote cleaned CSV with {len(cleaned)} rows → {export_fixed}")
+        if export_fixed.resolve() == annotations_file.resolve():
+            console.print(
+                "[yellow]⚠️ Skipping export: make sure you don't "
+                "overwrite original annotations file.[/]"
+            )
+        else:
+            cleaned.to_csv(export_fixed, index=False)
+            console.print(
+                f"[green]✅ Wrote cleaned CSV with {len(cleaned)} rows → {export_fixed} [/]"
+            )
 
     if errors and not warn_only:
         sys.exit(1)
@@ -221,7 +231,3 @@ def main(
 
 if __name__ == "__main__":
     main()
-    # main([
-    #     "-a", "/Users/anka/Downloads/arg_plate_dataset/train_anotaciones.csv",
-    #     "--plate-config-file", "/Users/anka/PycharmProjects/fast-plate-ocr/config/latin_plate_example.yaml"
-    # ])
