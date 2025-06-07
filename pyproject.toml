@@ -33,11 +33,11 @@ rich = "*"
 onnxruntime = { version = ">=1.19.2", markers = " extra != 'gpu' and extra != 'openvino' and extra != 'directml' and extra != 'qnn' and extra != 'rocm' " }
 
 # ONNX package variants (for different hardware accelerator)
-gpu = { version = ">=1.19.2", optional = true }
-openvino = { version = ">=1.19.2", optional = true }
-directml = { version = ">=1.19.2", optional = true }
-qnn = { version = ">=1.19.2", optional = true }
-rocm = { version = ">=1.19.2", optional = true }
+onnxruntime-gpu = { version = ">=1.19.2", optional = true }
+onnxruntime-openvino = { version = ">=1.19.2", optional = true }
+onnxruntime-directml = { version = ">=1.19.2", optional = true }
+onnxruntime-qnn = { version = ">=1.19.2", optional = true }
+onnxruntime-rocm = { version = ">=1.19.2", optional = true }
 
 # Training packages are optional
 albumentations = { version = "*", optional = true }
