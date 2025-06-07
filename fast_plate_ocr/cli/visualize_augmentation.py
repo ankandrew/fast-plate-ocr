@@ -100,7 +100,7 @@ def display_images(
     "--num-images",
     "-n",
     type=int,
-    default=1_000,
+    default=250,
     show_default=True,
     help="Maximum number of images to visualize.",
 )
