@@ -1,3 +1,7 @@
+"""
+Common custom types used across the lib.
+"""
+
 import os
 from collections.abc import Sequence
 from typing import Literal, TypeAlias

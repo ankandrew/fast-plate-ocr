@@ -91,6 +91,7 @@ def load_images_from_folder(
     """
     Return all images read from a directory. This uses the same read function used during training.
     """
+    # pylint: disable=too-many-arguments
     image_paths = sorted(
         str(f.resolve()) for f in img_dir.iterdir() if f.is_file() and f.suffix in IMG_EXTENSIONS
     )

@@ -76,6 +76,8 @@ def resize_image(
     :param padding_color: Padding color (int for grayscale, tuple for RGB).
     :return: The resized image as a NumPy array with shape (H, W, C).
     """
+    # pylint: disable=too-many-locals
+
     interpolation = INTERPOLATION_MAP[interpolation_method]
 
     if not keep_aspect_ratio:

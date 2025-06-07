@@ -8,6 +8,9 @@ import keras
 import numpy as np
 from keras import ops
 
+# pylint: disable=too-many-ancestors,abstract-method,attribute-defined-outside-init,arguments-differ
+# pylint: disable=useless-parent-delegation
+
 
 class AddCoords(keras.layers.Layer):
     """Add coords to a tensor, modified from paper: https://arxiv.org/abs/1807.03247"""
