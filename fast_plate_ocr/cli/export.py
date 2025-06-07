@@ -261,7 +261,7 @@ def _export_coreml(
 )
 @click.option(
     "--dynamic-batch/--no-dynamic-batch",
-    default=False,
+    default=True,
     show_default=True,
     help="Enable dynamic batch size (only applies to ONNX format).",
 )
