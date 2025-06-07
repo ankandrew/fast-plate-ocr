@@ -85,7 +85,7 @@ ruff = "*"
 pandas-stubs = "^2.2.0.240218"
 pylint = "*"
 types-pyyaml = "^6.0.12.20240311"
-yamllint = "^1.37.1"
+yamllint = "*"
 
 [tool.poetry.group.train.dependencies]
 scikit-learn = "^1.6.1"
