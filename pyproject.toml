@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fast-plate-ocr"
-version = "0.3.0"
+version = "1.0.0"
 description = "Fast & Lightweight OCR for vehicle license plates."
 authors = ["ankandrew <61120139+ankandrew@users.noreply.github.com>"]
 readme = "README.md"
@@ -23,48 +23,56 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.13"
 # Packages required for doing inference
 numpy = ">=1.20"
 opencv-python = "*"
 pyyaml = ">=5.1"
 tqdm = "*"
 rich = "*"
+onnxruntime = { version = ">=1.19.2", markers = " extra != 'gpu' and extra != 'openvino' and extra != 'directml' and extra != 'qnn' and extra != 'rocm' " }
 
-# Install onnxruntime-gpu only on systems other than macOS or Raspberry Pi
-onnxruntime-gpu = { version = ">=1.19.2", markers = "sys_platform != 'darwin' and platform_machine != 'armv7l' and platform_machine != 'aarch64' and (platform_system == 'Linux' or platform_system == 'Windows')" }
-# Fallback to onnxruntime for macOS, Raspberry Pi, and other unsupported platforms
-onnxruntime = { version = ">=1.19.2", markers = "sys_platform == 'darwin' or platform_machine == 'armv7l' or platform_machine == 'aarch64'" }
+# ONNX package variants (for different hardware accelerator)
+gpu = { version = ">=1.19.2", optional = true }
+openvino = { version = ">=1.19.2", optional = true }
+directml = { version = ">=1.19.2", optional = true }
+qnn = { version = ">=1.19.2", optional = true }
+rocm = { version = ">=1.19.2", optional = true }
 
 # Training packages are optional
 albumentations = { version = "*", optional = true }
 click = { version = "*", optional = true }
-keras = { version = ">=3.1.1", optional = true }
+coremltools = { version = "*", optional = true }
+keras = { version = "^3.9.2", optional = true }
 matplotlib = { version = "*", optional = true }
-pandas = { version   = "*", optional = true }
-pydantic = { version = "^2.0.0", optional = true }
+onnxslim = { version = ">=0.1.56", optional = true }
+pandas = { version = "*", optional = true }
+pydantic = { version = "^2.5.2", optional = true }
 tensorboard = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
 
 # Optional packages for creating the docs
 mkdocs-material = { version = "*", optional = true }
-mkdocstrings = {version = "*", extras = ["python"], optional = true}
+mkdocstrings = { version = "*", extras = ["python"], optional = true }
 mike = { version = "*", optional = true }
-onnxsim = { version = ">0.4.10", optional = true }
 
 [tool.poetry.extras]
+gpu = ["gpu"]
+openvino = ["openvino"]
+directml = ["directml"]
+qnn = ["qnn"]
+rocm = ["rocm"]
 train = [
     "albumentations",
     "click",
+    "coremltools",
     "keras",
     "matplotlib",
+    "onnxslim",
     "pandas",
     "pydantic",
     "tensorboard",
     "tensorflow",
-    "tf2onnx",
-    "torch",
-    "onnxsim",
 ]
 docs = ["mkdocs-material", "mkdocstrings", "mike"]
 
@@ -77,6 +85,10 @@ ruff = "*"
 pandas-stubs = "^2.2.0.240218"
 pylint = "*"
 types-pyyaml = "^6.0.12.20240311"
+yamllint = "^1.37.1"
+
+[tool.poetry.group.train.dependencies]
+scikit-learn = "^1.6.1"
 
 [tool.poetry.scripts]
 fast_plate_ocr = "fast_plate_ocr.cli.cli:main_cli"
