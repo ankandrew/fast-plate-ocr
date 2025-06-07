@@ -98,6 +98,7 @@ def resize_image(
             round(dw - 0.1),
             round(dw + 0.1),
         )
+        border_color: PaddingColor
         # Ensure padding colour matches channel count
         if image_color_mode == "grayscale":
             if isinstance(padding_color, tuple):
@@ -108,7 +109,7 @@ def resize_image(
             if isinstance(padding_color, tuple):
                 if len(padding_color) != 3:
                     raise ValueError("padding_color must be length-3 for RGB images")
-                border_color = tuple(int(c) for c in padding_color)
+                border_color = tuple(int(c) for c in padding_color)  # type: ignore[assignment]
             else:
                 border_color = (int(padding_color),) * 3
         img = cv2.copyMakeBorder(
@@ -118,9 +119,8 @@ def resize_image(
             left,
             right,
             borderType=cv2.BORDER_CONSTANT,
-            value=border_color,
+            value=border_color,  # type: ignore[arg-type]
         )
-
     # Add channel axis for gray so output is HxWxC
     if image_color_mode == "grayscale" and img.ndim == 2:
         img = np.expand_dims(img, axis=-1)
