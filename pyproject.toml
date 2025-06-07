@@ -30,14 +30,13 @@ opencv-python = "*"
 pyyaml = ">=5.1"
 tqdm = "*"
 rich = "*"
-onnxruntime = { version = ">=1.19.2", markers = " extra != 'gpu' and extra != 'openvino' and extra != 'directml' and extra != 'qnn' and extra != 'rocm' " }
+onnxruntime = { version = ">=1.19.2", markers = " extra != 'gpu' and extra != 'openvino' and extra != 'directml' and extra != 'qnn' " }
 
 # ONNX package variants (for different hardware accelerator)
 onnxruntime-gpu = { version = ">=1.19.2", optional = true }
 onnxruntime-openvino = { version = ">=1.19.2", optional = true }
 onnxruntime-directml = { version = ">=1.19.2", optional = true }
 onnxruntime-qnn = { version = ">=1.19.2", optional = true }
-onnxruntime-rocm = { version = ">=1.19.2", optional = true }
 
 # Training packages are optional
 albumentations = { version = "*", optional = true }
@@ -57,11 +56,10 @@ mkdocstrings = { version = "*", extras = ["python"], optional = true }
 mike = { version = "*", optional = true }
 
 [tool.poetry.extras]
-gpu = ["gpu"]
-openvino = ["openvino"]
-directml = ["directml"]
-qnn = ["qnn"]
-rocm = ["rocm"]
+gpu = ["onnxruntime-gpu"]
+openvino = ["onnxruntime-openvino"]
+directml = ["onnxruntime-directml"]
+qnn = ["onnxruntime-qnn"]
 train = [
     "albumentations",
     "click",
