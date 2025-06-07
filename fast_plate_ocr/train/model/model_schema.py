@@ -92,8 +92,7 @@ class _Activation(BaseModel):
         return keras.layers.Activation(self.activation)
 
 
-class _Conv2D(BaseModel):
-    layer: Literal["Conv2D"]
+class _Conv2DBase(BaseModel):
     filters: PositiveInt
     kernel_size: PositiveIntTuple
     strides: PositiveIntTuple = 1
@@ -103,26 +102,22 @@ class _Conv2D(BaseModel):
     kernel_initializer: WeightInitializationStr = "he_normal"
     bias_initializer: WeightInitializationStr = "zeros"
 
-    def to_keras_layer(self):
-        return keras.layers.Conv2D(
-            filters=self.filters,
-            kernel_size=self.kernel_size,
-            strides=self.strides,
-            padding=self.padding,
-            activation=self.activation,
-            use_bias=self.use_bias,
-            kernel_initializer=self.kernel_initializer,
-            bias_initializer=self.bias_initializer,
-        )
+
+class _Conv2D(_Conv2DBase):
+    layer: Literal["Conv2D"]
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        params = self.model_dump(exclude={"layer"})
+        return keras.layers.Conv2D(**params)
 
 
-class _CoordConv2D(_Conv2D):
+class _CoordConv2D(_Conv2DBase):
     layer: Literal["CoordConv2D"]
     with_r: bool = False
 
     def to_keras_layer(self) -> keras.layers.Layer:
-        conv_args = self.model_dump(exclude={"with_r"})
-        return CoordConv2D(with_r=self.with_r, **conv_args)
+        params = self.model_dump(exclude={"layer", "with_r"})
+        return CoordConv2D(with_r=self.with_r, **params)
 
 
 class _DepthwiseConv2D(BaseModel):
