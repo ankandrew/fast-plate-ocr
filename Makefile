@@ -1,5 +1,6 @@
 # Directories
 SRC_PATHS := fast_plate_ocr/ test/
+YAML_PATHS := .github/ models/ config/ mkdocs.yml
 
 # Tasks
 .PHONY: help
@@ -36,6 +37,11 @@ ruff:
 	@echo "=====> Running Ruff..."
 	@poetry run ruff check $(SRC_PATHS)
 
+.PHONY: yamllint
+yamllint:
+	@echo "=====> Running yamllint..."
+	@poetry run yamllint $(YAML_PATHS)
+
 .PHONY: pylint
 pylint:
 	@echo "=====> Running Pylint..."
@@ -47,7 +53,7 @@ mypy:
 	@poetry run mypy $(SRC_PATHS)
 
 .PHONY: lint
-lint: ruff pylint mypy
+lint: ruff yamllint pylint mypy
 
 .PHONY: test
 test:
