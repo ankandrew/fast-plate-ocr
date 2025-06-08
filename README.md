@@ -236,7 +236,7 @@ Example:
 ```shell
 fast_plate_ocr valid \
     --model arg_cnn_ocr.keras \
-    --config-file arg_plate_example.yaml \
+    --config-file argentinian_plate_config.yaml \
     --annotations benchmark/annotations.csv
 ```
 

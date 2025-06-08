@@ -1,4 +1,4 @@
-# Config example for Latin-alphabet plates
+# Config for Latin-alphabet plates
 
 # Max number of plate slots supported. This represents the number of model classification heads.
 max_plate_slots: 9
