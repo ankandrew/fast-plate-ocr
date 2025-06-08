@@ -80,7 +80,7 @@ def _make_output_path(
 @requires("onnx", "onnxruntime", "onnxslim")
 def export_onnx(
     model: keras.Model,
-    config: PlateOCRConfig,
+    plate_config: PlateOCRConfig,
     out_file: pathlib.Path,
     simplify: bool,
     dynamic_batch: bool,
@@ -92,9 +92,9 @@ def export_onnx(
             name="input",
             shape=(
                 None if dynamic_batch else 1,
-                config.img_height,
-                config.img_width,
-                config.num_channels,
+                plate_config.img_height,
+                plate_config.img_width,
+                plate_config.num_channels,
             ),
             dtype="uint8",
         )
@@ -123,11 +123,15 @@ def export_onnx(
     _validate_prediction(
         model,
         _predict,
-        _dummy_input(1, config.img_height, config.img_width, config.num_channels),
+        _dummy_input(1, plate_config.img_height, plate_config.img_width, plate_config.num_channels),
         "ONNX",
     )
     with log_time_taken("ONNX inference time"):
-        _predict(_dummy_input(1, config.img_height, config.img_width, config.num_channels))
+        _predict(
+            _dummy_input(
+                1, plate_config.img_height, plate_config.img_width, plate_config.num_channels
+            )
+        )
 
     logging.info("Saved ONNX model to %s", out_file)
 
@@ -135,7 +139,7 @@ def export_onnx(
 @requires("tensorflow")
 def export_tflite(
     model: keras.Model,
-    config: PlateOCRConfig,
+    plate_config: PlateOCRConfig,
     out_file: pathlib.Path,
 ) -> None:
     import tensorflow as tf
@@ -165,7 +169,13 @@ def export_tflite(
     _validate_prediction(
         model,
         tfl_runner,
-        _dummy_input(1, config.img_height, config.img_width, config.num_channels, np.float32),
+        _dummy_input(
+            1,
+            plate_config.img_height,
+            plate_config.img_width,
+            plate_config.num_channels,
+            np.float32,
+        ),
         "TFLite",
         atol=5e-3,
         rtol=5e-3,
@@ -176,7 +186,7 @@ def export_tflite(
 @requires("coremltools", "tensorflow")
 def export_coreml(
     model: keras.Model,
-    config: PlateOCRConfig,
+    plate_config: PlateOCRConfig,
     out_file: pathlib.Path,
 ) -> None:
     import coremltools as ct
@@ -191,9 +201,9 @@ def export_coreml(
             ct.TensorType(
                 shape=(
                     1,
-                    config.img_height,
-                    config.img_width,
-                    config.num_channels,
+                    plate_config.img_height,
+                    plate_config.img_width,
+                    plate_config.num_channels,
                 ),
                 dtype=np.float32,
             )
@@ -218,7 +228,13 @@ def export_coreml(
     _validate_prediction(
         model,
         _predict,
-        _dummy_input(1, config.img_height, config.img_width, config.num_channels, np.float32),
+        _dummy_input(
+            1,
+            plate_config.img_height,
+            plate_config.img_width,
+            plate_config.num_channels,
+            np.float32,
+        ),
         "CoreML",
     )
     logging.info("Saved CoreML model to %s", out_file)
@@ -278,18 +294,18 @@ def export(
     Export Keras models to other formats.
     """
 
-    config = load_plate_config_from_yaml(plate_config_file)
+    plate_config = load_plate_config_from_yaml(plate_config_file)
     model = load_keras_model(
         model_path,
-        vocab_size=config.vocabulary_size,
-        max_plate_slots=config.max_plate_slots,
+        vocab_size=plate_config.vocabulary_size,
+        max_plate_slots=plate_config.max_plate_slots,
     )
 
     if export_format == "onnx":
         out_file = _make_output_path(model_path, save_dir, ".onnx")
         export_onnx(
             model=model,
-            config=config,
+            plate_config=plate_config,
             out_file=out_file,
             simplify=simplify,
             dynamic_batch=dynamic_batch,
@@ -300,14 +316,14 @@ def export(
         # See: https://ai.google.dev/edge/litert/inference#run-inference
         export_tflite(
             model=model,
-            config=config,
+            plate_config=plate_config,
             out_file=out_file,
         )
     elif export_format == "coreml":
         out_file = _make_output_path(model_path, save_dir, ".mlpackage")
         export_coreml(
             model=model,
-            config=config,
+            plate_config=plate_config,
             out_file=out_file,
         )
 
