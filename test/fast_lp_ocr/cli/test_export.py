@@ -16,7 +16,7 @@ from fast_plate_ocr.train.model.model_builders import build_model
 from fast_plate_ocr.train.model.model_schema import load_model_config_from_yaml
 from test import MODEL_CONFIG_PATHS, PLATE_CONFIG_DIR
 
-LATIN_VOCAB_PLATE_CONFIG = PLATE_CONFIG_DIR / "latin_plate_example.yaml"
+LATIN_VOCAB_PLATE_CONFIG = PLATE_CONFIG_DIR / "default_latin_plate_config.yaml"
 
 
 def _build_and_save_keras_model(model_cfg_path: Path, plate_cfg_path: Path, save_dir: Path) -> Path:
