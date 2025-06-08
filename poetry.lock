@@ -96,7 +96,7 @@ wheel = ">=0.23.0,<1.0"
 name = "attrs"
 version = "25.3.0"
 description = "Classes Without Boilerplate"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3"},
@@ -129,7 +129,7 @@ dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 name = "cattrs"
 version = "24.1.3"
 description = "Composable complex class support for attrs and dataclasses."
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "cattrs-24.1.3-py3-none-any.whl", hash = "sha256:adf957dddd26840f27ffbd060a6c4dd3b2192c5b7c2c0525ef1bd8131d8a83f5"},
@@ -290,7 +290,7 @@ files = [
 name = "coloredlogs"
 version = "15.0.1"
 description = "Colored terminal output for Python's logging module"
-optional = false
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "coloredlogs-15.0.1-py2.py3-none-any.whl", hash = "sha256:612ee75c546f53e92e70049c9dbfcc18c935a2b9a53b66085ce9ef6a6e5c0934"},
@@ -370,7 +370,7 @@ test-no-images = ["pytest", "pytest-cov", "pytest-xdist", "wurlitzer"]
 name = "coremltools"
 version = "8.3.0"
 description = "Community Tools for Core ML"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "coremltools-8.3.0-cp310-none-macosx_10_15_x86_64.whl", hash = "sha256:730831927cde3ba39ae6f80b72c5fbff8820393f2f97ec1c98ab33ec08094c4e"},
@@ -451,7 +451,7 @@ test = ["pytest (>=6)"]
 name = "flatbuffers"
 version = "24.3.25"
 description = "The FlatBuffers serialization format for Python"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "flatbuffers-24.3.25-py2.py3-none-any.whl", hash = "sha256:8dbdec58f935f3765e4f7f3cf635ac3a77f83568138d6a2311f524ec96364812"},
@@ -683,7 +683,7 @@ numpy = ">=1.17.3"
 name = "humanfriendly"
 version = "10.0"
 description = "Human friendly output for text interfaces using Python"
-optional = false
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "humanfriendly-10.0-py2.py3-none-any.whl", hash = "sha256:1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477"},
@@ -1325,7 +1325,7 @@ dev = ["absl-py", "pyink", "pylint (>=2.6.0)", "pytest", "pytest-xdist"]
 name = "mpmath"
 version = "1.3.0"
 description = "Python library for arbitrary-precision floating-point arithmetic"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "mpmath-1.3.0-py3-none-any.whl", hash = "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c"},
@@ -1498,7 +1498,7 @@ reference = ["Pillow", "google-re2"]
 name = "onnxruntime"
 version = "1.19.2"
 description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "onnxruntime-1.19.2-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:84fa57369c06cadd3c2a538ae2a26d76d583e7c34bdecd5769d71ca5c0fc750e"},
@@ -1526,6 +1526,106 @@ files = [
     {file = "onnxruntime-1.19.2-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fae4b4de45894b9ce7ae418c5484cbf0341db6813effec01bb2216091c52f7fb"},
     {file = "onnxruntime-1.19.2-cp39-cp39-win32.whl", hash = "sha256:dc5430f473e8706fff837ae01323be9dcfddd3ea471c900a91fa7c9b807ec5d3"},
     {file = "onnxruntime-1.19.2-cp39-cp39-win_amd64.whl", hash = "sha256:38475e29a95c5f6c62c2c603d69fc7d4c6ccbf4df602bd567b86ae1138881c49"},
+]
+
+[package.dependencies]
+coloredlogs = "*"
+flatbuffers = "*"
+numpy = ">=1.21.6"
+packaging = "*"
+protobuf = "*"
+sympy = "*"
+
+[[package]]
+name = "onnxruntime-directml"
+version = "1.22.0"
+description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
+optional = true
+python-versions = ">=3.10"
+files = [
+    {file = "onnxruntime_directml-1.22.0-cp310-cp310-win_amd64.whl", hash = "sha256:1eddf2d05b6f28efa529e704c6cf515331df8ee84fd293e055e4a9a99a3ab51d"},
+    {file = "onnxruntime_directml-1.22.0-cp311-cp311-win_amd64.whl", hash = "sha256:4c611cb4b8588356eef4c02552e0a50117d558223dcfbdfe1b30b413e9a6feb0"},
+    {file = "onnxruntime_directml-1.22.0-cp312-cp312-win_amd64.whl", hash = "sha256:f8fc1a48b7fb134e34f8f138719a27d1bf6895611728b593fd86bc7c05b848a1"},
+    {file = "onnxruntime_directml-1.22.0-cp313-cp313-win_amd64.whl", hash = "sha256:35cde5043450cab642ac71a1ec7bded58e5ed5dcc867930a179cc48a501af235"},
+]
+
+[package.dependencies]
+coloredlogs = "*"
+flatbuffers = "*"
+numpy = ">=1.21.6"
+packaging = "*"
+protobuf = "*"
+sympy = "*"
+
+[[package]]
+name = "onnxruntime-gpu"
+version = "1.22.0"
+description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
+optional = true
+python-versions = ">=3.10"
+files = [
+    {file = "onnxruntime_gpu-1.22.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:965da7d33a54917e8e5176f292cc22640819f328370f4fb86087908745b03708"},
+    {file = "onnxruntime_gpu-1.22.0-cp310-cp310-win_amd64.whl", hash = "sha256:6db51c375ffe3887fe5cce61a0ae054e5e9c1eaf0603f8a106589a819976e4b2"},
+    {file = "onnxruntime_gpu-1.22.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d30c1512f22b1f01bacb4f177d49cbefd23e0f4bef56066f1282992d133e6ff8"},
+    {file = "onnxruntime_gpu-1.22.0-cp311-cp311-win_amd64.whl", hash = "sha256:0f1719f7cca76075b398a7d0466ead62d78fd2b8c0ea053dcf65d80c813103e8"},
+    {file = "onnxruntime_gpu-1.22.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:86b064c8f6cbe6da03f51f46351237d985f8fd5eb907d3f9997ea91881131a13"},
+    {file = "onnxruntime_gpu-1.22.0-cp312-cp312-win_amd64.whl", hash = "sha256:89cfd71e1ba17a4668e8770e344f22cde64bfd70b2ad3d03b8a390d4414b5995"},
+    {file = "onnxruntime_gpu-1.22.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c3e635792931c5edf48a6a44b8daf4f74a9458e2d60245d24d91e29b6c1c7aa5"},
+    {file = "onnxruntime_gpu-1.22.0-cp313-cp313-win_amd64.whl", hash = "sha256:082c9744b0470448a7d814babe058d0b5074380f32839aa655e5e5f9975f6d94"},
+    {file = "onnxruntime_gpu-1.22.0-cp313-cp313t-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d1559033601d71023d72a8e279b2575a104de5f46e136f87534206aa2044eb1c"},
+]
+
+[package.dependencies]
+coloredlogs = "*"
+flatbuffers = "*"
+numpy = ">=1.21.6"
+packaging = "*"
+protobuf = "*"
+sympy = "*"
+
+[package.extras]
+cuda = ["nvidia-cuda-nvrtc-cu12 (>=12.0,<13.0)", "nvidia-cuda-runtime-cu12 (>=12.0,<13.0)", "nvidia-cufft-cu12 (>=11.0,<12.0)", "nvidia-curand-cu12 (>=10.0,<11.0)"]
+cudnn = ["nvidia-cudnn-cu12 (>=9.0,<10.0)"]
+
+[[package]]
+name = "onnxruntime-openvino"
+version = "1.22.0"
+description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
+optional = true
+python-versions = ">=3.10"
+files = [
+    {file = "onnxruntime_openvino-1.22.0-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:c89fa637a3f0515aa9f9b249f050e4361c654bf0b1ddb95b65a9b723c5dcda74"},
+    {file = "onnxruntime_openvino-1.22.0-cp310-cp310-win_amd64.whl", hash = "sha256:83f5156ebe595d9c8f33cae034c98f5a033c8638446e0dce45fa1359d532ac76"},
+    {file = "onnxruntime_openvino-1.22.0-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:693c4e63fb6ca8c10ebd4f67a87701f3f0628eb81f40960bdf7ae5c61b6aefdb"},
+    {file = "onnxruntime_openvino-1.22.0-cp311-cp311-win_amd64.whl", hash = "sha256:bf3953915244ed54c03ece5542d93e45526a6dc776cd8919c179759aae0d9e76"},
+    {file = "onnxruntime_openvino-1.22.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:000811fd42b027663cd15fcbbde049871164f7353ed28cab0219a1c10eef8e6d"},
+    {file = "onnxruntime_openvino-1.22.0-cp312-cp312-win_amd64.whl", hash = "sha256:092446f82e52ab90d117120d321c7a726e58d77aab36d8796c29b7aa918ddb33"},
+    {file = "onnxruntime_openvino-1.22.0-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:a9879cfeb777a74b157383650aaf8762854a564f974ecdad55c7aa5962c7c534"},
+    {file = "onnxruntime_openvino-1.22.0-cp313-cp313-win_amd64.whl", hash = "sha256:329ddda0093cb2702dc5774075d3f5520e7cb9b478a420ec7183ee45426d7027"},
+]
+
+[package.dependencies]
+coloredlogs = "*"
+flatbuffers = "*"
+numpy = ">=1.21.6"
+packaging = "*"
+protobuf = "*"
+sympy = "*"
+
+[[package]]
+name = "onnxruntime-qnn"
+version = "1.22.0"
+description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
+optional = true
+python-versions = ">=3.10"
+files = [
+    {file = "onnxruntime_qnn-1.22.0-cp310-cp310-win_amd64.whl", hash = "sha256:7332cfbdf074858e2bcd8d40765bbfac5e08c5f2f6e84057bfa3f603b6710d03"},
+    {file = "onnxruntime_qnn-1.22.0-cp311-cp311-win_amd64.whl", hash = "sha256:87e8be267744a38c30cd44730a648587de1bc6ae1ff8564029bfe53c0a2f1b3e"},
+    {file = "onnxruntime_qnn-1.22.0-cp311-cp311-win_arm64.whl", hash = "sha256:08dd3180fc0fd39af225147a7cb958ac079bef8b8a1a2d7fb2280504ced259c1"},
+    {file = "onnxruntime_qnn-1.22.0-cp312-cp312-win_amd64.whl", hash = "sha256:9931ecfee8f410c5f456a5fb80dcde26bc90ccd848efd101e9617978bf6bd144"},
+    {file = "onnxruntime_qnn-1.22.0-cp312-cp312-win_arm64.whl", hash = "sha256:aae0b26a589f125c1374a1bd2e4128fbcb6944c4c5626100b9b2fe5f42d92ff9"},
+    {file = "onnxruntime_qnn-1.22.0-cp313-cp313-win_amd64.whl", hash = "sha256:d6ec41f71eb268cd4047a5bf908764b3b203e75afa9c9ceffa2bd449467f570a"},
+    {file = "onnxruntime_qnn-1.22.0-cp313-cp313-win_arm64.whl", hash = "sha256:9f99833ded779dc65ada3d8e9469e537d7e7fd2f1cbdbb6d33a1c5fd651df306"},
 ]
 
 [package.dependencies]
@@ -1918,7 +2018,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "protobuf"
 version = "3.20.3"
 description = "Protocol Buffers"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "protobuf-3.20.3-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:f4bd856d702e5b0d96a00ec6b307b0f51c1982c2bf9c0052cf9019e9a544ba99"},
@@ -1949,7 +2049,7 @@ files = [
 name = "pyaml"
 version = "25.5.0"
 description = "PyYAML-based module to produce a bit more pretty and readable YAML-serialized data"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "pyaml-25.5.0-py3-none-any.whl", hash = "sha256:b9e0c4e58a5e8003f8f18e802db49fd0563ada587209b13e429bdcbefa87d035"},
@@ -2163,7 +2263,7 @@ diagrams = ["jinja2", "railroad-diagrams"]
 name = "pyreadline3"
 version = "3.4.1"
 description = "A python implementation of GNU readline."
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "pyreadline3-3.4.1-py3-none-any.whl", hash = "sha256:b0efb6516fd4fb07b45949053826a62fa4cb353db5be2bbb4a7aa1fdd1e345fb"},
@@ -2850,7 +2950,7 @@ files = [
 name = "sympy"
 version = "1.12"
 description = "Computer algebra system (CAS) in Python"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "sympy-1.12-py3-none-any.whl", hash = "sha256:c3588cd4295d0c0f603d0f2ae780587e64e2efeedb3521e46b9bb1d08d184fa5"},
@@ -3309,15 +3409,14 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
+directml = ["onnxruntime-directml"]
 docs = ["mike", "mkdocs-material", "mkdocstrings"]
-onnx-directml = []
-onnx-gpu = []
-onnx-openvino = []
-onnx-qnn = []
-onnx-rocm = []
-train = ["albumentations", "click", "keras", "matplotlib", "onnxslim", "pandas", "pydantic", "tensorboard", "tensorflow"]
+gpu = ["onnxruntime-gpu"]
+openvino = ["onnxruntime-openvino"]
+qnn = ["onnxruntime-qnn"]
+train = ["albumentations", "click", "coremltools", "keras", "matplotlib", "onnxslim", "pandas", "pydantic", "tensorboard", "tensorflow"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "d94fd878b12c79a20772b9d9c74bfd5daa89c0df06394a96d70f7b92440e7618"
+content-hash = "2110389f6c381e3c54d4722d20c6dd27a97606acc2ad506163c4b7d59be758c0"
