@@ -78,7 +78,7 @@ def _make_output_path(
 
 
 @requires("onnx", "onnxruntime", "onnxslim")
-def _export_onnx(
+def export_onnx(
     model: keras.Model,
     config: PlateOCRConfig,
     out_file: pathlib.Path,
@@ -133,7 +133,7 @@ def _export_onnx(
 
 
 @requires("tensorflow")
-def _export_tflite(
+def export_tflite(
     model: keras.Model,
     config: PlateOCRConfig,
     out_file: pathlib.Path,
@@ -174,7 +174,7 @@ def _export_tflite(
 
 
 @requires("coremltools", "tensorflow")
-def _export_coreml(
+def export_coreml(
     model: keras.Model,
     config: PlateOCRConfig,
     out_file: pathlib.Path,
@@ -287,7 +287,7 @@ def export(
 
     if export_format == "onnx":
         out_file = _make_output_path(model_path, save_dir, ".onnx")
-        _export_onnx(
+        export_onnx(
             model=model,
             config=config,
             out_file=out_file,
@@ -298,14 +298,14 @@ def export(
         out_file = _make_output_path(model_path, save_dir, ".tflite")
         # TFLite doesn't seem to support dynamic batch size
         # See: https://ai.google.dev/edge/litert/inference#run-inference
-        _export_tflite(
+        export_tflite(
             model=model,
             config=config,
             out_file=out_file,
         )
     elif export_format == "coreml":
         out_file = _make_output_path(model_path, save_dir, ".mlpackage")
-        _export_coreml(
+        export_coreml(
             model=model,
             config=config,
             out_file=out_file,
