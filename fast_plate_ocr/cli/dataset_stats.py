@@ -96,9 +96,11 @@ def main(annotations: Path, plate_config_file: Path, top_chars: int, workers: in
     else:
         dims = [_header_shape(p) for p in paths]
 
-    heights = [h for ok, (h, _) in dims if ok]
-    widths = [w for ok, (_, w) in dims if ok]
-    aspects = [w / h for h, w in zip(heights, widths) if h > 0]
+    valid_dims = [dims_pair for ok, dims_pair in dims if ok and dims_pair is not None]
+
+    heights = [h for h, _ in valid_dims]
+    widths = [w for _, w in valid_dims]
+    aspects = [w / h for h, w in valid_dims if h > 0]
 
     # Build tables
     tbl_len = _compact_table("Plate Lengths", plate_lengths)
