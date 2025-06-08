@@ -174,8 +174,8 @@ def rich_report(errors, warnings):
 )
 @click.option(
     "--export-fixed",
-    type=click.Path(dir_okay=False, file_okay=True, path_type=Path),
-    help="Write a clean CSV containing only rows that passed validation.",
+    type=str,
+    help="Filename for the cleaned CSV written in the same directory as the annotations file.",
 )
 @click.option(
     "--min-height",
@@ -195,7 +195,7 @@ def main(
     annotations_file: Path,
     plate_config_file: Path,
     warn_only: bool,
-    export_fixed: Path | None,
+    export_fixed: str | None,
     min_height: int,
     min_width: int,
 ):
@@ -210,18 +210,26 @@ def main(
 
     errors, warnings, cleaned = validate_dataset(df, cfg, min_height, min_width)
 
+    # Make cleaned dataset img_path relative (expected format)
+    cleaned["image_path"] = cleaned["image_path"].apply(
+        lambda p: str(Path(p).relative_to(csv_root))
+    )
+
     rich_report(errors, warnings)
 
     if export_fixed:
-        if export_fixed.resolve() == annotations_file.resolve():
+        export_path = csv_root / Path(export_fixed).name
+        if export_path.resolve() == annotations_file.resolve():
             console.print(
                 "[yellow]⚠️ Skipping export: make sure you don't "
                 "overwrite original annotations file.[/]"
             )
+        elif export_path.exists():
+            console.print(f"[yellow]⚠️ Skipping export: file already exists at {export_path}[/]")
         else:
-            cleaned.to_csv(export_fixed, index=False)
+            cleaned.to_csv(export_path, index=False)
             console.print(
-                f"[green]✅ Wrote cleaned CSV with {len(cleaned)} rows → {export_fixed} [/]"
+                f"[green]✅ Wrote cleaned CSV with {len(cleaned)} rows at {export_path} [/]"
             )
 
     if errors and not warn_only:
