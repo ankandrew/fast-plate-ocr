@@ -295,11 +295,7 @@ def export(
     """
 
     plate_config = load_plate_config_from_yaml(plate_config_file)
-    model = load_keras_model(
-        model_path,
-        vocab_size=plate_config.vocabulary_size,
-        max_plate_slots=plate_config.max_plate_slots,
-    )
+    model = load_keras_model(model_path, plate_config)
 
     if export_format == "onnx":
         out_file = _make_output_path(model_path, save_dir, ".onnx")

@@ -7,10 +7,8 @@ import pathlib
 import click
 
 from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
-
-# Custom metris / losses
 from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
-from fast_plate_ocr.train.utilities import utils
+from fast_plate_ocr.train.utilities.utils import load_keras_model
 
 
 @click.command(context_settings={"max_content_width": 120})
@@ -75,13 +73,11 @@ def valid(
     """
     Validate the trained OCR model on a labeled set.
     """
-    config = load_plate_config_from_yaml(plate_config_file)
-    model = utils.load_keras_model(
-        model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
-    )
+    plate_config = load_plate_config_from_yaml(plate_config_file)
+    model = load_keras_model(model_path, plate_config)
     val_dataset = PlateRecognitionPyDataset(
         annotations_file=annotations,
-        config=config,
+        config=plate_config,
         batch_size=batch_size,
         shuffle=False,
         workers=workers,
