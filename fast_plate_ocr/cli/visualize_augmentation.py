@@ -164,6 +164,7 @@ def visualize_augmentation(
         if augmentation_path
         else default_augmentation(config.image_color_mode)
     )
+    aug.set_random_seed(seed)
     images, augmented_images = load_images(img_dir, num_images, shuffle, config, aug)
     display_images(images, augmented_images, columns, rows, show_original)
 
