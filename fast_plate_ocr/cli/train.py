@@ -300,7 +300,7 @@ def train(
     train_dataset = PlateRecognitionPyDataset(
         annotations_file=annotations,
         transform=train_augmentation,
-        config=plate_config,
+        plate_config=plate_config,
         batch_size=batch_size,
         shuffle=True,
         workers=workers,
@@ -310,7 +310,7 @@ def train(
 
     val_dataset = PlateRecognitionPyDataset(
         annotations_file=val_annotations,
-        config=plate_config,
+        plate_config=plate_config,
         batch_size=batch_size,
         shuffle=False,
         workers=workers,

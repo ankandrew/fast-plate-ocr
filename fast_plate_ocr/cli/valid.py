@@ -77,7 +77,7 @@ def valid(
     model = load_keras_model(model_path, plate_config)
     val_dataset = PlateRecognitionPyDataset(
         annotations_file=annotations,
-        config=plate_config,
+        plate_config=plate_config,
         batch_size=batch_size,
         shuffle=False,
         workers=workers,
