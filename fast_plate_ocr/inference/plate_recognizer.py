@@ -144,21 +144,51 @@ class LicensePlateRecognizer:
         )
         self.logger.info("Using ONNX Runtime with %s.", self.providers)
 
-    def benchmark(self, n_iter: int = 10_000, include_processing: bool = False) -> None:
+    def benchmark(
+        self,
+        n_iter: int = 10_000,
+        batch_size: int = 1,
+        include_processing: bool = False,
+        warmup: int = 50,
+    ) -> None:
         """
-        Benchmark time taken to run the OCR model. This reports the average inference time and the
-        throughput in plates per second.
+        Run an inference benchmark and pretty print the results.
+
+        It reports the following metrics:
+
+        * **Average latency per batch** (milliseconds)
+        * **Throughput** in *plates / second* (PPS), i.e., how many plates the pipeline can process
+          per second at the chosen ``batch_size``.
 
         Args:
             n_iter: The number of iterations to run the benchmark. This determines how many times
                 the inference will be executed to compute the average performance metrics.
+            batch_size : Batch size to use for the benchmark.
             include_processing: Indicates whether the benchmark should include preprocessing and
                 postprocessing times in the measurement.
+            warmup: Number of warmup iterations to run before the benchmark.
         """
-        cum_time = 0.0
         x = np.random.randint(
-            0, 256, size=(1, self.config["img_height"], self.config["img_width"], 1), dtype=np.uint8
+            0,
+            256,
+            size=(
+                batch_size,
+                self.config.img_height,
+                self.config.img_width,
+                self.config.num_channels,
+            ),
+            dtype=np.uint8,
         )
+
+        # Warm-up
+        for _ in range(warmup):
+            if include_processing:
+                self.run(x)
+            else:
+                self.model.run(None, {"input": x})
+
+        # Timed loop
+        cum_time = 0.0
         for _ in range(n_iter):
             with measure_time() as time_taken:
                 if include_processing:
@@ -167,8 +197,8 @@ class LicensePlateRecognizer:
                     self.model.run(None, {"input": x})
             cum_time += time_taken()
 
-        avg_time = (cum_time / n_iter) if n_iter > 0 else 0.0
-        avg_pps = (1_000 / avg_time) if n_iter > 0 else 0.0
+        avg_time_ms = cum_time / n_iter if n_iter else 0.0
+        pps = (1_000 / avg_time_ms) * batch_size if n_iter else 0.0
 
         console = Console()
         model_info = Panel(
@@ -178,12 +208,15 @@ class LicensePlateRecognizer:
             expand=False,
         )
         console.print(model_info)
-        table = Table(title=f"Benchmark for '{self.model_name}' Model", border_style="bright_blue")
+        table = Table(title=f"Benchmark for '{self.model_name}'", border_style="bright_blue")
         table.add_column("Metric", justify="center", style="cyan", no_wrap=True)
         table.add_column("Value", justify="center", style="magenta")
-        table.add_row("Number of Iterations", str(n_iter))
-        table.add_row("Average Time (ms)", f"{avg_time:.4f}")
-        table.add_row("Plates Per Second (PPS)", f"{avg_pps:.4f}")
+
+        table.add_row("Batch size", str(batch_size))
+        table.add_row("Warm-up iters", str(warmup))
+        table.add_row("Timed iterations", str(n_iter))
+        table.add_row("Average Time / batch (ms)", f"{avg_time_ms:.4f}")
+        table.add_row("Plates per Second (PPS)", f"{pps:.4f}")
         console.print(table)
 
     def run(
@@ -214,7 +247,7 @@ class LicensePlateRecognizer:
         # Postprocess model output
         return postprocess_output(
             y[0],
-            self.config["max_plate_slots"],
-            self.config["alphabet"],
+            self.config.max_plate_slots,
+            self.config.alphabet,
             return_confidence=return_confidence,
         )
