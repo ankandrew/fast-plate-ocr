@@ -23,7 +23,7 @@ from fast_plate_ocr.train.utilities import utils
     help="Path to the saved .keras model.",
 )
 @click.option(
-    "--config-file",
+    "--plate-config-file",
     required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
@@ -65,7 +65,7 @@ from fast_plate_ocr.train.utilities import utils
 )
 def valid(
     model_path: pathlib.Path,
-    config_file: pathlib.Path,
+    plate_config_file: pathlib.Path,
     annotations: pathlib.Path,
     batch_size: int,
     workers: int,
@@ -75,7 +75,7 @@ def valid(
     """
     Validate the trained OCR model on a labeled set.
     """
-    config = load_plate_config_from_yaml(config_file)
+    config = load_plate_config_from_yaml(plate_config_file)
     model = utils.load_keras_model(
         model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
     )
