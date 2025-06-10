@@ -13,7 +13,7 @@ import numpy as np
 import numpy.typing as npt
 
 from fast_plate_ocr.train.data.augmentation import (
-    default_augmentation,
+    default_train_augmentation,
 )
 from fast_plate_ocr.train.model.config import PlateOCRConfig, load_plate_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
@@ -162,7 +162,7 @@ def visualize_augmentation(
     aug = (
         A.load(augmentation_path, data_format="yaml")
         if augmentation_path
-        else default_augmentation(config.image_color_mode)
+        else default_train_augmentation(config.image_color_mode)
     )
     aug.set_random_seed(seed)
     images, augmented_images = load_images(img_dir, num_images, shuffle, config, aug)

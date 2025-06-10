@@ -23,7 +23,7 @@ from keras.src.optimizers import AdamW
 import fast_plate_ocr.train.model.model_builders
 from fast_plate_ocr.cli.utils import print_params, print_train_details
 from fast_plate_ocr.train.data.augmentation import (
-    default_augmentation,
+    default_train_augmentation,
 )
 from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
 from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
@@ -293,7 +293,7 @@ def train(
     train_augmentation = (
         A.load(augmentation_path, data_format="yaml")
         if augmentation_path
-        else default_augmentation(img_color_mode=plate_config.image_color_mode)
+        else default_train_augmentation(img_color_mode=plate_config.image_color_mode)
     )
     print_train_details(train_augmentation, plate_config.model_dump())
 
