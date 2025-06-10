@@ -7,7 +7,7 @@ from typing import Annotated, Literal, TypeAlias
 import keras
 import yaml
 from keras.src.layers import RMSNormalization
-from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
+from pydantic import BaseModel, Field, PositiveFloat, PositiveInt, model_validator
 
 from fast_plate_ocr.core.types import PathLike
 from fast_plate_ocr.train.model.layers import (
@@ -332,6 +332,15 @@ class _CCTTransformerEncoderConfig(BaseModel):
     head_mlp_dropout: UnitFloat = 0.2
     token_reducer_heads: PositiveInt = 2
     normalization: NormalizationStr = "layer_norm"
+
+    @model_validator(mode="after")
+    def _consistency_checks(self):
+        if self.units[-1] != self.projection_dim:
+            raise ValueError(
+                "'units[-1]' must equal 'projection_dim' "
+                f"(got {self.units[-1]} vs {self.projection_dim})."
+            )
+        return self
 
 
 class CCTModelConfig(BaseModel):
