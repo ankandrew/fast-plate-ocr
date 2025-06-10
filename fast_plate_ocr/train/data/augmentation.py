@@ -11,13 +11,14 @@ BORDER_COLOR_BLACK: tuple[int, int, int] = (0, 0, 0)
 
 TRAIN_AUGMENTATION = A.Compose(
     [
-        A.ShiftScaleRotate(
-            shift_limit=0.02,
-            scale_limit=(-0.35, 0.05),
-            rotate_limit=10,
+        A.Affine(
+            translate_percent=(-0.02, 0.02),
+            scale=(0.65, 1.05),
+            rotate=(-10, 10),
             border_mode=cv2.BORDER_CONSTANT,
             fill=BORDER_COLOR_BLACK,
-            p=1,
+            shear=(0.0, 0.0),
+            p=0.75,
         ),
         A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1.0),
         A.GaussianBlur(sigma_limit=(0.2, 0.5), p=0.25),
@@ -41,12 +42,13 @@ TRAIN_AUGMENTATION = A.Compose(
 
 TRAIN_AUGMENTATION_RGB = A.Compose(
     [
-        A.ShiftScaleRotate(
-            shift_limit=0.02,
-            scale_limit=(-0.35, 0.05),
-            rotate_limit=10,
+        A.Affine(
+            translate_percent=(-0.02, 0.02),
+            scale=(0.65, 1.05),
+            rotate=(-10, 10),
             border_mode=cv2.BORDER_CONSTANT,
             fill=BORDER_COLOR_BLACK,
+            shear=(0.0, 0.0),
             p=0.75,
         ),
         A.RandomBrightnessContrast(brightness_limit=0.10, contrast_limit=0.10, p=0.5),
