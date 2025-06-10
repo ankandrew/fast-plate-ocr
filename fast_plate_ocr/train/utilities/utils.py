@@ -16,10 +16,12 @@ import numpy.typing as npt
 
 from fast_plate_ocr.core.process import read_and_resize_plate_image
 from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PaddingColor
+from fast_plate_ocr.train.model.config import PlateOCRConfig
 from fast_plate_ocr.train.model.loss import cce_loss, focal_cce_loss
 from fast_plate_ocr.train.model.metric import (
     cat_acc_metric,
     plate_acc_metric,
+    plate_len_acc_metric,
     top_3_k_metric,
 )
 
@@ -52,21 +54,34 @@ def _register_custom_keras():
 
 def load_keras_model(
     model_path: str | pathlib.Path,
-    vocab_size: int,
-    max_plate_slots: int,
+    plate_config: PlateOCRConfig,
 ) -> keras.Model:
     """
     Utility helper function to load the keras OCR model.
     """
     _register_custom_keras()
     custom_objects = {
-        "cce": cce_loss(vocabulary_size=vocab_size),
-        "focal_cce": focal_cce_loss(vocabulary_size=vocab_size),
-        "cat_acc": cat_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
-        "plate_acc": plate_acc_metric(max_plate_slots=max_plate_slots, vocabulary_size=vocab_size),
-        "top_3_k": top_3_k_metric(vocabulary_size=vocab_size),
-        "plate_len_acc": plate_acc_metric(
-            max_plate_slots=max_plate_slots, vocabulary_size=vocab_size
+        "cce": cce_loss(
+            vocabulary_size=plate_config.vocabulary_size,
+        ),
+        "focal_cce": focal_cce_loss(
+            vocabulary_size=plate_config.vocabulary_size,
+        ),
+        "cat_acc": cat_acc_metric(
+            max_plate_slots=plate_config.max_plate_slots,
+            vocabulary_size=plate_config.vocabulary_size,
+        ),
+        "plate_acc": plate_acc_metric(
+            max_plate_slots=plate_config.max_plate_slots,
+            vocabulary_size=plate_config.vocabulary_size,
+        ),
+        "top_3_k": top_3_k_metric(
+            vocabulary_size=plate_config.vocabulary_size,
+        ),
+        "plate_len_acc": plate_len_acc_metric(
+            max_plate_slots=plate_config.max_plate_slots,
+            vocabulary_size=plate_config.vocabulary_size,
+            pad_token_index=plate_config.pad_idx,
         ),
     }
     model = keras.models.load_model(model_path, custom_objects=custom_objects)
