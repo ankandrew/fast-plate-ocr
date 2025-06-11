@@ -23,20 +23,20 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.10"
 # Packages required for doing inference
 numpy = ">=1.20"
 opencv-python = "*"
 pyyaml = ">=5.1"
 tqdm = "*"
 rich = "*"
-onnxruntime = { version = ">=1.19.2", markers = " extra != 'gpu' and extra != 'openvino' and extra != 'directml' and extra != 'qnn' " }
+onnxruntime = "*"
 
 # ONNX package variants (for different hardware accelerator)
-onnxruntime-gpu = { version = ">=1.19.2", optional = true }
-onnxruntime-openvino = { version = ">=1.19.2", optional = true }
-onnxruntime-directml = { version = ">=1.19.2", optional = true }
-onnxruntime-qnn = { version = ">=1.19.2", optional = true }
+onnxruntime-gpu = { version = "*", optional = true }
+onnxruntime-openvino = { version = "*", optional = true }
+onnxruntime-directml = { version = "*", optional = true }
+onnxruntime-qnn = { version = "*", optional = true }
 
 # Training packages are optional
 albumentations = { version = "*", optional = true }
@@ -47,13 +47,9 @@ matplotlib = { version = "*", optional = true }
 onnxslim = { version = ">=0.1.56", optional = true }
 pandas = { version = "*", optional = true }
 pydantic = { version = "^2.5.2", optional = true }
+scikit-learn = { version = "*", optional = true }
 tensorboard = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
-
-# Optional packages for creating the docs
-mkdocs-material = { version = "*", optional = true }
-mkdocstrings = { version = "*", extras = ["python"], optional = true }
-mike = { version = "*", optional = true }
 
 [tool.poetry.extras]
 gpu = ["onnxruntime-gpu"]
@@ -69,10 +65,10 @@ train = [
     "onnxslim",
     "pandas",
     "pydantic",
+    "scikit-learn",
     "tensorboard",
     "tensorflow",
 ]
-docs = ["mkdocs-material", "mkdocstrings", "mike"]
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
@@ -80,13 +76,15 @@ pytest = "*"
 [tool.poetry.group.dev.dependencies]
 mypy = "*"
 ruff = "*"
-pandas-stubs = "^2.2.0.240218"
+pandas-stubs = "*"
 pylint = "*"
-types-pyyaml = "^6.0.12.20240311"
+types-pyyaml = "*"
 yamllint = "*"
 
-[tool.poetry.group.train.dependencies]
-scikit-learn = "^1.6.1"
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "*"
+mkdocstrings = { version = "*", extras = ["python"] }
+mike = "*"
 
 [tool.poetry.scripts]
 fast_plate_ocr = "fast_plate_ocr.cli.cli:main_cli"
