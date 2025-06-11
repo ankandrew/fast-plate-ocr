@@ -50,6 +50,7 @@ pydantic = { version = "^2.5.2", optional = true }
 scikit-learn = { version = "*", optional = true }
 tensorboard = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
+tf2onnx = { version = "*", optional = true }
 
 [tool.poetry.extras]
 gpu = ["onnxruntime-gpu"]
@@ -68,6 +69,7 @@ train = [
     "scikit-learn",
     "tensorboard",
     "tensorflow",
+    "tf2onnx",
 ]
 
 [tool.poetry.group.test.dependencies]
