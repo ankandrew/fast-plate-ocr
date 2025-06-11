@@ -7,6 +7,7 @@ YAML_PATHS := .github/ models/ config/ mkdocs.yml
 help:
 	@echo "Available targets:"
 	@echo "  help             : Show this help message"
+	@echo "  install          : Install project with all dev/test/docs/train dependencies"
 	@echo "  format           : Format code using Ruff format"
 	@echo "  check_format     : Check code formatting with Ruff format"
 	@echo "  ruff             : Run Ruff linter"
@@ -16,6 +17,10 @@ help:
 	@echo "  test             : Run tests using pytest"
 	@echo "  checks           : Check format, lint, and test"
 	@echo "  clean            : Clean up caches and build artifacts"
+
+install:
+	@echo "==> Installing project with dev/test/docs/train dependencies..."
+	poetry install --with dev,test,docs --extras train
 
 .PHONY: format
 format:
