@@ -71,8 +71,8 @@ class LicensePlateRecognizer:
         device: Literal["cuda", "cpu", "auto"] = "auto",
         providers: Sequence[str | tuple[str, dict]] | None = None,
         sess_options: ort.SessionOptions | None = None,
-        model_path: str | os.PathLike[str] | None = None,
-        config_path: str | os.PathLike[str] | None = None,
+        model_path: PathLike | None = None,
+        config_path: PathLike | None = None,
         force_download: bool = False,
     ) -> None:
         """

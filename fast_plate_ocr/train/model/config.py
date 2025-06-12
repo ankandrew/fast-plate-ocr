@@ -2,7 +2,6 @@
 Config values used throughout the code.
 """
 
-from os import PathLike
 from typing import Annotated, TypeAlias
 
 import annotated_types
@@ -15,7 +14,7 @@ from pydantic import (
     model_validator,
 )
 
-from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PathLike
 
 UInt8: TypeAlias = Annotated[int, annotated_types.Ge(0), annotated_types.Le(255)]
 """
@@ -92,7 +91,7 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
         return self
 
 
-def load_plate_config_from_yaml(yaml_file_path: str | PathLike[str]) -> PlateOCRConfig:
+def load_plate_config_from_yaml(yaml_file_path: PathLike) -> PlateOCRConfig:
     """Read and parse a YAML containing the plate config."""
     with open(yaml_file_path, encoding="utf-8") as f_in:
         yaml_content = yaml.safe_load(f_in)

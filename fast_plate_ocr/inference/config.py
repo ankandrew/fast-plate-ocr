@@ -3,11 +3,10 @@ Model config reading/parsing for doing inference.
 """
 
 from dataclasses import dataclass
-from os import PathLike
 
 import yaml
 
-from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PathLike
 
 # pylint: disable=duplicate-code
 
@@ -72,7 +71,7 @@ class PlateOCRConfig:  # pylint: disable=too-many-instance-attributes
         return 3 if self.image_color_mode == "rgb" else 1
 
     @classmethod
-    def from_yaml(cls, path: str | PathLike[str]) -> "PlateOCRConfig":
+    def from_yaml(cls, path: PathLike) -> "PlateOCRConfig":
         """
         Read and parse a yaml containing the Plate OCR config.
         """
