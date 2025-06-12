@@ -162,8 +162,10 @@ def display_predictions(
     logging.info("Plate: %s", plate_str)
     logging.info("Confidence: %s", probs)
     image_to_show = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_LINEAR)
-    # Converting to BGR for color text
-    image_to_show = cv2.cvtColor(image_to_show, cv2.COLOR_GRAY2RGB)
+    if len(image_to_show.shape) == 2:
+        image_to_show = cv2.cvtColor(image_to_show, cv2.COLOR_GRAY2RGB)
+    elif image_to_show.shape[2] == 3:
+        image_to_show = cv2.cvtColor(image_to_show, cv2.COLOR_BGR2RGB)
     # Average probabilities
     avg_prob = np.mean(probs) * 100
     cv2.putText(

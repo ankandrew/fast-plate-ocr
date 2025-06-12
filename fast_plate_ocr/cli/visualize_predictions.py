@@ -68,7 +68,13 @@ def visualize_predictions(
     plate_config = load_plate_config_from_yaml(plate_config_file)
     model = utils.load_keras_model(model_path, plate_config)
     images = utils.load_images_from_folder(
-        img_dir, width=plate_config.img_width, height=plate_config.img_height
+        img_dir,
+        width=plate_config.img_width,
+        height=plate_config.img_height,
+        image_color_mode=plate_config.image_color_mode,
+        keep_aspect_ratio=plate_config.keep_aspect_ratio,
+        interpolation_method=plate_config.interpolation,
+        padding_color=plate_config.padding_color,
     )
     for image in images:
         x = np.expand_dims(image, 0)
