@@ -84,6 +84,7 @@ def export_onnx(
     out_file: pathlib.Path,
     simplify: bool,
     dynamic_batch: bool,
+    skip_validation: bool = False,
 ) -> None:
     import onnxruntime as rt
 
@@ -113,6 +114,11 @@ def export_onnx(
         else:
             shutil.copy(tmp.name, out_file)
 
+    if skip_validation:
+        logging.info("Skipping ONNX validation.")
+        logging.info("Saved ONNX model to %s", out_file)
+        return
+
     sess = rt.InferenceSession(out_file)
     input_name = sess.get_inputs()[0].name
     output_names = [o.name for o in sess.get_outputs()]
@@ -141,6 +147,7 @@ def export_tflite(
     model: keras.Model,
     plate_config: PlateOCRConfig,
     out_file: pathlib.Path,
+    skip_validation: bool = False,
 ) -> None:
     import tensorflow as tf
 
@@ -152,6 +159,11 @@ def export_tflite(
 
         tflite_bytes = converter.convert()
         out_file.write_bytes(tflite_bytes)
+
+    if skip_validation:
+        logging.info("Skipping TFLite validation.")
+        logging.info("Saved TFLite model to %s", out_file)
+        return
 
     class _TFLiteRunner:
         def __init__(self, path):
@@ -188,6 +200,7 @@ def export_coreml(
     model: keras.Model,
     plate_config: PlateOCRConfig,
     out_file: pathlib.Path,
+    skip_validation: bool = False,
 ) -> None:
     import coremltools as ct
     import tensorflow as tf
@@ -215,6 +228,10 @@ def export_coreml(
             inputs=ct_inputs,
         )
         mlmodel.save(str(out_file))
+
+    if skip_validation:
+        logging.info("Skipping CoreML validation.")
+        return
 
     mlmodel = ct.models.MLModel(str(out_file))
 
@@ -282,6 +299,12 @@ def export_coreml(
     show_default=True,
     help="Enable dynamic batch size (only applies to ONNX format).",
 )
+@click.option(
+    "--skip-validation/--no-skip-validation",
+    default=False,
+    show_default=True,
+    help="Skip the post-export inference validation step.",
+)
 def export(
     model_path: pathlib.Path,
     export_format: str,
@@ -289,6 +312,7 @@ def export(
     plate_config_file: pathlib.Path,
     save_dir: pathlib.Path,
     dynamic_batch: bool,
+    skip_validation: bool,
 ) -> None:
     """
     Export Keras models to other formats.
@@ -305,6 +329,7 @@ def export(
             out_file=out_file,
             simplify=simplify,
             dynamic_batch=dynamic_batch,
+            skip_validation=skip_validation,
         )
     elif export_format == "tflite":
         out_file = _make_output_path(model_path, save_dir, ".tflite")
@@ -321,6 +346,7 @@ def export(
             model=model,
             plate_config=plate_config,
             out_file=out_file,
+            skip_validation=skip_validation,
         )
 
 
