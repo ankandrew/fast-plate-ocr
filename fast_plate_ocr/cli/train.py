@@ -240,7 +240,7 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
     default="bias,layer_norm",
     show_default=True,
     type=str,
-    help="Comma‑separated list of variable‑name substrings to exclude from weight decay.",
+    help="Comma-separated list of variable substrings to exclude from weight decay.",
 )
 @click.option(
     "--seed",

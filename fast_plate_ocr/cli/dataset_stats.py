@@ -1,5 +1,5 @@
 """
-Display statistics for a `fast‑plate‑ocr` dataset.
+Display statistics for a `fast-plate-ocr` dataset.
 """
 
 from collections import Counter
@@ -17,6 +17,8 @@ from rich.panel import Panel
 from rich.table import Table
 
 from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
+
+# pylint: disable=too-many-locals
 
 console = Console()
 
@@ -38,7 +40,7 @@ def _compact_table(title: str, values: Sequence[float]) -> Table:
     tbl = Table(title=title, box=box.MINIMAL_DOUBLE_HEAD, pad_edge=False, expand=False)
     for m in metrics:
         tbl.add_column(m, justify="right", style="bold")
-    tbl.add_row(*[f"{desc[m]:.2f}" if pd.notna(desc[m]) else "–" for m in metrics])
+    tbl.add_row(*[f"{desc[m]:.2f}" if pd.notna(desc[m]) else "-" for m in metrics])
     return tbl
 
 
@@ -73,23 +75,23 @@ def _compact_table(title: str, values: Sequence[float]) -> Table:
 )
 def main(annotations: Path, plate_config_file: Path, top_chars: int, workers: int) -> None:
     """
-    Display statistics for a `fast‑plate‑ocr` dataset.
+    Display statistics for a `fast-plate-ocr` dataset.
     """
     plate_config = load_plate_config_from_yaml(plate_config_file)
 
-    df = pd.read_csv(annotations)
+    df_annots = pd.read_csv(annotations)
     root = annotations.parent
-    df["image_path"] = df["image_path"].apply(lambda p: str((root / p).resolve()))
+    df_annots["image_path"] = df_annots["image_path"].apply(lambda p: str((root / p).resolve()))
 
     # Plate lengths and char frequencies
-    plate_lengths = df["plate_text"].str.len().tolist()
-    char_counter: Counter[str] = Counter("".join(df["plate_text"].tolist()))
+    plate_lengths = df_annots["plate_text"].str.len().tolist()
+    char_counter: Counter[str] = Counter("".join(df_annots["plate_text"].tolist()))
 
     # File extension counts
-    ext_counter = Counter(df["image_path"].apply(lambda p: Path(p).suffix.lower()))
+    ext_counter = Counter(df_annots["image_path"].apply(lambda p: Path(p).suffix.lower()))
 
     # Image header dimensions
-    paths = [Path(p) for p in df["image_path"].tolist()]
+    paths = [Path(p) for p in df_annots["image_path"].tolist()]
     if workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as ex:
             dims = list(ex.map(_header_shape, paths))

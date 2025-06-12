@@ -92,7 +92,7 @@ IMG_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".
 """Valid image extensions for the scope of this script."""
 
 
-def load_images_from_folder(
+def load_images_from_folder(  # noqa: PLR0913
     img_dir: pathlib.Path,
     width: int,
     height: int,

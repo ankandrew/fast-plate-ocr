@@ -17,17 +17,15 @@ from rich.table import Table
 
 from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
 
+# pylint: disable=too-many-locals
+
 console = Console()
 
 
 def partial_decode_ok(path: Path) -> tuple[bool, tuple[int, int] | None]:
-    """
-    Return (is_ok, (h, w)) – True only if Pillow can verify the file and
-    obtain its dimensions without allocating the full pixel buffer.
-    """
     try:
         with Image.open(path) as im:
-            im.verify()  # light-weight integrity check
+            im.verify()
             w, h = im.size
             return True, (h, w)
     except (UnidentifiedImageError, OSError):
@@ -47,7 +45,6 @@ def validate_dataset(
     char_counter: Counter[str] = Counter()
     seen_paths: set[Path] = set()
 
-    # pretty progress bar
     progress = Progress(
         SpinnerColumn(),
         BarColumn(bar_width=None),
@@ -204,11 +201,11 @@ def main(
     """
     cfg = load_plate_config_from_yaml(plate_config_file)
 
-    df = pd.read_csv(annotations_file)
+    df_annots = pd.read_csv(annotations_file)
     csv_root = annotations_file.parent
-    df["image_path"] = df["image_path"].apply(lambda p: str((csv_root / p).resolve()))
+    df_annots["image_path"] = df_annots["image_path"].apply(lambda p: str((csv_root / p).resolve()))
 
-    errors, warnings, cleaned = validate_dataset(df, cfg, min_height, min_width)
+    errors, warnings, cleaned = validate_dataset(df_annots, cfg, min_height, min_width)
 
     # Make cleaned dataset img_path relative (expected format)
     cleaned["image_path"] = cleaned["image_path"].apply(
