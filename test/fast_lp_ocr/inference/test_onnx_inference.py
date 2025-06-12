@@ -18,7 +18,7 @@ def onnx_model_fixture() -> Iterator[LicensePlateRecognizer]:
 
 
 @pytest.mark.parametrize(
-    "input_image, expected_result",
+    "input_image, expected_plate_count",
     [
         # Single image path (str)
         (str(ASSETS_DIR / "test_plate_1.png"), 1),
@@ -45,8 +45,8 @@ def onnx_model_fixture() -> Iterator[LicensePlateRecognizer]:
 )
 def test_result_from_different_image_sources(
     input_image: str | list[str] | npt.NDArray,
-    expected_result: int,
+    expected_plate_count: int,
     onnx_model: LicensePlateRecognizer,
 ) -> None:
-    actual_result = len(onnx_model.run(input_image))
-    assert actual_result == expected_result
+    actual_plate_count = len(onnx_model.run(input_image))
+    assert actual_plate_count == expected_plate_count
