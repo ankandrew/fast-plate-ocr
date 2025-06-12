@@ -3,7 +3,6 @@ ONNX inference module.
 """
 
 import logging
-import os
 import pathlib
 from collections.abc import Sequence
 from typing import Literal
@@ -16,50 +15,102 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from fast_plate_ocr.core.process import postprocess_output, preprocess_image, read_plate_image
+from fast_plate_ocr.core.process import (
+    postprocess_output,
+    preprocess_image,
+    read_and_resize_plate_image,
+    resize_image,
+)
+from fast_plate_ocr.core.types import BatchArray, BatchOrImgLike, ImgLike, PathLike
 from fast_plate_ocr.core.utils import measure_time
 from fast_plate_ocr.inference import hub
-from fast_plate_ocr.inference.config import load_config_from_yaml
+from fast_plate_ocr.inference.config import PlateOCRConfig
 from fast_plate_ocr.inference.hub import OcrModel
 
 
-def _load_image_from_source(
-    source: str | list[str] | npt.NDArray | list[npt.NDArray],
-) -> npt.NDArray | list[npt.NDArray]:
+def _frame_from(item: ImgLike, cfg: PlateOCRConfig) -> BatchArray:
     """
-    Loads an image from a given source.
-
-    :param source: Path to the input image file, list of paths, or numpy array representing one or
-     multiple images.
-    :return: Numpy array representing the input image(s) or a list of numpy arrays.
+    Converts a single image-like input into a normalized (H, W, C) NumPy array ready for model
+    inference. It handles both file paths and in-memory images. If input is a file path, the image
+    is read and resized using the configuration provided. If it's a NumPy array, it is validated and
+    resized accordingly.
     """
-    if isinstance(source, str):
-        # Shape returned (H, W)
-        return read_plate_image(source)
+    # If it's a path, read and resize
+    if isinstance(item, (str | pathlib.PurePath)):
+        return read_and_resize_plate_image(
+            item,
+            img_height=cfg.img_height,
+            img_width=cfg.img_width,
+            image_color_mode=cfg.image_color_mode,
+            keep_aspect_ratio=cfg.keep_aspect_ratio,
+            interpolation_method=cfg.interpolation,
+            padding_color=cfg.padding_color,
+        )
 
-    if isinstance(source, list):
-        # Are image paths
-        if all(isinstance(s, str) for s in source):
-            # List returned with array item of shape (H, W)
-            return [read_plate_image(i) for i in source]  # type: ignore[arg-type]
-        # Are list of numpy arrays
-        if all(isinstance(a, np.ndarray) for a in source):
-            # List returned with array item of shape (H, W)
-            return source  # type: ignore[return-value]
-        raise ValueError("Expected source to be a list of `str` or `np.ndarray`!")
+    # Otherwise it must be a numpy array
+    if not isinstance(item, np.ndarray):
+        raise TypeError(f"Unsupported element type: {type(item)}")
 
-    if isinstance(source, np.ndarray):
-        # Squeeze grayscale channel dimension if supplied
-        source = source.squeeze()
-        if source.ndim != 2:
-            raise ValueError("Expected source array to be of shape (H, W) or (H, W, 1).")
-        # Shape returned (H, W)
+    # If it has (N, H, W, C) shape we assume it's ready for inference
+    if item.ndim == 4:
+        return item
+
+    # If it's a single frame resize accordingly
+    return resize_image(
+        item,
+        cfg.img_height,
+        cfg.img_width,
+        image_color_mode=cfg.image_color_mode,
+        keep_aspect_ratio=cfg.keep_aspect_ratio,
+        interpolation_method=cfg.interpolation,
+        padding_color=cfg.padding_color,
+    )
+
+
+def _load_image_from_source(source: BatchOrImgLike, cfg: PlateOCRConfig) -> BatchArray:
+    """
+    Converts an image input or batch of inputs into a 4-D NumPy array (N, H, W, C).
+
+    This utility supports a wide range of input formats, including single images or batches, file
+    paths or NumPy arrays. It ensures the result is always a model-ready batch.
+
+    Supported input formats:
+    - Single path (`str` or `PathLike`) -> image is read and resized
+    - List or tuple of paths -> each image is read and resized
+    - Single 2D or 3D NumPy array -> resized and wrapped in a batch
+    - List or tuple of NumPy arrays -> each image is resized and batched
+    - Single 4D NumPy array with shape (N, H, W, C) -> returned as is
+
+    Args:
+        source: A single image or batch of images in path or NumPy array format.
+        cfg: The configuration object that defines image preprocessing parameters.
+
+    Returns:
+        A 4D NumPy array of shape (N, H, W, C), dtype uint8, ready for model inference.
+    """
+    if isinstance(source, np.ndarray) and source.ndim == 4:
         return source
 
-    raise ValueError("Unsupported input type. Only file path or numpy array is supported.")
+    items: Sequence[ImgLike] = (
+        source
+        if isinstance(source, Sequence)
+        and not isinstance(source, (str | pathlib.PurePath | np.ndarray))
+        else [source]
+    )
+
+    frames: list[BatchArray] = [
+        frame
+        for item in items
+        for frame in (
+            _frame_from(item, cfg)  # type: ignore[attr-defined]
+            if isinstance(item, np.ndarray) and item.ndim == 4
+            else [_frame_from(item, cfg)]
+        )
+    ]
+
+    return np.stack(frames, axis=0, dtype=np.uint8)
 
 
-class ONNXPlateRecognizer:
 class LicensePlateRecognizer:
     """
     ONNX inference class for performing license plates OCR.
@@ -138,7 +189,7 @@ class LicensePlateRecognizer:
                 "Either provide a model from the HUB or a custom model_path and config_path"
             )
 
-        self.config = load_config_from_yaml(config_path)
+        self.config = PlateOCRConfig.from_yaml(config_path)
         self.model = ort.InferenceSession(
             model_path, providers=self.providers, sess_options=sess_options
         )
@@ -239,9 +290,9 @@ class LicensePlateRecognizer:
                 array is returned with the shape `(N, plate_slots)`, where N is the batch size and
                 each plate slot is the confidence for the recognized license plate character.
         """
-        x = _load_image_from_source(source)
+        x = _load_image_from_source(source, self.config)
         # Preprocess
-        x = preprocess_image(x, self.config["img_height"], self.config["img_width"])
+        x = preprocess_image(x)
         # Run model
         y: list[npt.NDArray] = self.model.run(None, {"input": x})
         # Postprocess model output
