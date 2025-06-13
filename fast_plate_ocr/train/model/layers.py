@@ -181,7 +181,7 @@ class SqueezeExcite(keras.layers.Layer):
         filters = input_shape[-1]
         self.squeeze = keras.layers.GlobalAveragePooling2D(keepdims=True)
         self.reduction = keras.layers.Dense(
-            units=filters // self.ratio,
+            units=int(filters // self.ratio),
             activation="relu",
             use_bias=False,
         )
