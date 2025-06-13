@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for categorical focal loss.
 - Added more test coverage (configs, train scripts, etc.).
 - New `validate_dataset.py` script to help check datasets before training.
+- New `dataset_stats.py` script to display dataset statistics.
 - Export script now officially supports more formats like TFLite and CoreML.
 - New plate config support: `keep_aspect_ratio`, `interpolation`, `image_color_mode` and `padding_color`.
 - New default augmentation for RGB image mode.
