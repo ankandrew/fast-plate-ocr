@@ -172,6 +172,20 @@ class _SeparableConv2D(BaseModel):
         )
 
 
+class _MLP(BaseModel):
+    layer: Literal["MLP"]
+    hidden_units: list[PositiveInt]
+    dropout_rate: UnitFloat = 0.1
+    activation: ActivationStr = "gelu"
+
+    def to_keras_layer(self) -> keras.layers.Layer:
+        return MLP(
+            hidden_units=self.hidden_units,
+            dropout_rate=self.dropout_rate,
+            activation=self.activation,
+        )
+
+
 class _MaxBlurPooling2D(BaseModel):
     layer: Literal["MaxBlurPooling2D"]
     pool_size: PositiveInt = 2
@@ -299,6 +313,7 @@ LayerConfig = Annotated[
     | _CoordConv2D
     | _DepthwiseConv2D
     | _SeparableConv2D
+    | _MLP
     | _MaxBlurPooling2D
     | _MaxPooling2D
     | _AveragePooling2D
