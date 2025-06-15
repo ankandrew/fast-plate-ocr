@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, PositiveFloat, PositiveInt, model_validat
 
 from fast_plate_ocr.core.types import PathLike
 from fast_plate_ocr.train.model.layers import (
+    MLP,
     CoordConv2D,
     DyT,
     MaxBlurPooling2D,
@@ -332,6 +333,9 @@ LayerConfig = Annotated[
 
 class _CCTTokenizerConfig(BaseModel):
     blocks: list[LayerConfig]
+    patch_size: PositiveInt = 1
+    patch_dim: PositiveInt | None = None
+    patch_mlp: _MLP | None = None
     positional_emb: bool = True
 
 

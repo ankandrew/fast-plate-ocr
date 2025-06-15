@@ -35,18 +35,28 @@ def _build_cct_model(
     data_rescale = cfg.rescaling.to_keras_layer()
     x = _build_stem_from_config(cfg.tokenizer.blocks)(data_rescale(inputs))
 
-    # 3. Flatten and add positional embedding (if applicable)
-    h, w = x.shape[1:3]  # static dims after conv stem
-    if h is None or w is None:
-        raise ValueError("Conv-stem must produce fixed spatial dims to add position embeddings.")
-    # (B, H, W, C) -> (B, H*W, C)
-    x = layers.Reshape((-1, x.shape[-1]))(x)
+    # 3. Patch projection
+    patch_dim = cfg.tokenizer.patch_dim or x.shape[-1]
+    x = layers.Conv2D(
+        filters=patch_dim,
+        kernel_size=cfg.tokenizer.patch_size,
+        strides=cfg.tokenizer.patch_size,
+        name="patch_conv",
+    )(x)
 
+    # 4. Flatten (B, H, W, C) -> (B, N, C)
+    x = layers.Reshape((-1, patch_dim), name="flatten_patches")(x)
+
+    # 5. Optional patch MLP
+    if cfg.tokenizer.patch_mlp is not None:
+        x = cfg.tokenizer.patch_mlp.to_keras_layer()(x)
+
+    # 6. Positional embeddings
     if cfg.tokenizer.positional_emb:
-        seq_len = h * w
-        x += PositionEmbedding(sequence_length=seq_len)(x)
+        seq_len = keras.ops.shape(x)[1]
+        x = x + PositionEmbedding(sequence_length=seq_len, name="pos_emb")(x)
 
-    # 4. N x TransformerBlock's
+    # 7. N x TransformerBlock's
     dpr = list(
         np.linspace(0.0, cfg.transformer_encoder.stochastic_depth, cfg.transformer_encoder.layers)
     )
@@ -62,7 +72,7 @@ def _build_cct_model(
             name=f"transformer_block_{i}",
         )(x)
 
-    # 5. Reduce to a fixed number of tokens, then project to vocab
+    # 8. Reduce to a fixed number of tokens, then project to vocab
     x = TokenReducer(
         num_tokens=max_plate_slots,
         projection_dim=cfg.transformer_encoder.projection_dim,
