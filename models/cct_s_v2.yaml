@@ -1,0 +1,29 @@
+model: cct
+rescaling:
+  scale: 0.00392156862745098
+  offset: 0.0
+tokenizer:
+  blocks:
+    - { layer: Conv2D, filters: 16, kernel_size: 3, strides: 1, padding: same, activation: leaky_relu, use_bias: false }
+    - { layer: Conv2D, filters: 32, kernel_size: 3, strides: 1, padding: same, activation: leaky_relu, use_bias: false }
+    - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
+  patch_size: 4
+  patch_dim: 64
+  patch_mlp:
+    layer: MLP
+    hidden_units: [ 48, 32 ]
+    dropout_rate: 0.1
+    activation: gelu
+  positional_emb: true
+transformer_encoder:
+  layers: 3
+  heads: 3
+  projection_dim: 32
+  units: [ 48, 32 ]
+  activation: gelu
+  stochastic_depth: 0.1
+  attention_dropout: 0.1
+  mlp_dropout: 0.1
+  head_mlp_dropout: 0.2
+  token_reducer_heads: 3
+  normalization: dyt
