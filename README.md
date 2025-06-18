@@ -1,6 +1,7 @@
 ## Fast & Lightweight License Plate OCR
 
-[![Actions status](https://github.com/ankandrew/fast-plate-ocr/actions/workflows/main.yaml/badge.svg)](https://github.com/ankandrew/fast-plate-ocr/actions)
+[![Actions status](https://github.com/ankandrew/fast-plate-ocr/actions/workflows/test.yaml/badge.svg)](https://github.com/ankandrew/fast-plate-ocr/actions)
+[![Actions status](https://github.com/ankandrew/fast-plate-ocr/actions/workflows/release.yaml/badge.svg)](https://github.com/ankandrew/fast-plate-ocr/actions)
 [![Keras 3](https://img.shields.io/badge/Keras-3-red?logo=keras&logoColor=red&labelColor=white)](https://keras.io/keras_3/)
 [![image](https://img.shields.io/pypi/v/fast-plate-ocr.svg)](https://pypi.python.org/pypi/fast-plate-ocr)
 [![image](https://img.shields.io/pypi/pyversions/fast-plate-ocr.svg)](https://pypi.python.org/pypi/fast-plate-ocr)
