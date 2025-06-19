@@ -55,3 +55,12 @@ def test_train_cli_runs_successfully(
 
     assert result.exit_code == 0, result.output
     assert output_dir.exists(), "Train script did not create output directory"
+
+    sub_dirs = [d for d in output_dir.iterdir() if d.is_dir()]
+    assert len(sub_dirs) == 1, "Expected exactly one timestamped output directory"
+    run_dir = sub_dirs[0]
+
+    assert (run_dir / "model_config.yaml").exists(), "Model config was not saved"
+    assert (run_dir / "plate_config.yaml").exists(), "Plate config was not saved"
+    assert (run_dir / "train_augmentation.yaml").exists(), "Train augmentation config was not saved"
+    assert (run_dir / "hyper_params.json").exists(), "Hyperparameters JSON was not saved"
