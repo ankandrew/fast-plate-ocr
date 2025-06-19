@@ -30,9 +30,9 @@ opencv-python = "*"
 pyyaml = ">=5.1"
 tqdm = "*"
 rich = "*"
-onnxruntime = "*"
 
 # ONNX package variants (for different hardware accelerator)
+onnxruntime = { version = "*", optional = true }
 onnxruntime-gpu = { version = "*", optional = true }
 onnxruntime-openvino = { version = "*", optional = true }
 onnxruntime-directml = { version = "*", optional = true }
@@ -53,10 +53,11 @@ tensorflow = { version = "*", optional = true }
 tf2onnx = { version = "*", optional = true }
 
 [tool.poetry.extras]
-gpu = ["onnxruntime-gpu"]
-openvino = ["onnxruntime-openvino"]
-directml = ["onnxruntime-directml"]
-qnn = ["onnxruntime-qnn"]
+onnx = ["onnxruntime"]
+onnx-gpu = ["onnxruntime-gpu"]
+onnx-openvino = ["onnxruntime-openvino"]
+onnx-directml = ["onnxruntime-directml"]
+onnx-qnn = ["onnxruntime-qnn"]
 train = [
     "albumentations",
     "click",

@@ -3,7 +3,7 @@
 For **inference**, install:
 
 ```shell
-pip install fast_plate_ocr
+pip install fast_plate_ocr[onnx]
 ```
 
 ### Train

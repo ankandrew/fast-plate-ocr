@@ -64,7 +64,7 @@ The idea is to use this after a plate object detector, since the OCR expects the
 * Calculate Inference Time:
 
   ```shell
-  pip install fast_plate_ocr
+  pip install fast_plate_ocr[onnx-gpu]
   ```
 
   ```python
@@ -94,8 +94,19 @@ The idea is to use this after a plate object detector, since the OCR expects the
 For inference, install:
 
 ```shell
-pip install fast_plate_ocr
+pip install fast_plate_ocr[onnx]
 ```
+
+> [!NOTE]
+> By default, **no ONNX runtime is installed**.
+> To run inference, you **must** install at least one ONNX backend via extras.
+>
+> - For CPU: `pip install fast-plate-ocr[onnx]`
+> - For hardware acceleration, use one of:
+>   - `onnx-gpu` (CUDA)
+>   - `onnx-openvino` (Intel)
+>   - `onnx-directml` (Windows)
+>   - `onnx-qnn` (Qualcomm)
 
 #### Usage
 
