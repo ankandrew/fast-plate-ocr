@@ -9,7 +9,14 @@ from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
-import onnxruntime as ort
+
+try:
+    import onnxruntime as ort
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError(
+        "ONNX Runtime is not installed. Run: "
+        "pip install 'fast-plate-ocr[onnx]' (or [onnx-gpu], etc.)"
+    ) from e
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
