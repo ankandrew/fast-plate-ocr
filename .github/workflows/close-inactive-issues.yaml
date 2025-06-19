@@ -11,7 +11,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v5
+      - uses: actions/stale@v9
         with:
           days-before-issue-stale: 90 # The number of days old an issue can be before marking it stale
           days-before-issue-close: 14 # The number of days to wait to close an issue after it being marked stale
