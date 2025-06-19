@@ -407,6 +407,9 @@ class MLP(keras.layers.Layer):
             self.dense_layers.append(keras.layers.Dense(units, activation=self.activation))
             self.dropout_layers.append(keras.layers.Dropout(self.dropout_rate))
 
+    def build(self, input_shape):
+        super().build(input_shape)
+
     def call(self, inputs, training=None):
         x = inputs
         for dense, drop in zip(self.dense_layers, self.dropout_layers, strict=True):
