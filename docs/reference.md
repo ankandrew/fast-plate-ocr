@@ -1,1 +1,1 @@
-::: fast_plate_ocr.inference.onnx_inference
+::: fast_plate_ocr.inference.plate_recognizer
