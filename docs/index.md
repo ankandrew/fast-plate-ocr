@@ -2,7 +2,7 @@
 
 ![Intro](https://raw.githubusercontent.com/ankandrew/fast-plate-ocr/4a7dd34c9803caada0dc50a33b59487b63dd4754/extra/demo.gif)
 
-**FastPlateOCR** is a **lightweight** and **fast** OCR framework for **license plate text recognition**. You can train
+`fast-plate-ocr` is a **lightweight** and **fast** OCR framework for **license plate text recognition**. You can train
 models from scratch or use the trained models for inference.
 
 The idea is to use this after a plate object detector, since the OCR expects the cropped plates.
@@ -43,14 +43,14 @@ _<sup>[4]</sup> For detailed accuracy for each country see [results](https://git
 Calculate Inference Time:
 
   ```shell
-  pip install fast_plate_ocr
+  pip install fast_plate_ocr[onnx-gpu]
   ```
 
   ```python
   from fast_plate_ocr import LicensePlateRecognizer
 
-m = LicensePlateRecognizer("argentinian-plates-cnn-model")
-m.benchmark()
+  m = LicensePlateRecognizer("argentinian-plates-cnn-model")
+  m.benchmark()
   ```
 
 Calculate Model accuracy:
