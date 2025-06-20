@@ -333,8 +333,7 @@ LayerConfig = Annotated[
 
 class _CCTTokenizerConfig(BaseModel):
     blocks: list[LayerConfig]
-    patch_size: PositiveInt = 1
-    patch_dim: PositiveInt | None = None
+    patch_size: PositiveIntTuple = 1
     patch_mlp: _MLP | None = None
     positional_emb: bool = True
 
