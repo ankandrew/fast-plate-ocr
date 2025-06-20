@@ -204,7 +204,7 @@ class LicensePlateRecognizer:
 
     def benchmark(
         self,
-        n_iter: int = 10_000,
+        n_iter: int = 5_000,
         batch_size: int = 1,
         include_processing: bool = False,
         warmup: int = 50,
