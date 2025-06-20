@@ -508,3 +508,38 @@ class TransformerBlock(keras.layers.Layer):
             }
         )
         return cfg
+
+
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
+class PatchExtractor(keras.layers.Layer):
+    """
+    Extract non-overlapping patches from an image and flatten them.
+
+    Modified from https://keras.io/examples/vision/image_classification_with_vision_transformer.
+    """
+
+    def __init__(self, patch_size, **kwargs):
+        super().__init__(**kwargs)
+        self.patch_size = patch_size
+
+    def call(self, images):
+        batch_size, height, width, channels = ops.shape(images)
+
+        num_patches_h = height // self.patch_size
+        num_patches_w = width // self.patch_size
+
+        patches = keras.ops.image.extract_patches(images, size=self.patch_size)
+        patches = ops.reshape(
+            patches,
+            (
+                batch_size,
+                num_patches_h * num_patches_w,
+                self.patch_size * self.patch_size * channels,
+            ),
+        )
+        return patches
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"patch_size": self.patch_size})
+        return config

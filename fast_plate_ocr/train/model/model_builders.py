@@ -10,6 +10,7 @@ from keras import layers
 
 from fast_plate_ocr.train.model.config import PlateOCRConfig
 from fast_plate_ocr.train.model.layers import (
+    PatchExtractor,
     PositionEmbedding,
     TokenReducer,
     TransformerBlock,
@@ -35,17 +36,8 @@ def _build_cct_model(
     data_rescale = cfg.rescaling.to_keras_layer()
     x = _build_stem_from_config(cfg.tokenizer.blocks)(data_rescale(inputs))
 
-    # 3. Patch projection
-    patch_dim = cfg.tokenizer.patch_dim or x.shape[-1]
-    x = layers.Conv2D(
-        filters=patch_dim,
-        kernel_size=cfg.tokenizer.patch_size,
-        strides=cfg.tokenizer.patch_size,
-        name="patch_conv",
-    )(x)
-
-    # 4. Flatten (B, H, W, C) -> (B, N, C)
-    x = layers.Reshape((-1, patch_dim), name="flatten_patches")(x)
+    # 3. Patch extraction: (B, H, W, C) -> (B, num_patches, C*patch_size**2)
+    x = PatchExtractor(patch_size=cfg.tokenizer.patch_size)(x)
 
     # 5. Optional patch MLP
     if cfg.tokenizer.patch_mlp is not None:
