@@ -401,11 +401,10 @@ class MLP(keras.layers.Layer):
         self.dropout_rate = dropout_rate
         self.activation = activation
 
-        self.dense_layers = []
-        self.dropout_layers = []
-        for units in self.hidden_units:
-            self.dense_layers.append(keras.layers.Dense(units, activation=self.activation))
-            self.dropout_layers.append(keras.layers.Dropout(self.dropout_rate))
+        self.dense_layers = [
+            keras.layers.Dense(units, activation=self.activation) for units in self.hidden_units
+        ]
+        self.dropout_layers = [keras.layers.Dropout(self.dropout_rate) for _ in self.hidden_units]
 
     def build(self, input_shape):
         super().build(input_shape)
