@@ -9,7 +9,7 @@ To start contributing or to begin development, you can follow these steps:
     ```
 2. Install all dependencies using [Poetry](https://python-poetry.org/docs/#installation):
     ```shell
-    poetry install --all-extras
+    make install
     ```
 3. To ensure your changes pass linting and tests before submitting a PR:
     ```shell

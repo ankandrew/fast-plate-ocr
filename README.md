@@ -26,12 +26,14 @@ The idea is to use this after a plate object detector, since the OCR expects the
 
 ### Features
 
-- **Keras 3 Backend Support**: Compatible with **[TensorFlow](https://www.tensorflow.org/)**, **[JAX](https://github.com/google/jax)**, and **[PyTorch](https://pytorch.org/)** backends 🧠
+- **Keras 3 Backend Support**: Train seamlessly using **[TensorFlow](https://www.tensorflow.org/)**, **[JAX](https://github.com/google/jax)**, or **[PyTorch](https://pytorch.org/)** backends 🧠
 - **Augmentation Variety**: Diverse **augmentations** via **[Albumentations](https://albumentations.ai/)** library 🖼️
 - **Efficient Execution**: **Lightweight** models that are cheap to run 💰
 - **ONNX Runtime Inference**: **Fast** and **optimized** inference with **[ONNX runtime](https://onnxruntime.ai/)** ⚡
 - **User-Friendly CLI**: Simplified **CLI** for **training** and **validating** OCR models 🛠️
 - **Model HUB**: Access to a collection of **pre-trained models** ready for inference 🌟
+- **Train**/**Fine-tune**: Easily train or fine-tune your own models 🔧
+- **Export-Friendly**: Export easily to CoreML or TFLite formats 📦
 
 ### Available Models
 
@@ -97,16 +99,16 @@ For inference, install:
 pip install fast_plate_ocr[onnx]
 ```
 
-> [!NOTE]
-> By default, **no ONNX runtime is installed**.
-> To run inference, you **must** install at least one ONNX backend via extras.
->
-> - For CPU: `pip install fast-plate-ocr[onnx]`
-> - For hardware acceleration, use one of:
->   - `onnx-gpu` (CUDA)
->   - `onnx-openvino` (Intel)
->   - `onnx-directml` (Windows)
->   - `onnx-qnn` (Qualcomm)
+By default, **no ONNX runtime is installed**. To run inference, you **must** install at least one ONNX backend using an appropriate extra.
+
+| Platform/Use Case  | Install Command                             | Notes                |
+|--------------------|---------------------------------------------|----------------------|
+| CPU (default)      | `pip install fast-plate-ocr[onnx]`          | Cross-platform       |
+| NVIDIA GPU (CUDA)  | `pip install fast-plate-ocr[onnx-gpu]`      | Linux/Windows        |
+| Intel (OpenVINO)   | `pip install fast-plate-ocr[onnx-openvino]` | Best on Intel CPUs   |
+| Windows (DirectML) | `pip install fast-plate-ocr[onnx-directml]` | For DirectML support |
+| Qualcomm (QNN)     | `pip install fast-plate-ocr[onnx-qnn]`      | Qualcomm chipsets    |
+
 
 #### Usage
 
@@ -120,7 +122,7 @@ print(m.run('test_plate.png'))
 ```
 
 <details>
-  <summary>run demo</summary>
+  <summary>Run demo</summary>
 
 ![Run demo](https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/inference_demo.gif?raw=true)
 
@@ -136,7 +138,7 @@ m.benchmark()
 ```
 
 <details>
-  <summary>benchmark demo</summary>
+  <summary>Benchmark demo</summary>
 
 ![Benchmark demo](https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/benchmark_demo.gif?raw=true)
 
@@ -178,6 +180,12 @@ To train the model you will need:
     img_height: 70
     # Image width which is fed to the model.
     img_width: 140
+   # Keep the aspect ratio of the input image.
+    keep_aspect_ratio: false
+    # Interpolation method used for resizing the input image.
+    interpolation: linear
+    # Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input.
+    image_color_mode: grayscale
     ```
 2. A labeled dataset,
    see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)
@@ -187,14 +195,17 @@ To train the model you will need:
     # You can set the backend to either TensorFlow, JAX or PyTorch
     # (just make sure it is installed)
     KERAS_BACKEND=tensorflow fast_plate_ocr train \
+        --model-config-file ./models/cct_s_v1.yaml \
+        --plate-config-file ./config/default_latin_plate_config.yaml \
         --annotations path_to_the_train.csv \
         --val-annotations path_to_the_val.csv \
-        --config-file config.yaml \
-        --batch-size 128 \
-        --epochs 750 \
-        --dense \
-        --early-stopping-patience 100 \
-        --reduce-lr-patience 50
+        --batch-size 64 \
+        --lr 0.001 \
+        --label-smoothing 0.01 \
+        --tensorboard \
+        --epochs 300 \
+        --early-stopping-patience 50 \
+        --workers 8
     ```
 
 You will probably want to change the augmentation pipeline to apply to your dataset.
@@ -209,8 +220,7 @@ transform_pipeline = A.Compose(
         # ...
         A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
         A.MotionBlur(blur_limit=(3, 5), p=0.1),
-        A.CoarseDropout(max_holes=10, max_height=4, max_width=4, p=0.3),
-        # ... and any other augmentation ...
+        # ... + any other augmentation ...
     ]
 )
 
@@ -339,7 +349,7 @@ To start contributing or to begin development, you can follow these steps:
     ```
 2. Install all dependencies using [Poetry](https://python-poetry.org/docs/#installation):
     ```shell
-    poetry install --all-extras
+    make install
     ```
 3. To ensure your changes pass linting and tests before submitting a PR:
     ```shell
