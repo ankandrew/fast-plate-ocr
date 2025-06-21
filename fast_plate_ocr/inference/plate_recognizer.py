@@ -200,11 +200,10 @@ class LicensePlateRecognizer:
         self.model = ort.InferenceSession(
             model_path, providers=self.providers, sess_options=sess_options
         )
-        self.logger.info("Using ONNX Runtime with %s.", self.providers)
 
     def benchmark(
         self,
-        n_iter: int = 5_000,
+        n_iter: int = 2_500,
         batch_size: int = 1,
         include_processing: bool = False,
         warmup: int = 50,
