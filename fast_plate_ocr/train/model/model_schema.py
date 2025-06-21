@@ -2,6 +2,7 @@
 Schema definitions for validating supported model architectures and layer blocks.
 """
 
+from pathlib import Path
 from typing import Annotated, Literal, TypeAlias
 
 import keras
@@ -375,7 +376,12 @@ AnyModelConfig = Annotated[CCTModelConfig, Field(discriminator="model")]
 def load_model_config_from_yaml(yaml_path: PathLike) -> AnyModelConfig:
     """
     Load, parse and validate a YAML file that describes any of the supported model architectures.
+
+    :param yaml_path: Path to the YAML file.
+    :return: Parsed and validated model config.
     """
-    with open(yaml_path, encoding="utf-8") as fh:
-        data = yaml.safe_load(fh)
+    if not Path(yaml_path).is_file():
+        raise FileNotFoundError(f"Model config '{yaml_path}' doesn't exist.")
+    with open(yaml_path, encoding="utf-8") as f_in:
+        data = yaml.safe_load(f_in)
     return AnyModelConfig(**data)

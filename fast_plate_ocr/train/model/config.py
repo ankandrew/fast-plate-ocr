@@ -2,6 +2,7 @@
 Config values used throughout the code.
 """
 
+from pathlib import Path
 from typing import Annotated, TypeAlias
 
 import annotated_types
@@ -91,9 +92,16 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
         return self
 
 
-def load_plate_config_from_yaml(yaml_file_path: PathLike) -> PlateOCRConfig:
-    """Read and parse a YAML containing the plate config."""
-    with open(yaml_file_path, encoding="utf-8") as f_in:
+def load_plate_config_from_yaml(yaml_path: PathLike) -> PlateOCRConfig:
+    """
+    Read and parse a YAML containing the plate config.
+
+    :param yaml_path: Path to the YAML file containing the plate config.
+    :return: Parsed and validated plate config.
+    """
+    if not Path(yaml_path).is_file():
+        raise FileNotFoundError(f"Plate config '{yaml_path}' doesn't exist.")
+    with open(yaml_path, encoding="utf-8") as f_in:
         yaml_content = yaml.safe_load(f_in)
     config = PlateOCRConfig(**yaml_content)
     return config
