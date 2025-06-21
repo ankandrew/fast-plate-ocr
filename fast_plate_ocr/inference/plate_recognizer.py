@@ -285,16 +285,23 @@ class LicensePlateRecognizer:
         Performs OCR to recognize license plate characters from an image or a list of images.
 
         Args:
-            source: The path(s) to the image(s), a numpy array representing an image or a list
-                of NumPy arrays. If a numpy array is provided, it is expected to already be in
-                grayscale format, with shape `(H, W) `or `(H, W, 1)`. A list of numpy arrays with
-                different image sizes may also be provided.
+            source: One or more image inputs, which can be:
+
+                - A file path (`str` or `PathLike`) to an image.
+                - A list of file paths.
+                - A NumPy array of a single image, with shape (H, W), (H, W, 1) or (H, W, 3).
+                - A list of NumPy arrays, each representing an image.
+                - A 4D NumPy array of shape (N, H, W, C), ready for inference.
+
+                Images will be automatically resized and converted as needed based on the model's
+                configuration (including color mode and aspect ratio settings).
+
             return_confidence: Whether to return confidence scores along with plate predictions.
 
         Returns:
-            A list of plates for each input image. If `return_confidence` is True, a numpy
-                array is returned with the shape `(N, plate_slots)`, where N is the batch size and
-                each plate slot is the confidence for the recognized license plate character.
+            A list of recognized license plates (one per image). If `return_confidence` is True,
+            also returns a NumPy array of shape `(N, plate_slots)` containing the confidence scores
+            for each predicted character.
         """
         x = _load_image_from_source(source, self.config)
         # Preprocess
