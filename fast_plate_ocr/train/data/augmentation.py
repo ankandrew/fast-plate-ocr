@@ -19,8 +19,8 @@ def default_train_augmentation(img_color_mode: ImageColorMode) -> A.Compose:
             [
                 A.Affine(
                     translate_percent=(-0.02, 0.02),
-                    scale=(0.65, 1.05),
-                    rotate=(-10, 10),
+                    scale=(0.75, 1.10),
+                    rotate=(-15, 15),
                     border_mode=cv2.BORDER_CONSTANT,
                     fill=BORDER_COLOR_BLACK,
                     shear=(0.0, 0.0),
@@ -34,7 +34,7 @@ def default_train_augmentation(img_color_mode: ImageColorMode) -> A.Compose:
                             num_holes_range=(1, 14),
                             hole_height_range=(1, 5),
                             hole_width_range=(1, 5),
-                            p=0.3,
+                            p=0.2,
                         ),
                         A.PixelDropout(dropout_prob=0.02, p=0.2),
                         A.GridDropout(ratio=0.3, fill="random", p=0.2),
@@ -48,8 +48,8 @@ def default_train_augmentation(img_color_mode: ImageColorMode) -> A.Compose:
             [
                 A.Affine(
                     translate_percent=(-0.02, 0.02),
-                    scale=(0.65, 1.05),
-                    rotate=(-10, 10),
+                    scale=(0.75, 1.10),
+                    rotate=(-15, 15),
                     border_mode=cv2.BORDER_CONSTANT,
                     fill=BORDER_COLOR_BLACK,
                     shear=(0.0, 0.0),
@@ -89,7 +89,7 @@ def default_train_augmentation(img_color_mode: ImageColorMode) -> A.Compose:
                             num_holes_range=(1, 14),
                             hole_height_range=(1, 5),
                             hole_width_range=(1, 5),
-                            p=0.3,
+                            p=0.2,
                         ),
                         A.PixelDropout(dropout_prob=0.02, p=0.3),
                         A.GridDropout(ratio=0.3, fill="random", p=0.3),
