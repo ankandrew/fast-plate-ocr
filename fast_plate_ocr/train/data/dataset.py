@@ -32,7 +32,7 @@ class PlateRecognitionPyDataset(PyDataset):
     ) -> None:
         super().__init__(**kwargs)
         # Load annotations
-        annotations = pd.read_csv(annotations_file)
+        annotations = pd.read_csv(annotations_file, dtype={"plate_text": str})
         annotations["image_path"] = (
             os.path.dirname(os.path.realpath(annotations_file)) + os.sep + annotations["image_path"]
         )
