@@ -25,3 +25,32 @@ Image-like objects, including paths to image files and NumPy arrays of images, o
 """
 BatchArray: TypeAlias = npt.NDArray[np.uint8]
 """Numpy array of images, representing a batch of images."""
+TensorDataFormat: TypeAlias = Literal["channels_last", "channels_first"]
+"""
+Data format of the input tensor. It can be either 'channels_last' or 'channels_first'.
+'channels_last' corresponds to inputs with shape (batch, height, width, channels), while
+'channels_first' corresponds to inputs with shape (batch, channels, height, width).
+"""
+KerasDtypes: TypeAlias = Literal[
+    "float16",
+    "float32",
+    "float64",
+    "uint8",
+    "uint16",
+    "uint32",
+    "uint64",
+    "int8",
+    "int16",
+    "int32",
+    "int64",
+    "bfloat16",
+    "bool",
+    "string",
+    "float8_e4m3fn",
+    "float8_e5m2",
+    "complex64",
+    "complex128",
+]
+"""
+Keras data types supported by the library.
+"""
