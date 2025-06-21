@@ -206,7 +206,7 @@ class LicensePlateRecognizer:
         n_iter: int = 2_500,
         batch_size: int = 1,
         include_processing: bool = False,
-        warmup: int = 50,
+        warmup: int = 250,
     ) -> None:
         """
         Run an inference benchmark and pretty print the results.
