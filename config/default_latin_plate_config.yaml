@@ -11,7 +11,7 @@ img_height: 64
 # Image width which is fed to the model.
 img_width: 128
 # Keep the aspect ratio of the input image.
-keep_aspect_ratio: true
+keep_aspect_ratio: false
 # Interpolation method used for resizing the input image.
 interpolation: linear
 # Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input.
