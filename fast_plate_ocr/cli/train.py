@@ -418,7 +418,7 @@ def train(
     ]
 
     if tensorboard:
-        run_dir = tensorboard_dir / datetime.now().strftime("run_%Y%m%d_%H%M%S")
+        run_dir = tensorboard_dir / datetime.now().strftime("run_%Y-%m-%d_%H-%M-%S")
         run_dir.mkdir(parents=True, exist_ok=True)
         callbacks.append(TensorBoard(log_dir=run_dir))
 
