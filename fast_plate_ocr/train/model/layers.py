@@ -12,6 +12,7 @@ from keras import ops
 # pylint: disable=useless-parent-delegation
 
 
+@keras.saving.register_keras_serializable(package="fast_plate_ocr")
 class AddCoords(keras.layers.Layer):
     """Add coords to a tensor, modified from paper: https://arxiv.org/abs/1807.03247"""
 
@@ -394,15 +395,18 @@ class MLP(keras.layers.Layer):
         hidden_units,
         dropout_rate: float = 0.1,
         activation: str = "gelu",
+        use_bias: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.hidden_units = list(hidden_units)
         self.dropout_rate = dropout_rate
         self.activation = activation
+        self.use_bias = use_bias
 
         self.dense_layers = [
-            keras.layers.Dense(units, activation=self.activation) for units in self.hidden_units
+            keras.layers.Dense(units, activation=self.activation, use_bias=self.use_bias)
+            for units in self.hidden_units
         ]
         self.dropout_layers = [keras.layers.Dropout(self.dropout_rate) for _ in self.hidden_units]
 
@@ -423,6 +427,7 @@ class MLP(keras.layers.Layer):
                 "hidden_units": self.hidden_units,
                 "dropout_rate": self.dropout_rate,
                 "activation": self.activation,
+                "use_bias": self.use_bias,
             }
         )
         return cfg
