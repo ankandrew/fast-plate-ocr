@@ -179,12 +179,14 @@ class _MLP(BaseModel):
     hidden_units: list[PositiveInt]
     dropout_rate: UnitFloat = 0.1
     activation: ActivationStr = "gelu"
+    use_bias: bool = True
 
     def to_keras_layer(self) -> keras.layers.Layer:
         return MLP(
             hidden_units=self.hidden_units,
             dropout_rate=self.dropout_rate,
             activation=self.activation,
+            use_bias=self.use_bias,
         )
 
 
