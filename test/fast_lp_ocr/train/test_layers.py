@@ -3,7 +3,6 @@ Test for custom layers module.
 """
 
 import inspect
-from typing import Type
 
 import keras
 import pytest
@@ -11,7 +10,7 @@ import pytest
 from fast_plate_ocr.train.model import layers
 
 
-def _layer_classes() -> list[Type[keras.layers.Layer]]:
+def _layer_classes() -> list[type[keras.layers.Layer]]:
     """
     Return every Layer subclass defined in the `layers` module.
     """
@@ -23,7 +22,7 @@ def _layer_classes() -> list[Type[keras.layers.Layer]]:
 
 
 @pytest.mark.parametrize("cls", _layer_classes())
-def test_all_layers_are_registered(cls) -> None:
+def test_all_layers_are_registered(cls: type[keras.layers.Layer]) -> None:
     registered_name = keras.saving.get_registered_name(cls)
 
     assert registered_name.startswith("fast_plate_ocr>"), (
