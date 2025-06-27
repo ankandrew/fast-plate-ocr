@@ -5,11 +5,17 @@ repo_url: https://github.com/ankandrew/fast-plate-ocr
 theme:
   name: material
   features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.path
     - navigation.instant
     - navigation.instant.progress
-    - search.suggest
+    - navigation.sections
+    - navigation.footer
     - search.highlight
-    - content.code.copy
+    - search.suggest
+    - toc.follow
+    - header.autohide
   palette:
     - scheme: default
       toggle:
@@ -35,19 +41,31 @@ plugins:
       handlers:
         python:
           paths: [ . ]
-        options:
-          members_order: source
-          separate_signature: true
-          filters: [ "!^_" ]
-          docstring_options:
-            ignore_init_summary: true
-          merge_init_into_class: true
-          show_signature_annotations: true
-          signature_crossrefs: true
+          options:
+            members_order: source
+            separate_signature: true
+            filters: [ "!^_" ]
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+            show_signature_annotations: true
+            show_object_full_path: false
+            show_type_annotations: true
+            show_variable_annotations: true
+            signature_crossrefs: true
+          inventories:
+            - url: https://docs.python.org/3/objects.inv
+              domains: [ py, std ]
+            - url: https://typing-extensions.readthedocs.io/en/latest/objects.inv
 extra:
   version:
     provider: mike
   generator: false
+  social:
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/fast-plate-ocr/
+    - icon: fontawesome/brands/github
+      link: https://github.com/ankandrew/fast-plate-ocr
 markdown_extensions:
   - admonition
   - pymdownx.highlight:
