@@ -8,6 +8,9 @@ import warnings
 import pytest
 from click.testing import CliRunner
 
+from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
+from fast_plate_ocr.train.utilities.utils import load_keras_model
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     from fast_plate_ocr.cli.train import train as train_cli
@@ -64,3 +67,9 @@ def test_train_cli_runs_successfully(
     assert (run_dir / "plate_config.yaml").exists(), "Plate config was not saved"
     assert (run_dir / "train_augmentation.yaml").exists(), "Train augmentation config was not saved"
     assert (run_dir / "hyper_params.json").exists(), "Hyperparameters JSON was not saved"
+
+    last_ckpt = run_dir / "last.keras"
+    assert last_ckpt.exists(), "Expected last checkpoint to be saved"
+    # Ensure we can load properly trained model
+    plate_config = load_plate_config_from_yaml(run_dir / "plate_config.yaml")
+    load_keras_model(last_ckpt, plate_config)
