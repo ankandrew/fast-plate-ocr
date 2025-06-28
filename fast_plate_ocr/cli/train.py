@@ -76,6 +76,13 @@ EVAL_METRICS: dict[str, Literal["max", "min", "auto"]] = {
     help="Path pointing to the train validation CSV file.",
 )
 @click.option(
+    "--validation-freq",
+    default=1,
+    show_default=True,
+    type=int,
+    help="Frequency (in epochs) at which to evaluate the validation data.",
+)
+@click.option(
     "--augmentation-path",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path),
     help="YAML file pointing to the augmentation pipeline saved with Albumentations.save(...)",
@@ -253,6 +260,7 @@ def train(
     plate_config_file: pathlib.Path,
     annotations: pathlib.Path,
     val_annotations: pathlib.Path,
+    validation_freq: int,
     augmentation_path: pathlib.Path | None,
     lr: float,
     final_lr_factor: float,
@@ -422,7 +430,13 @@ def train(
         run_dir.mkdir(parents=True, exist_ok=True)
         callbacks.append(TensorBoard(log_dir=run_dir))
 
-    model.fit(train_dataset, epochs=epochs, validation_data=val_dataset, callbacks=callbacks)
+    model.fit(
+        train_dataset,
+        epochs=epochs,
+        validation_data=val_dataset,
+        callbacks=callbacks,
+        validation_freq=validation_freq,
+    )
 
 
 if __name__ == "__main__":
