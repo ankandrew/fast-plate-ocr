@@ -7,66 +7,71 @@ models from scratch or use the trained models for inference.
 
 The idea is to use this after a plate object detector, since the OCR expects the cropped plates.
 
+!!! info "🚀 Try it on Hugging Face Spaces!"
+    You can try `fast-plate-ocr` pre-trained models in [**Hugging Spaces**](https://huggingface.co/spaces/ankandrew/fast-alpr).
+    No setup required!
+
+
 ### Features
 
 - **Keras 3 Backend Support**: Train seamlessly using **[TensorFlow](https://www.tensorflow.org/)**, **[JAX](https://github.com/google/jax)**, or **[PyTorch](https://pytorch.org/)** backends 🧠
-- **Augmentation Variety**: Diverse **augmentations** via **[Albumentations](https://albumentations.ai/)** library 🖼️
+- **Augmentation Variety**: Diverse **training-time augmentations** via **[Albumentations](https://albumentations.ai/)** library 🖼️
 - **Efficient Execution**: **Lightweight** models that are cheap to run 💰
 - **ONNX Runtime Inference**: **Fast** and **optimized** inference with **[ONNX runtime](https://onnxruntime.ai/)** ⚡
 - **User-Friendly CLI**: Simplified **CLI** for **training** and **validating** OCR models 🛠️
 - **Model HUB**: Access to a collection of **pre-trained models** ready for inference 🌟
-- **Train**/**Fine-tune**: Easily train or fine-tune your own models 🔧
-- **Export-Friendly**: Export easily to CoreML or TFLite formats 📦
+- **Train**/**Fine-tune**: Easily train or **fine-tune** your own models 🔧
+- **Export-Friendly**: Export easily to **CoreML** or **TFLite** formats 📦
 
-### Model Zoo
+### Quick Installation
 
-We currently have the following available models:
+Install for **inference**:
 
-|                Model Name                | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> | Accuracy<sup>[2]</sup> |                                                                                           Dataset                                                                                            |
-|:----------------------------------------:|:--------------------------------:|:----------------------------------------------:|:----------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|      `argentinian-plates-cnn-model`      |               2.1                |                      476                       |         94.05%         |              Non-synthetic, plates up to 2020. Dataset [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip).              |
-|   `argentinian-plates-cnn-synth-model`   |               2.1                |                      476                       |         94.19%         | Plates up to 2020 + synthetic plates. Dataset [arg_plate_dataset_plus_synth.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip). |
-|  `european-plates-mobile-vit-v2-model`   |               2.9                |                      344                       |  92.5%<sup>[3]</sup>   |                                                                European plates (from +40 countries, trained on 40k+ plates).                                                                 |
-| 🆕🔥 `global-plates-mobile-vit-v2-model` |               2.9                |                      344                       |  93.3%<sup>[4]</sup>   |                                                                Worldwide plates (from +65 countries, trained on 85k+ plates).                                                                |
+```shell
+pip install fast-plate-ocr[onnx-gpu]
+```
 
-_<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
-by 5x in the CNN models._
+Install for **training**:
 
-_<sup>[2]</sup> Accuracy is what we refer as plate_acc. See [metrics section](#model-metrics)._
+```shell
+pip install fast_plate_ocr[train]
+```
 
-_<sup>[3]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_results.json) and
-the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_val.zip) used._
+For full installation options (like GPU backends or ONNX variants), see the [**Installation Guide**](installation.md).
 
-_<sup>[4]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/global_mobile_vit_v2_ocr_results.json)._
+### Quick Usage
 
-<details>
-  <summary>Reproduce results.</summary>
+Run **OCR** on a **cropped** license plate image using [`LicensePlateRecognizer`](reference/inference/inference_class.md):
 
-Calculate Inference Time:
+```python
+from fast_plate_ocr import LicensePlateRecognizer
 
-  ```shell
-  pip install fast_plate_ocr[onnx-gpu]
-  ```
+m = LicensePlateRecognizer("argentinian-plates-cnn-model")
+print(m.run("test_plate.png"))
+```
 
-  ```python
-  from fast_plate_ocr import LicensePlateRecognizer
+For **more examples** and input formats (NumPy arrays, batches, etc.), see the [**Inference Guide**](inference/running_inference.md).
 
-  m = LicensePlateRecognizer("argentinian-plates-cnn-model")
-  m.benchmark()
-  ```
+### Use it with FastALPR
 
-Calculate Model accuracy:
+If you prefer not to use `fast-plate-ocr` directly on **cropped plates**, you can easily leverage it through **FastALPR**,
+an end-to-end Automatic License Plate Recognition library where `fast-plate-ocr` serves as the **default OCR backend**.
 
-  ```shell
-  pip install fast-plate-ocr[train]
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr_config.yaml
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr.keras
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_benchmark.zip
-  unzip arg_plate_benchmark.zip
-  fast_plate_ocr valid \
-      -m arg_cnn_ocr.keras \
-      --config-file arg_cnn_ocr_config.yaml \
-      --annotations benchmark/annotations.csv
-  ```
 
-</details>
+```python
+from fast_alpr import ALPR  # (1)!
+
+alpr = ALPR(
+    detector_model="yolo-v9-t-384-license-plate-end2end",
+    ocr_model="global-plates-mobile-vit-v2-model",  # (2)!
+)
+
+alpr_results = alpr.predict("assets/test_image.png")
+print(alpr_results)
+```
+
+1. **Requires** `fast-alpr` package to be **installed**!
+2. Can be **any** of the default `fast-plate-ocr` **trained** models or **custom** ones too!
+
+!!! tip "Explore More"
+    Check out the [**FastALPR**](https://github.com/ankandrew/fast-alpr) docs for full ALPR pipeline and integration tips!

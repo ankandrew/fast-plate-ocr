@@ -93,10 +93,10 @@ The idea is to use this after a plate object detector, since the OCR expects the
 
 ### Inference
 
-For inference, install:
+For doing inference, install:
 
 ```shell
-pip install fast_plate_ocr[onnx]
+pip install fast_plate_ocr[onnx-gpu]
 ```
 
 By default, **no ONNX runtime is installed**. To run inference, you **must** install at least one ONNX backend using an appropriate extra.
