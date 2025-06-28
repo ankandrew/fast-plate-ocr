@@ -32,7 +32,7 @@ def partial_decode_ok(path: Path) -> tuple[bool, tuple[int, int] | None]:
         return False, None
 
 
-def validate_dataset(
+def _validate_dataset(
     df: pd.DataFrame,
     cfg,
     min_h: int,
@@ -188,7 +188,7 @@ def rich_report(errors, warnings):
     type=int,
     help="Minimum allowed image width.",
 )
-def main(
+def validate_dataset(
     annotations_file: Path,
     plate_config_file: Path,
     warn_only: bool,
@@ -205,7 +205,7 @@ def main(
     csv_root = annotations_file.parent
     df_annots["image_path"] = df_annots["image_path"].apply(lambda p: str((csv_root / p).resolve()))
 
-    errors, warnings, cleaned = validate_dataset(df_annots, cfg, min_height, min_width)
+    errors, warnings, cleaned = _validate_dataset(df_annots, cfg, min_height, min_width)
 
     # Make cleaned dataset img_path relative (expected format)
     cleaned["image_path"] = cleaned["image_path"].apply(
@@ -235,4 +235,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    validate_dataset()

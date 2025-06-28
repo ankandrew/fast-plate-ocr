@@ -73,7 +73,7 @@ def _compact_table(title: str, values: Sequence[float]) -> Table:
     type=int,
     help="Parallel header reads (0 disables threading).",
 )
-def main(annotations: Path, plate_config_file: Path, top_chars: int, workers: int) -> None:
+def dataset_stats(annotations: Path, plate_config_file: Path, top_chars: int, workers: int) -> None:
     """
     Display statistics for a `fast-plate-ocr` dataset.
     """
@@ -133,4 +133,4 @@ def main(annotations: Path, plate_config_file: Path, top_chars: int, workers: in
 
 
 if __name__ == "__main__":
-    main()
+    dataset_stats()
