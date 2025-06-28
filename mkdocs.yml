@@ -26,12 +26,30 @@ theme:
         icon: material/lightbulb
         name: Switch to light mode
 nav:
-  - Introduction: index.md
-  - Installation: installation.md
-  - Usage: usage.md
+  - Get Started:
+      - Introduction: index.md
+      - Installation: installation.md
+  - Inference:
+      - Running Inference: inference/running_inference.md
+      - Available Models: inference/model_zoo.md
+  - Training:
+      - intro: training/intro.md
+      - CLI:
+          - dataset_stats: training/cli/dataset_stats.md
+          - export: training/cli/export.md
+          - train: training/cli/train.md
+          - valid: training/cli/valid.md
+          - validate_dataset: training/cli/validate_dataset.md
+          - visualize_augmentation: training/cli/visualize_augmentation.md
+          - visualize_predictions: training/cli/visualize_predictions.md
   - Architecture: architecture.md
   - Contributing: contributing.md
-  - Reference: reference.md
+  - Reference:
+      - Inference:
+          - LicensePlateRecognizer: reference/inference/inference_class.md
+          - HUB: reference/inference/hub.md
+      - Train:
+          - XD: reference/train/model_builder.md
 plugins:
   - search
   - mike:
