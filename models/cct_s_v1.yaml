@@ -1,31 +1,34 @@
 model: cct
+
 rescaling:
   scale: 0.00392156862745098
   offset: 0.0
+
 tokenizer:
-  positional_emb: true
   blocks:
-    # Conv-stem blocks
-    - { layer: Conv2D, filters: 32, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
-    - { layer: Conv2D, filters: 32, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
+    - { layer: Conv2D, filters: 48, kernel_size: 3, strides: 1, padding: same, activation: gelu, use_bias: false }
     - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
+    - { layer: Conv2D, filters: 80, kernel_size: 3, strides: 1, padding: same, activation: gelu, use_bias: false }
+    - { layer: Conv2D, filters: 96, kernel_size: 3, strides: 1, padding: same, activation: gelu, use_bias: false }
+    - { layer: Conv2D, filters: 128, kernel_size: 3, strides: 1, padding: same, activation: gelu, use_bias: false }
 
-    - { layer: Conv2D, filters: 64, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
-    - { layer: Conv2D, filters: 64, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
-    - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
+  positional_emb: true
+  patch_size: 2
+  patch_mlp:
+    layer: MLP
+    hidden_units: [ 128 ]
+    activation: gelu
+    dropout_rate: 0.1
 
-    - { layer: Conv2D, filters: 96, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
-    - { layer: Conv2D, filters: 96, kernel_size: 3, strides: 1, padding: valid, activation: relu, use_bias: false, kernel_initializer: he_normal }
-    - { layer: MaxBlurPooling2D, pool_size: 2, filter_size: 3 }
 transformer_encoder:
-  layers: 2
+  layers: 6
   heads: 2
-  projection_dim: 96
-  units: [ 96, 96 ]
+  projection_dim: 128
+  units: [ 128, 128 ]
   activation: gelu
-  stochastic_depth: 0.1
+  stochastic_depth: 0.12
   attention_dropout: 0.1
   mlp_dropout: 0.1
-  head_mlp_dropout: 0.2
-  token_reducer_heads: 2
+  head_mlp_dropout: 0.15
+  token_reducer_heads: 4
   normalization: dyt
