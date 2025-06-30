@@ -45,9 +45,6 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 | `cct-xs-v1-global-model` | XS   | [CCT](https://ankandrew.github.io/fast-plate-ocr/latest/reference/training/config/model_config.md#compact-convolutional-transformer-cct) | **0.3232**            | **3094.21**      | [model_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_model_config.yaml) | [plate_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_plate_config.yaml) | [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_val_results.json) |
 
 
-<details>
-  <summary>Notes</summary>
-
 > [!TIP]
 > **Benchmarking Setup**
 >
@@ -59,14 +56,6 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 >   ```bash
 >   pip install fast-plate-ocr[onnx-gpu]
 >   ```
-
-|   |   |
-|---|---|
-|   |   |
-
-
-</details>
-
 
 ### Inference
 
