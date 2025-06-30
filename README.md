@@ -72,7 +72,7 @@ The idea is to use this after a plate object detector, since the OCR expects the
   ```python
   from fast_plate_ocr import LicensePlateRecognizer
 
-  m = LicensePlateRecognizer("argentinian-plates-cnn-model")
+  m = LicensePlateRecognizer("cct-s-v1-global-model")
   m.benchmark()
   ```
 * Calculate Model accuracy:
@@ -117,7 +117,7 @@ To predict from disk image:
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-m = LicensePlateRecognizer('argentinian-plates-cnn-model')
+m = LicensePlateRecognizer('cct-s-v1-global-model')
 print(m.run('test_plate.png'))
 ```
 
@@ -133,7 +133,7 @@ To run model benchmark:
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-m = LicensePlateRecognizer('argentinian-plates-cnn-model')
+m = LicensePlateRecognizer('cct-s-v1-global-model')
 m.benchmark()
 ```
 

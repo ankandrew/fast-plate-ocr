@@ -138,13 +138,17 @@ class LicensePlateRecognizer:
 
         The current OCR models available from the HUB are:
 
-        - `argentinian-plates-cnn-model`: OCR for Argentinian license plates. Uses fully conv
+        - `cct-s-v1-global-model`: OCR model trained with **global** plates data. Based on Compact
+            Convolutional Transformer (CCT) architecture. This is the **S** variant.
+        - `cct-xs-v1-global-model`: OCR model trained with **global** plates data. Based on Compact
+            Convolutional Transformer (CCT) architecture. This is the **XS** variant.
+        - `argentinian-plates-cnn-model`: OCR for **Argentinian** license plates. Uses fully conv
             architecture.
-        - `argentinian-plates-cnn-synth-model`: OCR for Argentinian license plates trained with
+        - `argentinian-plates-cnn-synth-model`: OCR for **Argentinian** license plates trained with
             synthetic and real data. Uses fully conv architecture.
-        - `european-plates-mobile-vit-v2-model`: OCR for European license plates. Uses MobileVIT-2
-            for the backbone.
-        - `global-plates-mobile-vit-v2-model`: OCR for Global license plates (+65 countries).
+        - `european-plates-mobile-vit-v2-model`: OCR for **European** license plates. Uses
+            MobileVIT-2 for the backbone.
+        - `global-plates-mobile-vit-v2-model`: OCR for **global** license plates (+65 countries).
             Uses MobileVIT-2 for the backbone.
 
         Args:

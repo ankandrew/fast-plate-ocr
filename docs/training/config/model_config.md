@@ -64,7 +64,7 @@ transformer_encoder:
 ```
 
 1. This scales values between range `[0, 1]`
-2. **Supports** a **wide** variety of **layer** types, such as `Conv2D`, `MaxPooling2D`, `DepthwiseConv2D`, `SqueezeExcite`, etc. See [**Model Config**](../../reference/train/model_config.md) for all available option.
+2. **Supports** a **wide** variety of **layer** types, such as `Conv2D`, `MaxPooling2D`, `DepthwiseConv2D`, `SqueezeExcite`, etc. See [**Model Config**](../../reference/train/model.md) for all available option.
 3. Each layer **supports** the **full set** of corresponding **Keras parameters**. For example, `Conv2D` accepts `filters`, `kernel_size`, `strides`, etc.
 4. See `Transformers without Normalization` [^2]
 

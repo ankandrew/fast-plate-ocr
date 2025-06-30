@@ -20,7 +20,7 @@ can optionally include character-level confidence scores.
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-plate_recognizer = LicensePlateRecognizer("argentinian-plates-cnn-model")
+plate_recognizer = LicensePlateRecognizer("cct-xs-v1-global-model")
 print(plate_recognizer.run("test_plate.png"))
 ```
 
@@ -39,7 +39,7 @@ print(plate_recognizer.run("test_plate.png"))
 import cv2
 from fast_plate_ocr import LicensePlateRecognizer
 
-plate_recognizer = LicensePlateRecognizer("argentinian-plates-cnn-model")
+plate_recognizer = LicensePlateRecognizer("cct-xs-v1-global-model")
 imgs = [cv2.imread(p) for p in ["plate1.jpg", "plate2.jpg"]]
 res = plate_recognizer.run(imgs)
 ```
@@ -49,7 +49,7 @@ res = plate_recognizer.run(imgs)
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-plate_recognizer = LicensePlateRecognizer("argentinian-plates-cnn-model")
+plate_recognizer = LicensePlateRecognizer("cct-xs-v1-global-model")
 plates, conf = plate_recognizer.run("test_plate.png", return_confidence=True)
 ```
 
@@ -58,7 +58,7 @@ plates, conf = plate_recognizer.run("test_plate.png", return_confidence=True)
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-m = LicensePlateRecognizer("argentinian-plates-cnn-model")
+m = LicensePlateRecognizer("cct-xs-v1-global-model")
 m.benchmark()
 ```
 

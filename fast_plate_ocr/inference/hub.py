@@ -11,11 +11,12 @@ from typing import Literal
 
 from tqdm.asyncio import tqdm
 
-from fast_plate_ocr.core.types import PathLike
 from fast_plate_ocr.core.utils import safe_write
 
 BASE_URL: str = "https://github.com/ankandrew/cnn-ocr-lp/releases/download"
 OcrModel = Literal[
+    "cct-s-v1-global-model",
+    "cct-xs-v1-global-model",
     "argentinian-plates-cnn-model",
     "argentinian-plates-cnn-synth-model",
     "european-plates-mobile-vit-v2-model",
@@ -25,6 +26,14 @@ OcrModel = Literal[
 
 
 AVAILABLE_ONNX_MODELS: dict[OcrModel, tuple[str, str]] = {
+    "cct-s-v1-global-model": (
+        f"{BASE_URL}/arg-plates/cct_s_v1_global.onnx",
+        f"{BASE_URL}/arg-plates/cct_s_v1_global_plate_config.yaml",
+    ),
+    "cct-xs-v1-global-model": (
+        f"{BASE_URL}/arg-plates/cct_xs_v1_global.onnx",
+        f"{BASE_URL}/arg-plates/cct_xs_v1_global_plate_config.yaml",
+    ),
     "argentinian-plates-cnn-model": (
         f"{BASE_URL}/arg-plates/arg_cnn_ocr.onnx",
         f"{BASE_URL}/arg-plates/arg_cnn_ocr_config.yaml",
@@ -68,7 +77,7 @@ def _download_with_progress(url: str, filename: pathlib.Path) -> None:
 
 def download_model(
     model_name: OcrModel,
-    save_directory: PathLike = None,
+    save_directory: pathlib.Path | None = None,
     force_download: bool = False,
 ) -> tuple[pathlib.Path, pathlib.Path]:
     """
