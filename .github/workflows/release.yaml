@@ -1,0 +1,103 @@
+name: Release
+on:
+  push:
+    branches: [ master ]
+    tags: [ 'v*' ]
+jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  publish-to-pypi:
+    name: Build and Publish to PyPI
+    needs:
+      - test
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fast-plate-ocr
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Build a binary wheel
+        run: poetry build
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    name: Create GitHub release
+    needs:
+      - publish-to-pypi
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check package version matches tag
+        id: check-version
+        uses: samuelcolvin/check-python-version@v4.1
+        with:
+          version_file_path: 'pyproject.toml'
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+              --generate-notes
+
+  update_docs:
+    name: Update documentation
+    needs:
+      - github-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'poetry'
+
+      - name: Configure Git user
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Retrieve version
+        id: check-version
+        uses: samuelcolvin/check-python-version@v4.1
+        with:
+          version_file_path: 'pyproject.toml'
+          skip_env_check: true
+
+      - name: Deploy the docs
+        run: |
+          poetry run mike deploy \
+              --update-aliases \
+              --push \
+              --branch docs-site \
+              ${{ steps.check-version.outputs.VERSION_MAJOR_MINOR }} latest

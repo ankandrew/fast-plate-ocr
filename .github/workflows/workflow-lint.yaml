@@ -1,0 +1,26 @@
+name: Lint GitHub Actions workflows
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**/*.yaml'
+      - '.github/workflows/**/*.yml'
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/**/*.yaml'
+      - '.github/workflows/**/*.yml'
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable matcher for actionlint
+        run: echo "::add-matcher::.github/actionlint-matcher.json"
+
+      - name: Download and run actionlint
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+        shell: bash

@@ -12,7 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 
-from fast_plate_ocr.train.data.augmentation import TRAIN_AUGMENTATION
+from fast_plate_ocr.train.data.augmentation import (
+    default_train_augmentation,
+)
+from fast_plate_ocr.train.model.config import PlateOCRConfig, load_plate_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
 
 
@@ -27,12 +30,21 @@ def load_images(
     img_dir: pathlib.Path,
     num_images: int,
     shuffle: bool,
-    height: int,
-    width: int,
+    plate_config: PlateOCRConfig,
     augmentation: A.Compose,
 ) -> tuple[list[npt.NDArray[np.uint8]], list[npt.NDArray[np.uint8]]]:
-    images = utils.load_images_from_folder(
-        img_dir, height=height, width=width, shuffle=shuffle, limit=num_images
+    images = list(
+        utils.load_images_from_folder(
+            img_dir,
+            width=plate_config.img_width,
+            height=plate_config.img_height,
+            image_color_mode=plate_config.image_color_mode,
+            keep_aspect_ratio=plate_config.keep_aspect_ratio,
+            interpolation_method=plate_config.interpolation,
+            padding_color=plate_config.padding_color,
+            shuffle=shuffle,
+            limit=num_images,
+        )
     )
     augmented_images = [augmentation(image=i)["image"] for i in images]
     return images, augmented_images
@@ -79,10 +91,16 @@ def display_images(
     help="Path to the images that will be augmented and visualized.",
 )
 @click.option(
+    "--plate-config-file",
+    required=True,
+    type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
+    help="Path pointing to the model license plate OCR config.",
+)
+@click.option(
     "--num-images",
     "-n",
     type=int,
-    default=1_000,
+    default=250,
     show_default=True,
     help="Maximum number of images to visualize.",
 )
@@ -115,22 +133,6 @@ def display_images(
     help="Number of rows in the grid layout for displaying images.",
 )
 @click.option(
-    "--height",
-    "-h",
-    type=int,
-    default=70,
-    show_default=True,
-    help="Height to which the images will be resize.",
-)
-@click.option(
-    "--width",
-    "-w",
-    type=int,
-    default=140,
-    show_default=True,
-    help="Width to which the images will be resize.",
-)
-@click.option(
     "--show-original",
     "-o",
     is_flag=True,
@@ -143,13 +145,12 @@ def display_images(
 )
 def visualize_augmentation(
     img_dir: pathlib.Path,
+    plate_config_file: pathlib.Path,
     num_images: int,
     augmentation_path: pathlib.Path | None,
     shuffle: bool,
     columns: int,
     rows: int,
-    height: int,
-    width: int,
     seed: int | None,
     show_original: bool,
 ) -> None:
@@ -157,8 +158,14 @@ def visualize_augmentation(
     Visualize augmentation pipeline applied to raw images.
     """
     _set_seed(seed)
-    aug = A.load(augmentation_path, data_format="yaml") if augmentation_path else TRAIN_AUGMENTATION
-    images, augmented_images = load_images(img_dir, num_images, shuffle, height, width, aug)
+    config = load_plate_config_from_yaml(plate_config_file)
+    aug = (
+        A.load(augmentation_path, data_format="yaml")
+        if augmentation_path
+        else default_train_augmentation(config.image_color_mode)
+    )
+    aug.set_random_seed(seed)
+    images, augmented_images = load_images(img_dir, num_images, shuffle, config, aug)
     display_images(images, augmented_images, columns, rows, show_original)
 
 

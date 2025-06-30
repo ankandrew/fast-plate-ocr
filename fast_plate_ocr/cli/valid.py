@@ -5,13 +5,10 @@ Script for validating trained OCR models.
 import pathlib
 
 import click
-from torch.utils.data import DataLoader
 
-from fast_plate_ocr.train.data.dataset import LicensePlateDataset
-
-# Custom metris / losses
-from fast_plate_ocr.train.model.config import load_config_from_yaml
-from fast_plate_ocr.train.utilities import utils
+from fast_plate_ocr.train.data.dataset import PlateRecognitionPyDataset
+from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
+from fast_plate_ocr.train.utilities.utils import load_keras_model
 
 
 @click.command(context_settings={"max_content_width": 120})
@@ -24,7 +21,7 @@ from fast_plate_ocr.train.utilities import utils
     help="Path to the saved .keras model.",
 )
 @click.option(
-    "--config-file",
+    "--plate-config-file",
     required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
@@ -44,22 +41,50 @@ from fast_plate_ocr.train.utilities import utils
     type=int,
     help="Batch size.",
 )
+@click.option(
+    "--workers",
+    default=1,
+    show_default=True,
+    type=int,
+    help="Number of worker threads/processes for parallel data loading via PyDataset.",
+)
+@click.option(
+    "--use-multiprocessing/--no-use-multiprocessing",
+    default=False,
+    show_default=True,
+    help="Whether to use multiprocessing for data loading.",
+)
+@click.option(
+    "--max-queue-size",
+    default=10,
+    show_default=True,
+    type=int,
+    help="Maximum number of batches to prefetch for the dataset.",
+)
 def valid(
     model_path: pathlib.Path,
-    config_file: pathlib.Path,
+    plate_config_file: pathlib.Path,
     annotations: pathlib.Path,
     batch_size: int,
+    workers: int,
+    use_multiprocessing: bool,
+    max_queue_size: int,
 ) -> None:
     """
     Validate the trained OCR model on a labeled set.
     """
-    config = load_config_from_yaml(config_file)
-    model = utils.load_keras_model(
-        model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
+    plate_config = load_plate_config_from_yaml(plate_config_file)
+    model = load_keras_model(model_path, plate_config)
+    val_dataset = PlateRecognitionPyDataset(
+        annotations_file=annotations,
+        plate_config=plate_config,
+        batch_size=batch_size,
+        shuffle=False,
+        workers=workers,
+        use_multiprocessing=use_multiprocessing,
+        max_queue_size=max_queue_size,
     )
-    val_torch_dataset = LicensePlateDataset(annotations_file=annotations, config=config)
-    val_dataloader = DataLoader(val_torch_dataset, batch_size=batch_size, shuffle=False)
-    model.evaluate(val_dataloader)
+    model.evaluate(val_dataset)
 
 
 if __name__ == "__main__":

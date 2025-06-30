@@ -1,0 +1,5 @@
+# yamllint configuration file: https://yamllint.readthedocs.io/
+extends: relaxed
+
+rules:
+  line-length: disable

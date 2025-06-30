@@ -1,0 +1,18 @@
+# Config for Latin-alphabet plates
+
+# Max number of plate slots supported. This represents the number of model classification heads.
+max_plate_slots: 9
+# All the possible character set for the model output.
+alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+# Padding character for plates which length is smaller than MAX_PLATE_SLOTS. It should still be present in the alphabet.
+pad_char: '_'
+# Image height which is fed to the model.
+img_height: 64
+# Image width which is fed to the model.
+img_width: 128
+# Keep the aspect ratio of the input image.
+keep_aspect_ratio: false
+# Interpolation method used for resizing the input image.
+interpolation: linear
+# Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input.
+image_color_mode: rgb

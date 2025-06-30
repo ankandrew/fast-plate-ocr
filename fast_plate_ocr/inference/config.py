@@ -2,20 +2,22 @@
 Model config reading/parsing for doing inference.
 """
 
-from os import PathLike
-from typing import TypedDict
+from dataclasses import dataclass
 
 import yaml
+
+from fast_plate_ocr.core.types import ImageColorMode, ImageInterpolation, PathLike
 
 # pylint: disable=duplicate-code
 
 
-class PlateOCRConfig(TypedDict):
+@dataclass(frozen=True)
+class PlateOCRConfig:  # pylint: disable=too-many-instance-attributes
     """
     Plate OCR Config used for inference.
 
-    This has the same attributes as the one used in the training Pydantic BaseModel. We use this to
-    avoid having Pydantic as a required dependency of the minimal package install.
+    This dataclass is used to read and parse the config file used for training the OCR model.
+    We prefer to keep the inference package with minimal dependencies and avoid using Pydantic here.
     """
 
     max_plate_slots: int
@@ -38,15 +40,41 @@ class PlateOCRConfig(TypedDict):
     """
     Image width which is fed to the model.
     """
-
-
-def load_config_from_yaml(yaml_file_path: str | PathLike[str]) -> PlateOCRConfig:
+    keep_aspect_ratio: bool = False
     """
-    Read and parse a yaml containing the Plate OCR config.
-
-    Note: This is currently not using Pydantic for parsing/validating to avoid adding it a python
-    dependency as part of the minimal installation.
+    Keep aspect ratio of the input image.
     """
-    with open(yaml_file_path, encoding="utf-8") as f_in:
-        config: PlateOCRConfig = yaml.safe_load(f_in)
-    return config
+    interpolation: ImageInterpolation = "linear"
+    """
+    Interpolation method used for resizing the input image.
+    """
+    image_color_mode: ImageColorMode = "grayscale"
+    """
+    Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input.
+    """
+    padding_color: tuple[int, int, int] | int = (114, 114, 114)
+    """
+    Padding color used when keep_aspect_ratio is True. For grayscale images, this should be a single
+    integer and for RGB images, this must be a tuple of three integers.
+    """
+
+    @property
+    def vocabulary_size(self) -> int:
+        return len(self.alphabet)
+
+    @property
+    def pad_idx(self) -> int:
+        return self.alphabet.index(self.pad_char)
+
+    @property
+    def num_channels(self) -> int:
+        return 3 if self.image_color_mode == "rgb" else 1
+
+    @classmethod
+    def from_yaml(cls, path: PathLike) -> "PlateOCRConfig":
+        """
+        Read and parse a yaml containing the Plate OCR config.
+        """
+        with open(path, encoding="utf-8") as f_in:
+            data = yaml.safe_load(f_in)
+        return cls(**data)

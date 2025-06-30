@@ -10,7 +10,7 @@ import cv2
 import keras
 import numpy as np
 
-from fast_plate_ocr.train.model.config import load_config_from_yaml
+from fast_plate_ocr.train.model.config import load_plate_config_from_yaml
 from fast_plate_ocr.train.utilities import utils
 from fast_plate_ocr.train.utilities.utils import postprocess_model_output
 
@@ -29,7 +29,7 @@ logging.basicConfig(
     help="Path to the saved .keras model.",
 )
 @click.option(
-    "--config-file",
+    "--plate-config-file",
     required=True,
     type=click.Path(exists=True, file_okay=True, path_type=pathlib.Path),
     help="Path pointing to the model license plate OCR config.",
@@ -57,7 +57,7 @@ logging.basicConfig(
 )
 def visualize_predictions(
     model_path: pathlib.Path,
-    config_file: pathlib.Path,
+    plate_config_file: pathlib.Path,
     img_dir: pathlib.Path,
     low_conf_thresh: float,
     filter_conf: float | None,
@@ -65,12 +65,16 @@ def visualize_predictions(
     """
     Visualize OCR model predictions on unlabeled data.
     """
-    config = load_config_from_yaml(config_file)
-    model = utils.load_keras_model(
-        model_path, vocab_size=config.vocabulary_size, max_plate_slots=config.max_plate_slots
-    )
+    plate_config = load_plate_config_from_yaml(plate_config_file)
+    model = utils.load_keras_model(model_path, plate_config)
     images = utils.load_images_from_folder(
-        img_dir, width=config.img_width, height=config.img_height
+        img_dir,
+        width=plate_config.img_width,
+        height=plate_config.img_height,
+        image_color_mode=plate_config.image_color_mode,
+        keep_aspect_ratio=plate_config.keep_aspect_ratio,
+        interpolation_method=plate_config.interpolation,
+        padding_color=plate_config.padding_color,
     )
     for image in images:
         x = np.expand_dims(image, 0)
@@ -78,9 +82,9 @@ def visualize_predictions(
         prediction = keras.ops.stop_gradient(prediction).numpy()
         plate, probs = postprocess_model_output(
             prediction=prediction,
-            alphabet=config.alphabet,
-            max_plate_slots=config.max_plate_slots,
-            vocab_size=config.vocabulary_size,
+            alphabet=plate_config.alphabet,
+            max_plate_slots=plate_config.max_plate_slots,
+            vocab_size=plate_config.vocabulary_size,
         )
         if not filter_conf or (filter_conf and np.any(probs < filter_conf)):
             utils.display_predictions(

@@ -2,13 +2,16 @@
 Utils used for the CLI scripts.
 """
 
+import importlib.util
 import inspect
 import pathlib
-from collections.abc import Callable
+import random
+from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any
 
 import albumentations as A
+import numpy as np
 from rich import box
 from rich.console import Console
 from rich.pretty import Pretty
@@ -81,3 +84,44 @@ def print_train_details(augmentation: A.Compose, config: dict[str, Any]) -> None
     console.print("[bold blue]Configuration:[/bold blue]")
     console.print(Pretty(config))
     console.print("\n")
+
+
+def requires(*modules: str, pkg_name: Sequence[str] | None = None) -> Callable:
+    """
+    Decorator that checks if given modules are importable. If not, raises ModuleNotFoundError with
+    a hint to install the package(s).
+
+    Args:
+        modules (str): Names of modules to check (via importlib.util.find_spec).
+        pkg_name (Sequence[str] | None): Names of packages to suggest installing.
+
+    Returns:
+        Callable: The wrapped function that checks for module availability.
+    """
+
+    def decorator(fn: Callable) -> Callable:
+        @wraps(fn)
+        def wrapper(*args: Any, **kwargs: Any):
+            missing = [m for m in modules if importlib.util.find_spec(m) is None]
+            if missing:
+                pkg_missing = " ".join(pkg_name or missing)
+                raise ModuleNotFoundError(
+                    f"Cannot run `{fn.__name__}` because {missing!r} "
+                    f"is not installed. Please install the required package(s): {pkg_missing}"
+                )
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def seed_everything(seed: int) -> None:
+    """
+    Seed random number generators for reproducibility.
+
+    Args:
+        seed (int): The seed value to set.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
