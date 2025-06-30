@@ -52,10 +52,7 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 >
 > - **Hardware**: NVIDIA RTX 3090 GPU
 > - **Execution Providers**: `['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']`
-> - **Install dependencies**:
->   ```bash
->   pip install fast-plate-ocr[onnx-gpu]
->   ```
+> - **Install dependencies**: `pip install fast-plate-ocr[onnx-gpu]`
 
 ### Inference
 
