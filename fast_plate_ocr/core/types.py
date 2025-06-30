@@ -12,7 +12,9 @@ from numpy import typing as npt
 ImageInterpolation: TypeAlias = Literal["nearest", "linear", "cubic", "area", "lanczos4"]
 """Interpolation method used for resizing the input image."""
 ImageColorMode: TypeAlias = Literal["grayscale", "rgb"]
-"""Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input."""
+"""
+Input image color mode. Use ``grayscale`` for single-channel input or ``rgb`` for 3-channel input.
+"""
 PaddingColor: TypeAlias = tuple[int, int, int] | int
 """Padding colour for letterboxing (only used when keeping image aspect ratio)."""
 PathLike: TypeAlias = str | os.PathLike
@@ -27,9 +29,9 @@ BatchArray: TypeAlias = npt.NDArray[np.uint8]
 """Numpy array of images, representing a batch of images."""
 TensorDataFormat: TypeAlias = Literal["channels_last", "channels_first"]
 """
-Data format of the input tensor. It can be either 'channels_last' or 'channels_first'.
-'channels_last' corresponds to inputs with shape (batch, height, width, channels), while
-'channels_first' corresponds to inputs with shape (batch, channels, height, width).
+Data format of the input tensor. It can be either ``channels_last`` or ``channels_first``.
+``channels_last`` corresponds to inputs with shape ``(batch, height, width, channels)``, while
+``channels_first`` corresponds to inputs with shape ``(batch, channels, height, width)``.
 """
 KerasDtypes: TypeAlias = Literal[
     "float16",

@@ -129,8 +129,8 @@ class LicensePlateRecognizer:
         device: Literal["cuda", "cpu", "auto"] = "auto",
         providers: Sequence[str | tuple[str, dict]] | None = None,
         sess_options: ort.SessionOptions | None = None,
-        model_path: PathLike | None = None,
-        config_path: PathLike | None = None,
+        onnx_model_path: PathLike | None = None,
+        plate_config_path: PathLike | None = None,
         force_download: bool = False,
     ) -> None:
         """
@@ -155,8 +155,8 @@ class LicensePlateRecognizer:
             providers: Optional sequence of providers in order of decreasing precedence. If not
                 specified, all available providers are used based on the device argument.
             sess_options: Advanced session options for ONNX Runtime.
-            model_path: Path to ONNX model file to use (In case you want to use a custom one).
-            config_path: Path to config file to use (In case you want to use a custom one).
+            onnx_model_path: Path to ONNX model file to use (In case you want to use a custom one).
+            plate_config_path: Path to config file to use (In case you want to use a custom one).
             force_download: Force and download the model, even if it already exists.
         Returns:
             None.
@@ -180,15 +180,15 @@ class LicensePlateRecognizer:
 
             self.logger.info("Using device '%s' with providers: %s", device, self.providers)
 
-        if model_path and config_path:
-            model_path = pathlib.Path(model_path)
-            config_path = pathlib.Path(config_path)
-            if not model_path.exists() or not config_path.exists():
+        if onnx_model_path and plate_config_path:
+            onnx_model_path = pathlib.Path(onnx_model_path)
+            plate_config_path = pathlib.Path(plate_config_path)
+            if not onnx_model_path.exists() or not plate_config_path.exists():
                 raise FileNotFoundError("Missing model/config file!")
-            self.model_name = model_path.stem
+            self.model_name = onnx_model_path.stem
         elif hub_ocr_model:
             self.model_name = hub_ocr_model
-            model_path, config_path = hub.download_model(
+            onnx_model_path, plate_config_path = hub.download_model(
                 model_name=hub_ocr_model, force_download=force_download
             )
         else:
@@ -196,9 +196,9 @@ class LicensePlateRecognizer:
                 "Either provide a model from the HUB or a custom model_path and config_path"
             )
 
-        self.config = PlateOCRConfig.from_yaml(config_path)
+        self.config = PlateOCRConfig.from_yaml(plate_config_path)
         self.model = ort.InferenceSession(
-            model_path, providers=self.providers, sess_options=sess_options
+            onnx_model_path, providers=self.providers, sess_options=sess_options
         )
 
     def benchmark(

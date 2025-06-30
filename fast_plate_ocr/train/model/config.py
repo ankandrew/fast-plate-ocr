@@ -1,5 +1,6 @@
 """
-Config values used throughout the code.
+License Plate OCR config. This config file defines how license plate images and text should be
+preprocessed for OCR model training and inference.
 """
 
 from pathlib import Path
@@ -94,10 +95,16 @@ class PlateOCRConfig(BaseModel, extra="forbid", frozen=True):
 
 def load_plate_config_from_yaml(yaml_path: PathLike) -> PlateOCRConfig:
     """
-    Read and parse a YAML containing the plate config.
+    Reads and parses a YAML file containing the plate configuration.
 
-    :param yaml_path: Path to the YAML file containing the plate config.
-    :return: Parsed and validated plate config.
+    Args:
+        yaml_path: Path to the YAML file containing the plate config.
+
+    Returns:
+        PlateOCRConfig: Parsed and validated plate configuration.
+
+    Raises:
+        FileNotFoundError: If the YAML file does not exist.
     """
     if not Path(yaml_path).is_file():
         raise FileNotFoundError(f"Plate config '{yaml_path}' doesn't exist.")

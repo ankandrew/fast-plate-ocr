@@ -377,10 +377,16 @@ AnyModelConfig = Annotated[CCTModelConfig, Field(discriminator="model")]
 
 def load_model_config_from_yaml(yaml_path: PathLike) -> AnyModelConfig:
     """
-    Load, parse and validate a YAML file that describes any of the supported model architectures.
+    Loads, parses, and validates a YAML file defining a model architecture.
 
-    :param yaml_path: Path to the YAML file.
-    :return: Parsed and validated model config.
+    Args:
+        yaml_path: Path to the YAML file.
+
+    Returns:
+        AnyModelConfig: Parsed and validated model configuration.
+
+    Raises:
+        FileNotFoundError: If the YAML file does not exist.
     """
     if not Path(yaml_path).is_file():
         raise FileNotFoundError(f"Model config '{yaml_path}' doesn't exist.")
