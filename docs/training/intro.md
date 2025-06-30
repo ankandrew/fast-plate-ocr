@@ -37,8 +37,10 @@ To train the model you will need:
     image_color_mode: rgb
     ```
    See [**Plate Config**](config/plate_config.md) section for more details.
-2. A **labeled dataset**, see [**Dataset**](dataset.md) section for more info.
-3. Run **train script**:
+2. A **model configuration** that defines the architecture of the OCR model. You can customize the architecture entirely
+   via YAML without editing code. See the [**Model Config**](config/model_config.md) section for supported architectures and examples.
+3. A **labeled dataset**, see [**Dataset**](dataset.md) section for more info.
+4. Run **train script**:
     ```shell
     # You can set the backend to either TensorFlow, JAX or PyTorch
     # (just make sure it is installed)
