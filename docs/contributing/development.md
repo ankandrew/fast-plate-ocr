@@ -7,7 +7,7 @@ To start contributing or to begin development, you can follow these steps:
     ```shell
     git clone https://github.com/ankandrew/fast-plate-ocr.git
     ```
-2. Install all dependencies using [Poetry](https://python-poetry.org/docs/#installation):
+2. Install all dependencies (make sure you have [Poetry](https://python-poetry.org/docs/#installation) installed):
     ```shell
     make install
     ```

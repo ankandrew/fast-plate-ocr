@@ -11,11 +11,11 @@ pip install fast_plate_ocr[onnx]
 
     To run inference, you **must install** one of the ONNX extras:
 
-    - `onnx` — for CPU inference (cross-platform)
-    - `onnx-gpu` — for NVIDIA GPUs (CUDA)
-    - `onnx-openvino` — for Intel CPUs / VPUs
-    - `onnx-directml` — for Windows devices via DirectML
-    - `onnx-qnn` — for Qualcomm chips on mobile
+    - `onnx` - for CPU inference (cross-platform)
+    - `onnx-gpu` - for NVIDIA GPUs (CUDA)
+    - `onnx-openvino` - for Intel CPUs / VPUs
+    - `onnx-directml` - for Windows devices via DirectML
+    - `onnx-qnn` - for Qualcomm chips on mobile
 
 Dependencies for inference are kept **minimal by default**. Inference-related packages like **ONNX runtimes** are
 **optional** and not installed unless **explicitly requested via extras**.
@@ -33,7 +33,7 @@ pip install fast_plate_ocr[train]
 
 ???+ tip
     You will need to **install** your desired framework for training as `fast-plate-ocr` doesn't
-    enforce you to use any specific framework. See [Keras backend](usage.md#keras-backend) section.
+    enforce you to use any specific framework. See [Keras backend](training/backend.md) section.
 
 
 ???+ example "Using TensorFlow with GPU support"

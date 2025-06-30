@@ -7,15 +7,16 @@ theme:
   features:
     - content.code.annotate
     - content.code.copy
-    - navigation.path
+    - content.footnote.tooltips
+    - header.autohide
+    - navigation.footer
     - navigation.instant
     - navigation.instant.progress
+    - navigation.path
     - navigation.sections
-    - navigation.footer
     - search.highlight
     - search.suggest
     - toc.follow
-    - header.autohide
   palette:
     - scheme: default
       toggle:
@@ -33,23 +34,34 @@ nav:
       - Running Inference: inference/running_inference.md
       - Available Models: inference/model_zoo.md
   - Training:
-      - intro: training/intro.md
+      - Intro: training/intro.md
+      - Dataset: training/dataset.md
+      - Configs:
+          - Plate Config: training/config/plate_config.md
+          - Model Config: training/config/model_config.md
+      - Metrics: training/metrics.md
       - CLI:
-          - dataset_stats: training/cli/dataset_stats.md
-          - export: training/cli/export.md
-          - train: training/cli/train.md
-          - valid: training/cli/valid.md
-          - validate_dataset: training/cli/validate_dataset.md
-          - visualize_augmentation: training/cli/visualize_augmentation.md
-          - visualize_predictions: training/cli/visualize_predictions.md
-  - Architecture: architecture.md
-  - Contributing: contributing.md
+          - Train: training/cli/train.md
+          - Validate: training/cli/valid.md
+          - Export: training/cli/export.md
+          - Validate Dataset: training/cli/validate_dataset.md
+          - Visualize Augmentation: training/cli/visualize_augmentation.md
+          - Visualize Predictions: training/cli/visualize_predictions.md
+          - Dataset Stats: training/cli/dataset_stats.md
+      - Backend: training/backend.md
   - Reference:
       - Inference:
           - LicensePlateRecognizer: reference/inference/inference_class.md
           - HUB: reference/inference/hub.md
       - Train:
-          - XD: reference/train/model_builder.md
+          - Model Schema: reference/train/model.md
+          - Plate Config: reference/train/plate_config.md
+      - Core:
+          - Process: reference/core/process.md
+          - Types: reference/core/types.md
+          - Utils: reference/core/utils.md
+  - Contributing:
+      - Development: contributing/development.md
 plugins:
   - search
   - mike:
@@ -66,11 +78,13 @@ plugins:
             docstring_options:
               ignore_init_summary: true
             merge_init_into_class: true
+            show_signature: true
             show_signature_annotations: true
             show_object_full_path: false
-            show_type_annotations: true
-            show_variable_annotations: true
             signature_crossrefs: true
+            extra:
+              show_type_annotations: true
+              show_variable_annotations: true
           inventories:
             - url: https://docs.python.org/3/objects.inv
               domains: [ py, std ]
@@ -86,6 +100,7 @@ extra:
       link: https://github.com/ankandrew/fast-plate-ocr
 markdown_extensions:
   - admonition
+  - footnotes
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span

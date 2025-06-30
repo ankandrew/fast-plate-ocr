@@ -12,7 +12,7 @@ We currently have the following available models:
 _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed
 by 5x in the CNN models._
 
-_<sup>[2]</sup> Accuracy is what we refer as plate_acc. See [metrics section](#model-metrics)._
+_<sup>[2]</sup> Accuracy is what we refer as plate_acc. See [metrics section](../training/metrics.md)._
 
 _<sup>[3]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_results.json) and
 the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_val.zip) used._
