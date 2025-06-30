@@ -37,59 +37,36 @@ The idea is to use this after a plate object detector, since the OCR expects the
 
 ### Available Models
 
-|                Model Name                | Time b=1<br/> (ms)<sup>[1]</sup> | Throughput <br/> (plates/second)<sup>[1]</sup> | Accuracy<sup>[2]</sup> |                                                                                           Dataset                                                                                            |
-|:----------------------------------------:|:--------------------------------:|:----------------------------------------------:|:----------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|      `argentinian-plates-cnn-model`      |               2.1                |                      476                       |         94.05%         |              Non-synthetic, plates up to 2020. Dataset [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip).              |
-|   `argentinian-plates-cnn-synth-model`   |               2.1                |                      476                       |         94.19%         | Plates up to 2020 + synthetic plates. Dataset [arg_plate_dataset_plus_synth.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset_plus_synth.zip). |
-|  `european-plates-mobile-vit-v2-model`   |               2.9                |                      344                       |  92.5%<sup>[3]</sup>   |                                                                European plates (from +40 countries, trained on 40k+ plates).                                                                 |
-| 🆕🔥 `global-plates-mobile-vit-v2-model` |               2.9                |                      344                       |  93.3%<sup>[4]</sup>   |                                                                Worldwide plates (from +65 countries, trained on 85k+ plates).                                                                |
+Optimized, ready to use models with config files for inference or fine-tuning.
 
-> [!TIP]
-> Try `fast-plate-ocr` pre-trained models in [Hugging Spaces](https://huggingface.co/spaces/ankandrew/fast-alpr).
+| Model Name               | Size | Arch                                                                                                                                     | b=1 Avg. Latency (ms) | Plates/sec (PPS) | Model Config                                                                                                                     | Plate Config                                                                                                                     | Val Results                                                                                                           |
+|--------------------------|------|------------------------------------------------------------------------------------------------------------------------------------------|-----------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `cct-s-v1-global-model`  | S    | [CCT](https://ankandrew.github.io/fast-plate-ocr/latest/reference/training/config/model_config.md#compact-convolutional-transformer-cct) | **0.5877**            | **1701.63**      | [model_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_s_v1_global_model_config.yaml)  | [plate_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_s_v1_global_plate_config.yaml)  | [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_s_v1_global_val_results.json)  |
+| `cct-xs-v1-global-model` | XS   | [CCT](https://ankandrew.github.io/fast-plate-ocr/latest/reference/training/config/model_config.md#compact-convolutional-transformer-cct) | **0.3232**            | **3094.21**      | [model_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_model_config.yaml) | [plate_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_plate_config.yaml) | [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_val_results.json) |
+
 
 <details>
   <summary>Notes</summary>
 
-  _<sup>[1]</sup> Inference on Mac M1 chip using CPUExecutionProvider. Utilizing CoreMLExecutionProvider accelerates speed by 5x in the CNN models._
+> [!TIP]
+> **Benchmarking Setup**
+>
+> These results were obtained with:
+>
+> - **Hardware**: NVIDIA RTX 3090 GPU
+> - **Execution Providers**: `['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']`
+> - **Install dependencies**:
+>   ```bash
+>   pip install fast-plate-ocr[onnx-gpu]
+>   ```
 
-  _<sup>[2]</sup> Accuracy is what we refer to as plate_acc. See [metrics section](#model-metrics)._
+|   |   |
+|---|---|
+|   |   |
 
-  _<sup>[3]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_results.json) and the corresponding [val split](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/european_mobile_vit_v2_ocr_val.zip) used._
-
-  _<sup>[4]</sup> For detailed accuracy for each country see [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/global_mobile_vit_v2_ocr_results.json)._
-
-</details>
-
-<details>
-  <summary>Reproduce results</summary>
-
-* Calculate Inference Time:
-
-  ```shell
-  pip install fast_plate_ocr[onnx-gpu]
-  ```
-
-  ```python
-  from fast_plate_ocr import LicensePlateRecognizer
-
-  m = LicensePlateRecognizer("cct-s-v1-global-model")
-  m.benchmark()
-  ```
-* Calculate Model accuracy:
-
-  ```shell
-  pip install fast-plate-ocr[train]
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr_config.yaml
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr.keras
-  curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_benchmark.zip
-  unzip arg_plate_benchmark.zip
-  fast_plate_ocr valid \
-      -m arg_cnn_ocr.keras \
-      --config-file arg_cnn_ocr_config.yaml \
-      --annotations benchmark/annotations.csv
-  ```
 
 </details>
+
 
 ### Inference
 
@@ -117,7 +94,7 @@ To predict from disk image:
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-m = LicensePlateRecognizer('cct-s-v1-global-model')
+m = LicensePlateRecognizer('cct-xs-v1-global-model')
 print(m.run('test_plate.png'))
 ```
 
@@ -133,7 +110,7 @@ To run model benchmark:
 ```python
 from fast_plate_ocr import LicensePlateRecognizer
 
-m = LicensePlateRecognizer('cct-s-v1-global-model')
+m = LicensePlateRecognizer('cct-xs-v1-global-model')
 m.benchmark()
 ```
 
@@ -146,196 +123,6 @@ m.benchmark()
 
 Make sure to check out the [docs](https://ankandrew.github.io/fast-plate-ocr) for more information.
 
-### CLI
-
-<img src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/cli_screenshot.png?raw=true" alt="CLI">
-
-To train or use the CLI tool, you'll need to install:
-
-```shell
-pip install fast_plate_ocr[train]
-```
-
-> [!IMPORTANT]
-> Make sure you have installed a supported backend for Keras.
-
-#### Train Model
-
-To train the model you will need:
-
-1. A configuration used for the OCR model. Depending on your use case, you might have more plate slots or different set
-   of characters. Take a look at the config for Argentinian license plate as an example:
-    ```yaml
-    # Config example for Argentinian License Plates
-    # The old license plates contain 6 slots/characters (i.e. JUH697)
-    # and new 'Mercosur' contain 7 slots/characters (i.e. AB123CD)
-
-    # Max number of plate slots supported. This represents the number of model classification heads.
-    max_plate_slots: 7
-    # All the possible character set for the model output.
-    alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_'
-    # Padding character for plates which length is smaller than MAX_PLATE_SLOTS. It should still be present in the alphabet.
-    pad_char: '_'
-    # Image height which is fed to the model.
-    img_height: 70
-    # Image width which is fed to the model.
-    img_width: 140
-   # Keep the aspect ratio of the input image.
-    keep_aspect_ratio: false
-    # Interpolation method used for resizing the input image.
-    interpolation: linear
-    # Input image color mode. Use 'grayscale' for single-channel input or 'rgb' for 3-channel input.
-    image_color_mode: grayscale
-    ```
-2. A labeled dataset,
-   see [arg_plate_dataset.zip](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_dataset.zip)
-   for the expected data format.
-3. Run train script:
-    ```shell
-    # You can set the backend to either TensorFlow, JAX or PyTorch
-    # (just make sure it is installed)
-    KERAS_BACKEND=tensorflow fast_plate_ocr train \
-        --model-config-file ./models/cct_s_v1.yaml \
-        --plate-config-file ./config/default_latin_plate_config.yaml \
-        --annotations path_to_the_train.csv \
-        --val-annotations path_to_the_val.csv \
-        --batch-size 64 \
-        --lr 0.001 \
-        --label-smoothing 0.01 \
-        --tensorboard \
-        --epochs 300 \
-        --early-stopping-patience 50 \
-        --workers 8
-    ```
-
-You will probably want to change the augmentation pipeline to apply to your dataset.
-
-In order to do this define an Albumentations pipeline:
-
-```python
-import albumentations as A
-
-transform_pipeline = A.Compose(
-    [
-        # ...
-        A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
-        A.MotionBlur(blur_limit=(3, 5), p=0.1),
-        # ... + any other augmentation ...
-    ]
-)
-
-# Export to a file (this resultant YAML can be used by the train script)
-A.save(transform_pipeline, "./transform_pipeline.yaml", data_format="yaml")
-```
-
-And then you can train using the custom transformation pipeline with the `--augmentation-path` option.
-
-#### Visualize Augmentation
-
-It's useful to visualize the augmentation pipeline before training the model. This helps us to identify
-if we should apply more heavy augmentation or less, as it can hurt the model.
-
-You might want to see the augmented image next to the original, to see how much it changed:
-
-```shell
-fast_plate_ocr visualize-augmentation \
-    --img-dir benchmark/imgs \
-    --columns 2 \
-    --show-original \
-    --augmentation-path '/transform_pipeline.yaml'
-```
-
-You will see something like:
-
-![Augmented Images](https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/image_augmentation.gif?raw=true)
-
-#### Validate Model
-
-After finishing training you can validate the model on a labeled test dataset.
-
-Example:
-
-```shell
-fast_plate_ocr valid \
-    --model arg_cnn_ocr.keras \
-    --config-file argentinian_plate_config.yaml \
-    --annotations benchmark/annotations.csv
-```
-
-#### Visualize Predictions
-
-Once you finish training your model, you can view the model predictions on raw data with:
-
-```shell
-fast_plate_ocr visualize-predictions \
-    --model arg_cnn_ocr.keras \
-    --img-dir benchmark/imgs \
-    --config-file arg_cnn_ocr_config.yaml
-```
-
-You will see something like:
-
-![Visualize Predictions](https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/visualize_predictions.gif?raw=true)
-
-#### Export as ONNX
-
-Exporting the Keras model to ONNX format might be beneficial to speed-up inference time.
-
-```shell
-fast_plate_ocr export-onnx \
-	--model arg_cnn_ocr.keras \
-	--output-path arg_cnn_ocr.onnx \
-	--opset 18 \
-	--config-file arg_cnn_ocr_config.yaml
-```
-
-### Keras Backend
-
-To train the model, you can install the ML Framework you like the most. **Keras 3** has
-support for **TensorFlow**, **JAX** and **PyTorch** backends.
-
-To change the Keras backend you can either:
-
-1. Export `KERAS_BACKEND` environment variable, i.e. to use JAX for training:
-    ```shell
-    KERAS_BACKEND=jax fast_plate_ocr train --config-file ...
-    ```
-2. Edit your local config file at `~/.keras/keras.json`.
-
-_Note: You will probably need to install your desired framework for training._
-
-### Model Architecture
-
-The current model architecture is quite simple but effective.
-See [cnn_ocr_model](https://github.com/ankandrew/cnn-ocr-lp/blob/e59b738bad86d269c82101dfe7a3bef49b3a77c7/fast_plate_ocr/train/model/models.py#L23-L23)
-for implementation details.
-
-The model output consists of several heads. Each head represents the prediction of a character of the
-plate. If the plate consists of 7 characters at most (`max_plate_slots=7`), then the model would have 7 heads.
-
-Example of Argentinian plates:
-
-![Model head](https://raw.githubusercontent.com/ankandrew/fast-plate-ocr/4a7dd34c9803caada0dc50a33b59487b63dd4754/extra/FCN.png)
-
-Each head will output a probability distribution over the `vocabulary` specified during training. So the output
-prediction for a single plate will be of shape `(max_plate_slots, vocabulary_size)`.
-
-### Model Metrics
-
-During training, you will see the following metrics
-
-* **plate_acc**: Compute the number of **license plates** that were **fully classified**. For a single plate, if the
-  ground truth is `ABC123` and the prediction is also `ABC123`, it would score 1. However, if the prediction was
-  `ABD123`, it would score 0, as **not all characters** were correctly classified.
-
-* **cat_acc**: Calculate the accuracy of **individual characters** within the license plates that were
-  **correctly classified**. For example, if the correct label is `ABC123` and the prediction is `ABC133`, it would yield
-  a precision of 83.3% (5 out of 6 characters correctly classified), rather than 0% as in plate_acc, because it's not
-  completely classified correctly.
-
-* **top_3_k**: Calculate how frequently the true character is included in the **top-3 predictions**
-  (the three predictions with the highest probability).
-
 ### Contributing
 
 Contributions to the repo are greatly appreciated. Whether it's bug fixes, feature enhancements, or new models,
@@ -347,7 +134,7 @@ To start contributing or to begin development, you can follow these steps:
     ```shell
     git clone https://github.com/ankandrew/fast-plate-ocr.git
     ```
-2. Install all dependencies using [Poetry](https://python-poetry.org/docs/#installation):
+2. Install all dependencies (make sure you have [Poetry](https://python-poetry.org/docs/#installation) installed):
     ```shell
     make install
     ```
@@ -362,3 +149,4 @@ If you look to contribute to the repo, some features that are not yet implemente
 
 - [ ] Add char confusion matrix callback
 - [ ] Extra head for country recognition, making it configurable.
+- [ ] Add jupyter notebooks examples on fine-tuning
