@@ -45,7 +45,7 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 | `cct-xs-v1-global-model` | XS   | [CCT](https://ankandrew.github.io/fast-plate-ocr/1.0/training/config/model_config/#compact-convolutional-transformer-cct) | **0.3232**            | **3094.21**      | [model_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_model_config.yaml) | [plate_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_plate_config.yaml) | [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_val_results.json) |
 
 
-> [!TIP]
+> [!NOTE]
 > **Benchmarking Setup**
 >
 > These results were obtained with:
