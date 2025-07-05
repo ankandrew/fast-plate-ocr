@@ -1,8 +1,7 @@
 """
 Loss functions for training license plate recognition models.
 """
-
-from keras.api import losses, ops
+from keras import ops, losses
 
 
 def cce_loss(vocabulary_size: int, label_smoothing: float = 0.01):

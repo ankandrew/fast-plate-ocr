@@ -4,7 +4,7 @@
 name = "absl-py"
 version = "2.1.0"
 description = "Abseil Python Common Libraries, see https://github.com/abseil/abseil-py."
-optional = true
+optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 markers = "extra == \"train\""
@@ -716,7 +716,7 @@ protobuf = ["grpcio-tools (>=1.62.1)"]
 name = "h5py"
 version = "3.14.0"
 description = "Read and write HDF5 files from Python"
-optional = true
+optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"train\""
@@ -877,15 +877,15 @@ files = [
 
 [[package]]
 name = "keras"
-version = "3.9.2"
+version = "3.10.0"
 description = "Multi-backend Keras"
-optional = true
+optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"train\""
 files = [
-    {file = "keras-3.9.2-py3-none-any.whl", hash = "sha256:404427856c2dc30e38c9fa6fa6a13ffb1844a8c35af312ca32a8e7dea9840f1e"},
-    {file = "keras-3.9.2.tar.gz", hash = "sha256:322aab6418ee3de1e2bd0871b60a07f0e444e744a7e8cba79af8b42408879ecf"},
+    {file = "keras-3.10.0-py3-none-any.whl", hash = "sha256:c095a6bf90cd50defadf73d4859ff794fad76b775357ef7bd1dbf96388dae7d3"},
+    {file = "keras-3.10.0.tar.gz", hash = "sha256:6e9100bf66eaf6de4b7f288d34ef9bb8b5dcdd62f42c64cfd910226bb34ad2d2"},
 ]
 
 [package.dependencies]
@@ -1414,7 +1414,7 @@ typing-extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
 name = "ml-dtypes"
 version = "0.3.2"
 description = ""
-optional = true
+optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"train\""
@@ -1531,7 +1531,7 @@ files = [
 name = "namex"
 version = "0.0.7"
 description = "A simple utility to separate the implementation of your Python package and its public API surface."
-optional = true
+optional = false
 python-versions = "*"
 groups = ["main"]
 markers = "extra == \"train\""
@@ -1869,7 +1869,7 @@ tests = ["pytest", "pytest-cov", "pytest-pep8"]
 name = "optree"
 version = "0.11.0"
 description = "Optimized PyTree Utilities."
-optional = true
+optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 markers = "extra == \"train\""
@@ -3574,4 +3574,4 @@ train = ["albumentations", "click", "coremltools", "keras", "matplotlib", "onnxs
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "e03d5416acc39d9d64613b06ba5bb427bc1eb95d85bd03fda1cc0ff206934fb2"
+content-hash = "40ce0428941c440506cdaa7aeb5d568c839f3f6b461d4a4ae82c2a57d18930f4"

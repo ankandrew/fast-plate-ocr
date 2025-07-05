@@ -42,7 +42,7 @@ onnxruntime-qnn = { version = "*", optional = true }
 albumentations = { version = "*", optional = true }
 click = { version = "*", optional = true }
 coremltools = { version = "*", optional = true }
-keras = { version = "^3.9.2", optional = true }
+keras = "^3.10.0"
 matplotlib = { version = "*", optional = true }
 onnxslim = { version = ">=0.1.56", optional = true }
 pandas = { version = "*", optional = true }
