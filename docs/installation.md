@@ -3,7 +3,7 @@
 For **inference**, install:
 
 ```shell
-pip install fast_plate_ocr[onnx]
+pip install fast-plate-ocr[onnx]
 ```
 
 ???+ warning
@@ -28,7 +28,7 @@ can choose the one that fits your needs, no code changes required.
 To **train** or use the **CLI tool**, you'll need to install:
 
 ```shell
-pip install fast_plate_ocr[train]
+pip install fast-plate-ocr[train]
 ```
 
 ???+ tip

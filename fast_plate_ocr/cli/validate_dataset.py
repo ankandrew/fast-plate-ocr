@@ -155,7 +155,7 @@ def rich_report(errors, warnings):
     "--annotations-file",
     "-a",
     required=True,
-    type=click.Path(exists=True, dir_okay=False, file_okay=True, path_type=Path),
+    type=click.Path(exists=True, dir_okay=False, file_okay=True, path_type=Path, resolve_path=True),
     help="CSV with image_path and plate_text columns.",
 )
 @click.option(

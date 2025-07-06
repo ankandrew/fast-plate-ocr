@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fast-plate-ocr"
-version = "1.0.0"
+version = "1.0.1"
 description = "Fast & Lightweight OCR for vehicle license plates."
 authors = ["ankandrew <61120139+ankandrew@users.noreply.github.com>"]
 readme = "README.md"
@@ -42,7 +42,7 @@ onnxruntime-qnn = { version = "*", optional = true }
 albumentations = { version = "*", optional = true }
 click = { version = "*", optional = true }
 coremltools = { version = "*", optional = true }
-keras = { version = "^3.9.2", optional = true }
+keras = "^3.10.0"
 matplotlib = { version = "*", optional = true }
 onnxslim = { version = ">=0.1.56", optional = true }
 pandas = { version = "*", optional = true }
@@ -90,7 +90,7 @@ mkdocstrings = { version = "*", extras = ["python"] }
 mike = "*"
 
 [tool.poetry.scripts]
-fast_plate_ocr = "fast_plate_ocr.cli.cli:main_cli"
+fast-plate-ocr = "fast_plate_ocr.cli.cli:main_cli"
 
 [tool.ruff]
 line-length = 100

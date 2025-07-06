@@ -2,7 +2,7 @@
 Evaluation metrics for license plate recognition models.
 """
 
-from keras.api import metrics, ops
+from keras import metrics, ops
 
 
 def cat_acc_metric(max_plate_slots: int, vocabulary_size: int):

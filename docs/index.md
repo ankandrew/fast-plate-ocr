@@ -34,7 +34,7 @@ pip install fast-plate-ocr[onnx-gpu]
 Install for **training**:
 
 ```shell
-pip install fast_plate_ocr[train]
+pip install fast-plate-ocr[train]
 ```
 
 For full installation options (like GPU backends or ONNX variants), see the [**Installation Guide**](installation.md).

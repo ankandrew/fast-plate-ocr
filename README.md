@@ -1,4 +1,4 @@
-## Fast & Lightweight License Plate OCR
+# Fast & Lightweight License Plate OCR
 
 [![Actions status](https://github.com/ankandrew/fast-plate-ocr/actions/workflows/test.yaml/badge.svg)](https://github.com/ankandrew/fast-plate-ocr/actions)
 [![Actions status](https://github.com/ankandrew/fast-plate-ocr/actions/workflows/release.yaml/badge.svg)](https://github.com/ankandrew/fast-plate-ocr/actions)
@@ -17,14 +17,14 @@
 
 ---
 
-### Introduction
+## Introduction
 
 **Lightweight** and **fast** OCR models for license plate text recognition. You can train models from scratch or use
 the trained models for inference.
 
 The idea is to use this after a plate object detector, since the OCR expects the cropped plates.
 
-### Features
+## Features
 
 - **Keras 3 Backend Support**: Train seamlessly using **[TensorFlow](https://www.tensorflow.org/)**, **[JAX](https://github.com/google/jax)**, or **[PyTorch](https://pytorch.org/)** backends 🧠
 - **Augmentation Variety**: Diverse **training-time augmentations** via **[Albumentations](https://albumentations.ai/)** library 🖼️
@@ -35,7 +35,7 @@ The idea is to use this after a plate object detector, since the OCR expects the
 - **Train**/**Fine-tune**: Easily train or **fine-tune** your own models 🔧
 - **Export-Friendly**: Export easily to **CoreML** or **TFLite** formats 📦
 
-### Available Models
+## Available Models
 
 Optimized, ready to use models with config files for inference or fine-tuning.
 
@@ -46,7 +46,7 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 
 
 > [!NOTE]
-> **Benchmarking Setup**
+> **Benchmark Setup**
 >
 > These results were obtained with:
 >
@@ -54,12 +54,12 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 > - **Execution Providers**: `['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']`
 > - **Install dependencies**: `pip install fast-plate-ocr[onnx-gpu]`
 
-### Inference
+## Inference
 
 For doing inference, install:
 
 ```shell
-pip install fast_plate_ocr[onnx-gpu]
+pip install fast-plate-ocr[onnx-gpu]
 ```
 
 By default, **no ONNX runtime is installed**. To run inference, you **must** install at least one ONNX backend using an appropriate extra.
@@ -73,7 +73,7 @@ By default, **no ONNX runtime is installed**. To run inference, you **must** ins
 | Qualcomm (QNN)     | `pip install fast-plate-ocr[onnx-qnn]`      | Qualcomm chipsets    |
 
 
-#### Usage
+### Usage
 
 To predict from disk image:
 
@@ -107,11 +107,20 @@ m.benchmark()
 
 </details>
 
-> [!IMPORTANT]
-> Make sure to check out the [docs](https://ankandrew.github.io/fast-plate-ocr) for full details on training,
-> fine-tuning, model configs, inference, and more.
+## Training
 
-### Contributing
+You can train models from scratch or fine-tune a pre-trained one using your own license plate dataset.
+
+Install the training dependencies:
+
+```shell
+pip install fast-plate-ocr[train]
+```
+
+For full details on data preparation, model configs, fine-tuning, and training commands, check out the
+[docs](https://ankandrew.github.io/fast-plate-ocr/1.0/training/intro/).
+
+## Contributing
 
 Contributions to the repo are greatly appreciated. Whether it's bug fixes, feature enhancements, or new models,
 your contributions are warmly welcomed.
@@ -131,10 +140,16 @@ To start contributing or to begin development, you can follow these steps:
     make checks
     ```
 
-If you want to train a model and share it, we'll add it to the HUB 🚀
+## Citations
 
-If you look to contribute to the repo, some features that are not yet implemented:
-
-- [ ] Add char confusion matrix callback
-- [ ] Extra head for country recognition, making it configurable.
-- [ ] Add jupyter notebooks examples on fine-tuning
+```bibtex
+@article{hassani2021escaping,
+    title   = {Escaping the Big Data Paradigm with Compact Transformers},
+    author  = {Ali Hassani and Steven Walton and Nikhil Shah and Abulikemu Abuduweili and Jiachen Li and Humphrey Shi},
+    year    = 2021,
+    url     = {https://arxiv.org/abs/2104.05704},
+    eprint  = {2104.05704},
+    archiveprefix = {arXiv},
+    primaryclass = {cs.CV}
+}
+```

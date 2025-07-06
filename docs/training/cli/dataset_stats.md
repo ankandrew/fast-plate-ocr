@@ -14,7 +14,7 @@ It provides insights into:
 ##  Usage
 
 ```bash
-fast_plate_ocr dataset-stats \
+fast-plate-ocr dataset-stats \
   --annotations path/to/annotations.csv \
   --plate-config-file path/to/plate_config.yaml
 ```

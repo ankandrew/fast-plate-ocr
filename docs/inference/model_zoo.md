@@ -30,7 +30,7 @@ These are pre-trained models from earlier iterations of `fast-plate-ocr`, primar
 | `european-plates-mobile-vit-v2-model` |               2.9                |                      344                       |  92.5%<sup>[3]</sup>   |                                                                European plates (from +40 countries, trained on 40k+ plates).                                                                 |
 |  `global-plates-mobile-vit-v2-model`  |               2.9                |                      344                       |  93.3%<sup>[4]</sup>   |                                                                Worldwide plates (from +65 countries, trained on 85k+ plates).                                                                |
 
-??? warning "Legacy Notice"
+???+ warning "Legacy Notice"
     These are older models maintained **for compatibility and inference only**.
     They are **not recommended for fine-tuning or continued development**.
     For best results, use the newer models from the [Model Zoo](#model-zoo).
@@ -50,7 +50,7 @@ These are pre-trained models from earlier iterations of `fast-plate-ocr`, primar
     Calculate Inference Time:
 
       ```shell
-      pip install fast_plate_ocr[onnx-gpu]
+      pip install fast-plate-ocr[onnx-gpu]
       ```
 
       ```python
@@ -68,7 +68,7 @@ These are pre-trained models from earlier iterations of `fast-plate-ocr`, primar
       curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr.keras
       curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_benchmark.zip
       unzip arg_plate_benchmark.zip
-      fast_plate_ocr valid \
+      fast-plate-ocr valid \
           -m arg_cnn_ocr.keras \
           --config-file arg_cnn_ocr_config.yaml \
           --annotations benchmark/annotations.csv
