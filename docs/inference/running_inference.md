@@ -1,6 +1,6 @@
 ### Inference Guide
 
-The `fast_plate_ocr` library performs **high-performance** license plate recognition using **ONNX Runtime** for **inference**.
+The `fast-plate-ocr` library performs **high-performance** license plate recognition using **ONNX Runtime** for **inference**.
 
 To run inference use the [`LicensePlateRecognizer`](../reference/inference/inference_class.md) class, which supports a wide
 range of input types:
