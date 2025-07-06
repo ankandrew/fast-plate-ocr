@@ -117,6 +117,12 @@ Install the training dependencies:
 pip install fast-plate-ocr[train]
 ```
 
+### Fine-tuning Tutorial
+
+A complete tutorial notebook is available for fine-tuning a license plate OCR model on your own dataset:
+[`examples/fine_tune_workflow.ipynb`](examples/tutorial_fine_tune_plate_model.ipynb). It covers the full workflow, from
+preparing your dataset to training and exporting the model.
+
 For full details on data preparation, model configs, fine-tuning, and training commands, check out the
 [docs](https://ankandrew.github.io/fast-plate-ocr/1.0/training/intro/).
 
