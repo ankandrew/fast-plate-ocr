@@ -1457,7 +1457,7 @@
 
 <h1 id="visualize-predictions">Visualize Predictions<a class="headerlink" href="#visualize-predictions" title="Permanent link">&para;</a></h1>
 <p>Once your model is trained, you can visually inspect how it performs on <strong>unseen images</strong> using:</p>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fast_plate_ocr<span class="w"> </span>visualize-predictions<span class="w"> </span><span class="se">\</span>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fast-plate-ocr<span class="w"> </span>visualize-predictions<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--model<span class="w"> </span>arg_cnn_ocr.keras<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--img-dir<span class="w"> </span>benchmark/imgs<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>--plate-config-file<span class="w"> </span>arg_cnn_ocr_config.yaml
@@ -1474,7 +1474,7 @@
 <p><img alt="Visualize Predictions" src="https://github.com/ankandrew/fast-plate-ocr/blob/ac3d110c58f62b79072e3a7af15720bb52a45e4e/extra/visualize_predictions.gif?raw=true" /></p>
 <hr />
 <h2 id="example-filter-uncertain-plates">Example: Filter Uncertain Plates<a class="headerlink" href="#example-filter-uncertain-plates" title="Permanent link">&para;</a></h2>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>fast_plate_ocr<span class="w"> </span>visualize-predictions<span class="w"> </span><span class="se">\</span>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>fast-plate-ocr<span class="w"> </span>visualize-predictions<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--model<span class="w"> </span>model.keras<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--img-dir<span class="w"> </span>raw_eval_imgs<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--plate-config-file<span class="w"> </span>config.yaml<span class="w"> </span><span class="se">\</span>
