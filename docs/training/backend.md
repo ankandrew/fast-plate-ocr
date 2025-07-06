@@ -28,7 +28,7 @@ To change the Keras backend you can either:
 
 1. Export `KERAS_BACKEND` environment variable, i.e. to use JAX for training:
     ```shell
-    KERAS_BACKEND=tensorflow fast_plate_ocr train --config-file ...
+    KERAS_BACKEND=tensorflow fast-plate-ocr train --config-file ...
     ```
 2. Edit your local config file at `~/.keras/keras.json`.
 

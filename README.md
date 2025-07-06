@@ -59,7 +59,7 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 For doing inference, install:
 
 ```shell
-pip install fast_plate_ocr[onnx-gpu]
+pip install fast-plate-ocr[onnx-gpu]
 ```
 
 By default, **no ONNX runtime is installed**. To run inference, you **must** install at least one ONNX backend using an appropriate extra.

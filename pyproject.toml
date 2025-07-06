@@ -90,7 +90,7 @@ mkdocstrings = { version = "*", extras = ["python"] }
 mike = "*"
 
 [tool.poetry.scripts]
-fast_plate_ocr = "fast_plate_ocr.cli.cli:main_cli"
+fast-plate-ocr = "fast_plate_ocr.cli.cli:main_cli"
 
 [tool.ruff]
 line-length = 100

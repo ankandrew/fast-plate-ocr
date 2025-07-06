@@ -3,7 +3,7 @@
 Once your model is trained, you can visually inspect how it performs on **unseen images** using:
 
 ```shell
-fast_plate_ocr visualize-predictions \
+fast-plate-ocr visualize-predictions \
   --model arg_cnn_ocr.keras \
   --img-dir benchmark/imgs \
   --plate-config-file arg_cnn_ocr_config.yaml
@@ -28,7 +28,7 @@ For each image, the model will:
 ## Example: Filter Uncertain Plates
 
 ```shell
-fast_plate_ocr visualize-predictions \
+fast-plate-ocr visualize-predictions \
   --model model.keras \
   --img-dir raw_eval_imgs \
   --plate-config-file config.yaml \

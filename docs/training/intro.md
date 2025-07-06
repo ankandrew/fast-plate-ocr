@@ -5,7 +5,7 @@
 To **train** and use the **CLI scripts**, you'll need to install:
 
 ```shell
-pip install fast_plate_ocr[train]
+pip install fast-plate-ocr[train]
 ```
 
 ---

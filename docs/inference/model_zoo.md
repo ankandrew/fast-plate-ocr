@@ -50,7 +50,7 @@ These are pre-trained models from earlier iterations of `fast-plate-ocr`, primar
     Calculate Inference Time:
 
       ```shell
-      pip install fast_plate_ocr[onnx-gpu]
+      pip install fast-plate-ocr[onnx-gpu]
       ```
 
       ```python
@@ -68,7 +68,7 @@ These are pre-trained models from earlier iterations of `fast-plate-ocr`, primar
       curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_cnn_ocr.keras
       curl -LO https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/arg_plate_benchmark.zip
       unzip arg_plate_benchmark.zip
-      fast_plate_ocr valid \
+      fast-plate-ocr valid \
           -m arg_cnn_ocr.keras \
           --config-file arg_cnn_ocr_config.yaml \
           --annotations benchmark/annotations.csv
