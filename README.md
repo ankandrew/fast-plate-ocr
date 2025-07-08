@@ -44,6 +44,8 @@ Optimized, ready to use models with config files for inference or fine-tuning.
 | `cct-s-v1-global-model`  | S    | [CCT](https://ankandrew.github.io/fast-plate-ocr/1.0/training/config/model_config/#compact-convolutional-transformer-cct) | **0.5877**            | **1701.63**      | [model_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_s_v1_global_model_config.yaml)  | [plate_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_s_v1_global_plate_config.yaml)  | [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_s_v1_global_val_results.json)  |
 | `cct-xs-v1-global-model` | XS   | [CCT](https://ankandrew.github.io/fast-plate-ocr/1.0/training/config/model_config/#compact-convolutional-transformer-cct) | **0.3232**            | **3094.21**      | [model_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_model_config.yaml) | [plate_config.yaml](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_plate_config.yaml) | [results](https://github.com/ankandrew/fast-plate-ocr/releases/download/arg-plates/cct_xs_v1_global_val_results.json) |
 
+> [!TIP]
+> 🚀 Try the above models in [Hugging Spaces](https://huggingface.co/spaces/ankandrew/fast-alpr).
 
 > [!NOTE]
 > **Benchmark Setup**
