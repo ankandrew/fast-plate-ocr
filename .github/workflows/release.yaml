@@ -21,19 +21,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install uv (and Python 3.10)
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.10'
+          version: "latest"
+          python-version: "3.10"
+          enable-cache: true
 
-      - name: Build a binary wheel
-        run: poetry build
+      - name: Build distributions (sdist + wheel)
+        run: uv build --no-sources
 
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
   github-release:
     name: Create GitHub release
@@ -74,13 +76,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install poetry
-        run: pipx install poetry
-
-      - uses: actions/setup-python@v5
+      - name: Install uv (and Python 3.10)
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.10'
-          cache: 'poetry'
+          version: "latest"
+          python-version: "3.10"
+          enable-cache: true
 
       - name: Configure Git user
         run: |
@@ -94,10 +95,16 @@ jobs:
           version_file_path: 'pyproject.toml'
           skip_env_check: true
 
+      - name: Install docs dependencies
+        run: uv sync --locked --no-default-groups --group docs
+
       - name: Deploy the docs
         run: |
-          poetry run mike deploy \
-              --update-aliases \
-              --push \
-              --branch docs-site \
-              ${{ steps.check-version.outputs.VERSION_MAJOR_MINOR }} latest
+          uv run mike deploy \
+            --update-aliases \
+            --push \
+            --branch docs-site \
+            ${{ steps.check-version.outputs.VERSION_MAJOR_MINOR }} latest
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
