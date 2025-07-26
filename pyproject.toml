@@ -1,13 +1,16 @@
-[tool.poetry]
+[project]
 name = "fast-plate-ocr"
 version = "1.0.1"
 description = "Fast & Lightweight OCR for vehicle license plates."
-authors = ["ankandrew <61120139+ankandrew@users.noreply.github.com>"]
+authors = [{ name = "ankandrew", email = "61120139+ankandrew@users.noreply.github.com" }]
+requires-python = ">=3.10"
 readme = "README.md"
-repository = "https://github.com/ankandrew/fast-plate-ocr/"
-documentation = "https://ankandrew.github.io/fast-plate-ocr"
-keywords = ["plate-recognition", "license-plate-recognition", "license-plate-ocr"]
 license = "MIT"
+keywords = [
+    "plate-recognition",
+    "license-plate-recognition",
+    "license-plate-ocr",
+]
 classifiers = [
     "Typing :: Typed",
     "Intended Audience :: Developers",
@@ -21,38 +24,15 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "numpy>=1.20",
+    "opencv-python",
+    "pyyaml>=5.1",
+    "tqdm",
+    "rich",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10"
-# Packages required for doing inference
-numpy = ">=1.20"
-opencv-python = "*"
-pyyaml = ">=5.1"
-tqdm = "*"
-rich = "*"
-
-# ONNX package variants (for different hardware accelerator)
-onnxruntime = { version = "*", optional = true }
-onnxruntime-gpu = { version = "*", optional = true }
-onnxruntime-openvino = { version = "*", optional = true }
-onnxruntime-directml = { version = "*", optional = true }
-onnxruntime-qnn = { version = "*", optional = true }
-
-# Training packages are optional
-albumentations = { version = "*", optional = true }
-click = { version = "*", optional = true }
-coremltools = { version = "*", optional = true }
-keras = "^3.10.0"
-matplotlib = { version = "*", optional = true }
-onnxslim = { version = ">=0.1.56", optional = true }
-pandas = { version = "*", optional = true }
-pydantic = { version = "^2.5.2", optional = true }
-scikit-learn = { version = "*", optional = true }
-tensorboard = { version = "*", optional = true }
-tensorflow = { version = "*", optional = true }
-tf2onnx = { version = "*", optional = true }
-
-[tool.poetry.extras]
+[project.optional-dependencies]
 onnx = ["onnxruntime"]
 onnx-gpu = ["onnxruntime-gpu"]
 onnx-openvino = ["onnxruntime-openvino"]
@@ -62,35 +42,50 @@ train = [
     "albumentations",
     "click",
     "coremltools",
-    "keras",
+    "keras>=3.10.0,<4",
     "matplotlib",
-    "onnxslim",
+    "onnxslim>=0.1.56",
     "pandas",
-    "pydantic",
+    "pydantic>=2.5.2,<3",
     "scikit-learn",
     "tensorboard",
     "tensorflow",
     "tf2onnx",
 ]
 
-[tool.poetry.group.test.dependencies]
-pytest = "*"
+[project.urls]
+Repository = "https://github.com/ankandrew/fast-plate-ocr/"
+Documentation = "https://ankandrew.github.io/fast-plate-ocr"
 
-[tool.poetry.group.dev.dependencies]
-mypy = "*"
-ruff = "*"
-pandas-stubs = "*"
-pylint = "*"
-types-pyyaml = "*"
-yamllint = "*"
-
-[tool.poetry.group.docs.dependencies]
-mkdocs-material = "*"
-mkdocstrings = { version = "*", extras = ["python"] }
-mike = "*"
-
-[tool.poetry.scripts]
+[project.scripts]
 fast-plate-ocr = "fast_plate_ocr.cli.cli:main_cli"
+
+[dependency-groups]
+test = ["pytest"]
+dev = [
+    "mypy",
+    "ruff",
+    "pandas-stubs",
+    "pylint",
+    "types-pyyaml",
+    "yamllint",
+]
+docs = [
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mike",
+]
+
+[tool.uv]
+default-groups = [
+    "test",
+    "dev",
+    "docs",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 100
@@ -134,6 +129,7 @@ line-ending = "lf"
 
 [tool.mypy]
 disable_error_code = "import-untyped"
+
 [[tool.mypy.overrides]]
 module = ["albumentations"]
 ignore_missing_imports = true
@@ -161,7 +157,3 @@ min-public-methods = 1
 
 [tool.pylint.basic]
 no-docstring-rgx = "^__|^test_"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
