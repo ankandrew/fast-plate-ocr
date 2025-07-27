@@ -34,9 +34,6 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-      - name: Minimize uv cache
-        run: uv cache prune --ci
-
   github-release:
     name: Create GitHub release
     needs:
@@ -105,6 +102,3 @@ jobs:
             --push \
             --branch docs-site \
             ${{ steps.check-version.outputs.VERSION_MAJOR_MINOR }} latest
-
-      - name: Minimize uv cache
-        run: uv cache prune --ci
