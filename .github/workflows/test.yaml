@@ -18,15 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install poetry
-        run: pipx install poetry
-
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
+          version: "latest"
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
+          enable-cache: true
 
-      - name: Install dependencies
+      - name: Install the project
         run: make install
 
       - name: Check format

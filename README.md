@@ -139,7 +139,7 @@ To start contributing or to begin development, you can follow these steps:
     ```shell
     git clone https://github.com/ankandrew/fast-plate-ocr.git
     ```
-2. Install all dependencies (make sure you have [Poetry](https://python-poetry.org/docs/#installation) installed):
+2. Install all dependencies (make sure you have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed):
     ```shell
     make install
     ```
