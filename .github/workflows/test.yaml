@@ -1,10 +1,6 @@
 name: Test
 on:
-  workflow_call:  # Allows this workflow to be called by other workflows
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  workflow_call:
 
 jobs:
   test:
