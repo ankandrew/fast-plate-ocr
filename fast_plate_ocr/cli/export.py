@@ -6,7 +6,7 @@ import logging
 import pathlib
 import platform
 import shutil
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from tempfile import TemporaryDirectory
 
 import click
 import keras
@@ -153,9 +153,10 @@ def export_onnx(
     )
     spec = [keras.InputSpec(name="input", shape=spec_shape, dtype=onnx_input_dtype)]
 
-    with NamedTemporaryFile(suffix=".onnx") as tmp:
+    with TemporaryDirectory() as tmp_dir:
+        tmp_onnx = pathlib.Path(tmp_dir) / "model.onnx"
         export_model.export(
-            tmp.name,
+            str(tmp_onnx),
             format="onnx",
             verbose=False,
             input_signature=spec,
@@ -167,10 +168,10 @@ def export_onnx(
             import onnxslim
 
             logging.info("Simplifying ONNX ...")
-            model_simp = onnxslim.slim(onnx.load(tmp.name))
+            model_simp = onnxslim.slim(onnx.load(tmp_onnx))
             onnx.save(model_simp, out_file)
         else:
-            shutil.copy(tmp.name, out_file)
+            shutil.copy(tmp_onnx, out_file)
 
     # Load the newly converted ONNX model
     sess = rt.InferenceSession(out_file)
